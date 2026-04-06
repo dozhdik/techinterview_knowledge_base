@@ -30,7 +30,7 @@ CLI-инструмент для управления базой знаний п�
 ### Шаг 1 — Клонирование репозитория
 
 ```bash
-git clone https://github.com/your-team/techinterview_knowledge_base.git
+git clone https://github.com/dozhdik/techinterview_knowledge_base.git
 cd techinterview_knowledge_base
 ```
 

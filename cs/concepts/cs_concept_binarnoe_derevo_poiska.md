@@ -1,5 +1,5 @@
 ---
-id: "CS-CONCEPT-TODO"
+id: "CS-CONCEPT-001"
 title: "Бинарное дерево поиска"
 domain: "cs"
 category: "concept"

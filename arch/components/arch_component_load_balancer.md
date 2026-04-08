@@ -20,7 +20,7 @@ interview_stage:
   - coding
 frequency: "high"
 related:
-  - "ARCH-COMPONENT-002"   # Cache (зависит от)
+  - "ARCH-COMPONENT-002"   # Cache (зависит от ...)
   - "ARCH-COMPONENT-004"   # API Gateway (часто используется вместе)
   - "ARCH-TRADEOFF-002"    # Availability vs Consistency (связанный компромисс)
 prerequisites:

@@ -428,4 +428,6 @@ python3 main.py search --text "dynamic programming" --verbose
 
 
 
-Contributors: Alexander, Mikalay, Pavlo
+Contributors: Alexander, Mikalay, Pavlo 
+
+Date: 08.04.2026

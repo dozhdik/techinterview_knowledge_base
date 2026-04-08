@@ -18,8 +18,7 @@ interview_stage:
 frequency: "high"
 related:
   - "PROC-FRAMEWORK-001"   # STAR Method (applied_in)
-  - "PROC-SOFTSKILL-003"   # Growth Mindset (relates_to)
-  - "PROC-PITFALL-008"     # Ошибка: отрицание неудач (warns_about)
+  - "PROC-STRATEGY-002"   # Resume & Self-Presentation (relates_to)
 prerequisites:
   - "PROC-FRAMEWORK-001"   # STAR Method
 sources:
@@ -136,8 +135,6 @@ status: "draft"
 ## Связанные темы
 
 - [[PROC-FRAMEWORK-001]] — STAR Method (applied_in)
-- [[PROC-SOFTSKILL-003]] — Growth Mindset (relates_to)
-- [[PROC-PITFALL-008]] — Ошибка: отрицание неудач (warns_about)
 - [[PROC-BEHAVIORAL-002]] — Conflict Resolution (complements)
 
 ## Источники

@@ -19,8 +19,6 @@ interview_stage:
 frequency: "high"
 related:
   - "PROC-BEHAVIORAL-001"   # Tell Me About Yourself (applied_in)
-  - "PROC-SOFTSKILL-001"   # Communication Skills (relates_to)
-  - "PROC-PITFALL-005"     # Ошибка: ответ без структуры (warns_about)
 prerequisites:
   - "PROC-STAGE-001"       # HR Screening (applied_in)
 sources:
@@ -122,8 +120,6 @@ STAR — фреймворк структурированного ответа н
 
 - [[PROC-BEHAVIORAL-001]] — Tell Me About Yourself (applied_in)
 - [[PROC-BEHAVIORAL-002]] — Conflict Resolution (applied_in)
-- [[PROC-SOFTSKILL-001]] — Communication Skills (relates_to)
-- [[PROC-PITFALL-005]] — Ошибка: ответ без структуры (warns_about)
 
 ## Источники
 

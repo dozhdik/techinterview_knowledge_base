@@ -98,7 +98,6 @@ status: "draft"
 - [[PROC-FRAMEWORK-001]] — STAR Method (applied_in)
 - [[PROC-STRATEGY-002]] — Resume & Self-Presentation (relates_to)
 - [[PROC-STAGE-001]] — HR Screening (applied_in)
-- [[PROC-SOFTSKILL-001]] — Communication Skills (relates_to)
 
 ## Источники
 1. McDowell G.L. Cracking the Coding Interview, Chapter 4. 2015.

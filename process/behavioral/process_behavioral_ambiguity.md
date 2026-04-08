@@ -17,7 +17,7 @@ interview_stage:
 frequency: "high"
 related:
   - "PROC-FRAMEWORK-001"   # STAR Method
-  - "PROC-SOFTSKILL-003"   # Adaptability
+  - "PROC-STRATEGY-002"   # Resume & Self-Presentation (relates_to)
 prerequisites:
   - "PROC-FRAMEWORK-001"
 sources:
@@ -27,7 +27,7 @@ author: "Инженер знаний №3"
 version: "1.0"
 date_created: "2026-04-09"
 date_updated: "2026-04-09"
-status: "draft"
+status: "reviewing"
 ---
 
 # Расскажите о ситуации с неопределённостью (Ambiguity)
@@ -82,8 +82,6 @@ status: "draft"
 ## Связанные темы
 
 - [[PROC-FRAMEWORK-001]] — STAR Method
-- [[PROC-SOFTSKILL-003]] — Adaptability
-- [[PROC-PITFALL-014]] — Ошибка: пассивность в неопределённости
 
 ## Источники
 

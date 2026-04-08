@@ -158,7 +158,6 @@ Mock Interview — симуляция реального техническог�
 - [[PROC-STRATEGY-004]] — План подготовки за 3 месяца
 - [[PROC-CHECKLIST-001]] — Pre-Interview Checklist
 - [[PROC-FRAMEWORK-002]] — Problem Solving Framework
-- [[PROC-SOFTSKILL-001]] — Communication Skills
 
 ## Источники
 

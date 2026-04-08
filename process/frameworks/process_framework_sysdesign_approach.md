@@ -21,7 +21,6 @@ frequency: "high"
 related:
   - "PROC-STAGE-004"
   - "ARCH-SYSDESIGN-001"
-  - "PROC-PITFALL-004"
 prerequisites:
   - "PROC-STAGE-003"
 sources:
@@ -145,7 +144,6 @@ status: "draft"
 - [[PROC-STAGE-004]] — System Design Interview (applied_in)
 - [[ARCH-SYSDESIGN-001]] — URL Shortener (exemplifies)
 - [[ARCH-COMPONENT-001]] — Load Balancer (relates_to)
-- [[PROC-PITFALL-004]] — Ошибка: пропуск capacity estimation (warns_about)
 
 ## Источники
 

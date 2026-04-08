@@ -19,7 +19,6 @@ frequency: "high"
 related:
   - "PROC-STAGE-003"   # Coding Interview (applied_in)
   - "CS-PATTERN-001"   # Algorithmic Patterns (relates_to)
-  - "PROC-PITFALL-003" # Ошибка: молча писать код (warns_about)
 prerequisites:
   - "PROC-STAGE-002"   # Phone Screen
 sources:
@@ -143,7 +142,6 @@ status: "draft"
 - [[PROC-STAGE-003]] — Coding Interview (applied_in)
 - [[CS-PATTERN-001]] — Two Pointers (relates_to)
 - [[CS-PATTERN-002]] — Sliding Window (relates_to)
-- [[PROC-PITFALL-003]] — Ошибка: молча писать код (warns_about)
 
 ## Источники
 

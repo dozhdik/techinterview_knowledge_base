@@ -20,8 +20,7 @@ interview_stage:
 frequency: "high"
 related:
   - "PROC-CHECKLIST-001"   # Pre-Interview Checklist (complements)
-  - "PROC-STRATEGY-001"   # Offer Negotiation (relates_to)
-  - "PROC-SOFTSKILL-003"   # Growth Mindset (relates_to)
+  - "PROC-STRATEGY-001"   
 prerequisites:
   - "PROC-CHECKLIST-001"   # Pre-Interview Checklist
 sources:
@@ -98,8 +97,6 @@ status: "draft"
 
 - [[PROC-CHECKLIST-001]] — Pre-Interview Checklist
 - [[PROC-STRATEGY-001]] — Offer Negotiation
-- [[PROC-SOFTSKILL-003]] — Growth Mindset
-- [[PROC-PITFALL-017]] — Ошибка: игнорировать фидбек после отказа
 
 ## Источники
 

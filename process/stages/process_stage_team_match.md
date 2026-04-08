@@ -18,8 +18,7 @@ interview_stage:
 frequency: "medium"
 related:
   - "PROC-STAGE-005"
-  - "PROC-SOFTSKILL-001"
-  - "PROC-PITFALL-018"
+  - "PROC-FRAMEWORK-003"   # System Design Approach
 prerequisites:
   - "PROC-STAGE-005"
 sources:
@@ -144,8 +143,6 @@ Team Match — этап, на котором кандидат, успешно п
 ## Связанные темы
 
 - [[PROC-STAGE-005]] — Behavioral Interview (предыдущий этап)
-- [[PROC-SOFTSKILL-001]] — Communication Skills (relates_to)
-- [[PROC-PITFALL-018]] — Ошибка: игнорировать культурный fit (warns_about)
 - [[PROC-STRATEGY-001]] — Offer Negotiation (следующий этап)
 
 ## Источники

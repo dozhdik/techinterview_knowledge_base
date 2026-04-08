@@ -20,7 +20,6 @@ frequency: "high"
 related:
   - "PROC-FRAMEWORK-001"   # STAR Method (applied_in)
   - "PROC-BEHAVIORAL-001"   # Tell Me About Yourself (relates_to)
-  - "PROC-SOFTSKILL-001"   # Communication Skills (relates_to)
 prerequisites:
   - "PROC-FRAMEWORK-001"   # STAR Method
 sources:
@@ -188,8 +187,6 @@ Behavioral Interview — этап собеседования, где оцени�
 - [[PROC-FRAMEWORK-001]] — STAR Method (applied_in)
 - [[PROC-BEHAVIORAL-001]] — Tell Me About Yourself (relates_to)
 - [[PROC-BEHAVIORAL-002]] — Conflict Resolution (relates_to)
-- [[PROC-SOFTSKILL-001]] — Communication Skills (relates_to)
-- [[PROC-COMPANY-001]] — Amazon Leadership Principles (relates_to)
 
 ## Источники
 

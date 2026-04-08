@@ -18,8 +18,7 @@ interview_stage:
 frequency: "high"
 related:
   - "PROC-FRAMEWORK-001"   # STAR Method
-  - "PROC-SOFTSKILL-005"   # Influence without authority
-  - "PROC-PITFALL-015"     # Ошибка: лидерство = управление
+  - "PROC-STRATEGY-002"   # Resume & Self-Presentation (relates_to)
 prerequisites:
   - "PROC-FRAMEWORK-001"
 sources:
@@ -115,8 +114,6 @@ status: "draft"
 ## Связанные темы
 
 - [[PROC-FRAMEWORK-001]] — STAR Method
-- [[PROC-SOFTSKILL-005]] — Influence without authority
-- [[PROC-PITFALL-015]] — Ошибка: лидерство = управление
 - [[PROC-BEHAVIORAL-002]] — Conflict Resolution
 
 ## Источники

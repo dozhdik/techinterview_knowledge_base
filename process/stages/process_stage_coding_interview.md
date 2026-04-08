@@ -18,7 +18,6 @@ frequency: "high"
 related:
   - "PROC-STAGE-002"   # Phone Screen (предыдущий этап)
   - "PROC-FRAMEWORK-002"   # Problem Solving Framework
-  - "PROC-PITFALL-003"   # Типичные ошибки на coding interview
 prerequisites:
   - "PROC-STAGE-002"   # Phone Screen
 sources:

@@ -18,8 +18,7 @@ interview_stage:
 frequency: "high"
 related:
   - "PROC-FRAMEWORK-001"   # STAR Method (applied_in)
-  - "PROC-SOFTSKILL-002"   # Constructive Disagreement (relates_to)
-  - "PROC-PITFALL-007"     # Ошибка: критика без альтернативы (warns_about)
+  - "PROC-STRATEGY-002"   # Resume & Self-Presentation (relates_to)
 prerequisites:
   - "PROC-FRAMEWORK-001"   # STAR Method
 sources:
@@ -131,10 +130,6 @@ status: "draft"
 ## Связанные темы
 
 - [[PROC-FRAMEWORK-001]] — STAR Method (applied_in)
-- [[PROC-SOFTSKILL-002]] — Constructive Disagreement (relates_to)
-- [[PROC-SOFTSKILL-005]] — Influence without authority (relates_to)
-- [[PROC-PITFALL-007]] — Ошибка: критика без альтернативы (warns_about)
-- [[PROC-COMPANY-001]] — Amazon Leadership Principles (relates_to)
 
 ## Источники
 

@@ -17,8 +17,7 @@ interview_stage:
 frequency: "high"
 related:
   - "PROC-STRATEGY-001"
-  - "PROC-SOFTSKILL-004"
-  - "PROC-PITFALL-010"
+  - "PROC-FRAMEWORK-004"   # Communication Framework
 prerequisites:
   - "PROC-STAGE-006"
 sources:
@@ -150,8 +149,6 @@ Offer Negotiation — финальный этап процесса найма, �
 ## Связанные темы
 
 - [[PROC-STRATEGY-001]] — Offer Negotiation Strategy
-- [[PROC-SOFTSKILL-004]] — Assertiveness
-- [[PROC-PITFALL-010]] — Ошибка: принятие первого оффера
 - [[GLB-PROFILE-002]] — Профиль Backend Developer (рыночные данные)
 
 ## Источники

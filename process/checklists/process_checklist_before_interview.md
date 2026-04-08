@@ -21,7 +21,6 @@ frequency: "high"
 related:
   - "PROC-STAGE-001"   # HR Screening (applied_in)
   - "PROC-STRATEGY-001"   # Offer Negotiation (relates_to)
-  - "PROC-SOFTSKILL-001"   # Communication Skills (relates_to)
 prerequisites:
   - "PROC-STAGE-001"   # HR Screening
 sources:
@@ -97,8 +96,6 @@ status: "draft"
 
 - [[PROC-STAGE-001]] — HR Screening (applied_in)
 - [[PROC-FRAMEWORK-001]] — STAR Method (relates_to)
-- [[PROC-SOFTSKILL-001]] — Communication Skills (relates_to)
-- [[PROC-PITFALL-011]] — Ошибка: неподготовленность к интервью (warns_about)
 
 ## Источники
 

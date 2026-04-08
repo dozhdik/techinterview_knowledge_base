@@ -425,3 +425,7 @@ python3 main.py search --text "dynamic programming" --verbose
 | `YAML-фронтматтер не найден` | Файл должен начинаться точно с `---` без пробелов перед |
 | `Отсутствуют обязательные поля` | Проверьте что `id`, `title`, `domain`, `category`, `difficulty` присутствуют в фронтматтере |
 | `Дублирующийся ID` | Запустите `python3 main.py registry` для поиска дублей |
+
+
+
+Contributors: Alexander, Mikalay, Pavlo

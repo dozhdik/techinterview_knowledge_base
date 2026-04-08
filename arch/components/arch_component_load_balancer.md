@@ -24,7 +24,7 @@ related:
   - "ARCH-COMPONENT-004"   # API Gateway (часто используется вместе)
   - "ARCH-TRADEOFF-002"    # Availability vs Consistency (связанный компромисс)
 prerequisites:
-  - "CS-CONCEPT-007"       # Компьютерные сети (базовое понимание) //подождать остальные карточки и сопоставить
+  - "CS-CONCEPT-007"       # Компьютерные сети (базовое понимание) //подождать остальные карточки и сопоставит
 sources:
   - "Kleppmann M. Designing Data-Intensive Applications. Chapter 11: Load Balancing. O'Reilly, 2017."
   - "Xu A. System Design Interview – An Iвременноnsider's Guide. Chapter 3: Load Balancer. ByteByteGo, 2020."

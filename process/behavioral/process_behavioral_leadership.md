@@ -28,7 +28,7 @@ author: "Инженер знаний №3"
 version: "1.0"
 date_created: "2026-04-09"
 date_updated: "2026-04-09"
-status: "draft"
+status: "review"
 ---
 
 # Расскажите о ситуации, где вы проявили лидерство

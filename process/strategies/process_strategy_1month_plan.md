@@ -30,7 +30,7 @@ author: "Инженер знаний №3"
 version: "1.0"
 date_created: "2026-04-09"
 date_updated: "2026-04-09"
-status: "draft"
+status: "approved"
 ---
 
 # План подготовки к собеседованию за 1 месяц

@@ -153,4 +153,3 @@ status: "review"
 
 1. Xu A. System Design Interview – An Insider's Guide. Chapter 9. ByteByteGo, 2020.
 2. The System Design Primer — Rate Limiter. https://github.com/donnemartin/system-design-primer
-3. Redis Documentation. https://redis.io/docsarch/tradeoffs/

@@ -1,5 +1,5 @@
 ---
-id: "ARCH-TRADEOFF-004"
+id: "ARCH-TRADEOFF-005"
 title: "Sharding vs Vertical Scaling"
 domain: "arch"
 category: "tradeoff"

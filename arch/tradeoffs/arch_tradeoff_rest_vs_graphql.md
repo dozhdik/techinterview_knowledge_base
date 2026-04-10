@@ -1,5 +1,5 @@
 ---
-id: "ARCH-TRADEOFF-001"
+id: "ARCH-TRADEOFF-004"
 title: "REST vs GraphQL"
 domain: "arch"
 category: "tradeoff"

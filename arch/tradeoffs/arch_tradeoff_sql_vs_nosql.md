@@ -1,5 +1,5 @@
 ---
-id: "ARCH-TRADEOFF-001"
+id: "ARCH-TRADEOFF-006"
 title: "SQL vs NoSQL"
 domain: "arch"
 category: "tradeoff"

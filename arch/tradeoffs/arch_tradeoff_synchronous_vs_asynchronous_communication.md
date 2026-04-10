@@ -1,5 +1,5 @@
 ---
-id: "ARCH-TRADEOFF-002"
+id: "ARCH-TRADEOFF-007"
 title: "Synchronous vs Asynchronous Communication"
 domain: "arch"
 category: "tradeoff"

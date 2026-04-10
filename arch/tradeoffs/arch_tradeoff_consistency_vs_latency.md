@@ -1,5 +1,5 @@
 ---
-id: "ARCH-TRADEOFF-003"
+id: "ARCH-TRADEOFF-002"
 title: "Consistency vs Latency"
 domain: "arch"
 category: "tradeoff"

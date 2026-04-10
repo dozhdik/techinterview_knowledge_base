@@ -1,5 +1,5 @@
 ---
-id: "ARCH-SYSDESIGN-003"
+id: "ARCH-SYSDESIGN-004"
 title: "Search Autocomplete"
 domain: "arch"
 category: "sysdesign"

@@ -1,5 +1,5 @@
 ---
-id: "ARCH-SYSDESIGN-002"
+id: "ARCH-SYSDESIGN-003"
 title: "Rate Limiter (Ограничитель запросов)"
 domain: "arch"
 category: "sysdesign"

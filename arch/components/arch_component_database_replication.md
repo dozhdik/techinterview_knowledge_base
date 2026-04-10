@@ -9,6 +9,8 @@ tags:
   - high_availability
   - scalability
   - consistency
+  - must_know
+  - core
 difficulty: "senior"
 roles:
   - "backend"
@@ -31,7 +33,7 @@ sources:
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-10"
-date_updated: "2026-04-10"
+date_updated: "2026-04-11"
 status: "review"
 ---
 
@@ -85,12 +87,7 @@ Database Replication — это механизм копирования данн
 6. Какие риски появляются в multi-primary replication?
 
 ## Связанные компоненты
-- [[ARCH-TRADEOFF-003]] — связь с компромиссом consistency vs latency
-- [[ARCH-TRADEOFF-004]] — связь с sharding vs vertical scaling
-- [[ARCH-SYSDESIGN-001]] — chat system использует реплики для истории и read path
-- [[ARCH-SYSDESIGN-002]] — notification service может использовать реплики для логов и чтения истории отправок
-
-## Источники
-1. Martin Kleppmann — Designing Data-Intensive Applications
-2. PostgreSQL Documentation — Replication
-3. MySQL Documentation — Replication
+- [[ARCH-TRADEOFF-003]] — согласованность чтений против задержки записи
+- [[ARCH-TRADEOFF-004]] — репликация часто идёт до шардирования
+- [[ARCH-SYSDESIGN-001]] — история чатов и read path
+- [[ARCH-SYSDESIGN-002]] — чтение логов доставки и настроек

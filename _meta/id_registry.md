@@ -11,8 +11,8 @@
   - `process`: 1
 - **По статусам:**
   - `approved`: 2
-  - `draft`: 15
-  - `review`: 20
+  - `draft`: 5
+  - `review`: 30
 
 ## Таблица идентификаторов
 
@@ -23,16 +23,16 @@
 | ARCH-COMPONENT-003 | Message Queue (Kafka / RabbitMQ) | arch | component | middle | draft | `arch/components/arch_component_message_queue_kafka_rabbitmq.md` |
 | ARCH-COMPONENT-004 | API Gateway | arch | component | middle | draft | `arch/components/arch_component_api_gateway.md` |
 | ARCH-COMPONENT-005 | Content Delivery Network (CDN) | arch | component | junior | draft | `arch/components/arch_component_content_delivery_network_cdn.md` |
-| ARCH-COMPONENT-006 | Blob Storage | arch | component | middle | draft | `arch/components/arch_component_blob_storage.md` |
-| ARCH-COMPONENT-007 | Search Engine | arch | component | senior | draft | `arch/components/arch_component_search_engine.md` |
-| ARCH-COMPONENT-008 | Database Replication | arch | component | senior | draft | `arch/components/arch_component_database_replication.md` |
-| ARCH-SYSDESIGN-001 | Chat System | arch | sysdesign | senior | draft | `arch/system_design/arch_sysdesign_chat_system.md` |
-| ARCH-SYSDESIGN-002 | Notification Service | arch | sysdesign | middle | draft | `arch/system_design/arch_sysdesign_notification_service.md` |
-| ARCH-SYSDESIGN-003 | Search Autocomplete | arch | sysdesign | senior | draft | `arch/system_design/arch_sysdesign_search_autocomplete.md` |
-| ARCH-TRADEOFF-001 | REST vs GraphQL | arch | tradeoff | middle | draft | `arch/tradeoffs/arch_tradeoff_rest_vs_graphql.md` |
-| ARCH-TRADEOFF-002 | Synchronous vs Asynchronous Communication | arch | tradeoff | middle | draft | `arch/tradeoffs/arch_tradeoff_synchronous_vs_asynchronous_communication.md` |
-| ARCH-TRADEOFF-003 | Consistency vs Latency | arch | tradeoff | senior | draft | `arch/tradeoffs/arch_tradeoff_consistency_vs_latency.md` |
-| ARCH-TRADEOFF-004 | Sharding vs Vertical Scaling | arch | tradeoff | senior | draft | `arch/tradeoffs/arch_tradeoff_sharding_vs_vertical_scaling.md` |
+| ARCH-COMPONENT-006 | Blob Storage | arch | component | middle | review | `arch/components/arch_component_blob_storage.md` |
+| ARCH-COMPONENT-007 | Search Engine | arch | component | senior | review | `arch/components/arch_component_search_engine.md` |
+| ARCH-COMPONENT-008 | Database Replication | arch | component | senior | review | `arch/components/arch_component_database_replication.md` |
+| ARCH-SYSDESIGN-001 | Chat System | arch | sysdesign | senior | review | `arch/system_design/arch_sysdesign_chat_system.md` |
+| ARCH-SYSDESIGN-002 | Notification Service | arch | sysdesign | middle | review | `arch/system_design/arch_sysdesign_notification_service.md` |
+| ARCH-SYSDESIGN-003 | Search Autocomplete | arch | sysdesign | senior | review | `arch/system_design/arch_sysdesign_search_autocomplete.md` |
+| ARCH-TRADEOFF-001 | REST vs GraphQL | arch | tradeoff | middle | review | `arch/tradeoffs/arch_tradeoff_rest_vs_graphql.md` |
+| ARCH-TRADEOFF-002 | Synchronous vs Asynchronous Communication | arch | tradeoff | middle | review | `arch/tradeoffs/arch_tradeoff_synchronous_vs_asynchronous_communication.md` |
+| ARCH-TRADEOFF-003 | Consistency vs Latency | arch | tradeoff | senior | review | `arch/tradeoffs/arch_tradeoff_consistency_vs_latency.md` |
+| ARCH-TRADEOFF-004 | Sharding vs Vertical Scaling | arch | tradeoff | senior | review | `arch/tradeoffs/arch_tradeoff_sharding_vs_vertical_scaling.md` |
 | CS-CONCEPT-001 | Бинарное дерево поиска | cs | concept | junior | draft | `cs/concepts/cs_concept_binarnoe_derevo_poiska.md` |
 | CS-CONCEPT-003 | Trie: префиксное дерево и сценарии применения | cs | concept | middle | review | `cs/concepts/cs_concept_trie_prefiksnoe_derevo_i_stsenarii_primeneniya.md` |
 | CS-CONCEPT-004 | Disjoint Set Union (Union-Find) | cs | concept | middle | review | `cs/concepts/cs_concept_disjoint_set_union_unionfind.md` |

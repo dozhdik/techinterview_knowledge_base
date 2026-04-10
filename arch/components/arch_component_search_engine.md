@@ -9,6 +9,8 @@ tags:
   - indexing
   - distributed_systems
   - scalability
+  - must_know
+  - core
 difficulty: "senior"
 roles:
   - "backend"
@@ -30,7 +32,7 @@ sources:
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-10"
-date_updated: "2026-04-10"
+date_updated: "2026-04-11"
 status: "review"
 ---
 
@@ -84,11 +86,6 @@ Search Engine — это компонент для полнотекстовог�
 6. Как решать проблему stale index и eventual consistency?
 
 ## Связанные компоненты
-- [[ARCH-SYSDESIGN-003]] — search autocomplete может строиться поверх поискового индекса или prefix index
-- [[ARCH-COMPONENT-006]] — blob storage хранит файлы, а search engine может индексировать их метаданные и содержимое
-- [[ARCH-TRADEOFF-001]] — REST vs GraphQL связан с проектированием поискового API
-
-## Источники
-1. Martin Kleppmann — Designing Data-Intensive Applications
-2. Elasticsearch Documentation
-3. OpenSearch Documentation
+- [[ARCH-SYSDESIGN-003]] — автодополнение поверх инвертированного или префиксного индекса
+- [[ARCH-COMPONENT-006]] — файлы в object storage, в индексе — метаданные и извлечённый текст
+- [[ARCH-TRADEOFF-001]] — форма поискового API (REST, BFF, при необходимости GraphQL)

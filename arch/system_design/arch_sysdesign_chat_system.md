@@ -9,6 +9,8 @@ tags:
   - realtime
   - websockets
   - messaging
+  - must_know
+  - core
 difficulty: "senior"
 roles:
   - "backend"
@@ -17,7 +19,7 @@ roles:
   - "all_roles"
 interview_stage:
   - "system_design"
-frequency: "medium"
+frequency: "high"
 related:
   - "ARCH-COMPONENT-006"
   - "ARCH-COMPONENT-008"
@@ -25,13 +27,13 @@ related:
   - "ARCH-TRADEOFF-003"
 prerequisites: []
 sources:
-  - "Alex Xu — System Design Interview"
-  - "Martin Kleppmann — Designing Data-Intensive Applications"
-  - "WebSocket RFC 6455"
+  - "Xu A. System Design Interview — An Insider's Guide. ByteByteGo, 2020+"
+  - "Kleppmann M. Designing Data-Intensive Applications. O'Reilly, 2017"
+  - "IETF RFC 6455 — The WebSocket Protocol"
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-10"
-date_updated: "2026-04-10"
+date_updated: "2026-04-11"
 status: "review"
 ---
 
@@ -90,3 +92,42 @@ status: "review"
                            [Push Notification Service]
 
                  [Blob Storage] ← attachments / media
+```
+
+## Шаг 4: Модель данных
+- **Пользователь и устройства**: сущности `user`, `device` (push token, platform); один пользователь — несколько устройств.
+- **Чаты**: `conversation` (direct / group), `membership` (`user_id`, `conversation_id`, роль).
+- **Сообщения**: серверный `message_id`, опционально `client_message_id` для идемпотентности; `conversation_id`, `sender_id`, текст или ссылка на объект в blob storage, `created_at`. Крупные вложения — только ссылка и метаданные в OLTP.
+- **Статусы**: sent / delivered / read — отдельные записи или поток событий; для UX часто допустима eventual consistency.
+- **Presence**: KV или отдельное хранилище с TTL.
+
+Типичное **шардирование** — по `conversation_id`, чтобы история одного чата была локальной для запросов «лента сообщений».
+
+## Шаг 5: API
+- **REST**: список чатов, создание чата, пагинация истории (курсор `before` / `after`), выдача pre-signed URL для загрузки вложения.
+- **WebSocket**: подписка на события пользователя/устройства — `new_message`, подтверждения, опционально typing/presence.
+- **Идемпотентность отправки**: клиент передаёт `client_message_id`; сервер отклоняет повтор при том же ключе.
+
+## Шаг 6: Углубление по компонентам
+- **WebSocket Gateway**: stateless за балансировщиком со sticky session; при обрыве — REST-догрузка пропущенных сообщений.
+- **Chat Service**: проверка членства, запись в БД, публикация события в брокер для fan-out и push.
+- **Message Broker** (Kafka и т.п.): событие «новое сообщение» для групповых чатов и асинхронной доставки.
+- **Delivery Workers**: размножение на получателей, вызов push, обновление badge/unread.
+- **Message DB**: индекс `(conversation_id, created_at)`; **read replicas** для тяжёлого чтения истории.
+
+## Шаг 7: Масштабирование
+- Горизонтально масштабируются gateway, chat service, workers; БД — шардирование и/или реплики.
+- Очень большие группы: отдельный fan-out pipeline и лимиты на размер группы или деградация до «уведомление + ленивая догрузка».
+- Multi-region: сложнее глобальный порядок и поиск; часто активный регион на чат или eventual merge.
+
+## Шаг 8: Отказы и надёжность
+- Доставка через брокер: **at-least-once** + дедуп по `client_message_id` / `message_id`.
+- Для «прочитал своё сообщение сразу после отправки» — чтение с primary или синхронная реплика критичного пути (см. [[ARCH-TRADEOFF-003]]).
+- DLQ и алерты для сообщений, не доставленных после N retry.
+
+## Шаг 9: Наблюдаемость
+- Метрики: число активных WebSocket, задержка до первого ack, lag consumer-групп, ошибки push, RPS REST.
+- Логи и трассировка с `correlation_id` / `conversation_id` / `message_id`.
+
+## Шаг 10: Резюме
+Разделены три пути: низкая задержка realtime (WebSocket), долговечное хранение (БД + blob), асинхронный fan-out и push (брокер + workers). На интервью важно проговорить ordering (per-chat vs global), E2E encryption (если требуется) и компромиссы [[ARCH-TRADEOFF-002]] / [[ARCH-TRADEOFF-003]].

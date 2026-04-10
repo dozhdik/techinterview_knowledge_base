@@ -9,6 +9,8 @@ tags:
   - messaging
   - queues
   - event_driven
+  - must_know
+  - core
 difficulty: "middle"
 roles:
   - "backend"
@@ -25,13 +27,13 @@ related:
   - "ARCH-TRADEOFF-003"
 prerequisites: []
 sources:
-  - "Alex Xu — System Design Interview"
-  - "Martin Kleppmann — Designing Data-Intensive Applications"
-  - "Firebase Cloud Messaging Documentation"
+  - "Xu A. System Design Interview — An Insider's Guide. ByteByteGo, 2020+"
+  - "Kleppmann M. Designing Data-Intensive Applications. O'Reilly, 2017"
+  - "Google. Firebase Cloud Messaging — documentation"
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-10"
-date_updated: "2026-04-10"
+date_updated: "2026-04-11"
 status: "review"
 ---
 
@@ -89,3 +91,38 @@ status: "review"
                     [Template Service]   [User Preferences Store]
                              ↓                   ↓
                      [Delivery Log Store]   [Rate Limit / Dedup Layer]
+```
+
+## Шаг 4: Модель данных
+- **Событие от продьюсера**: `notification_request` с `event_id`, типом, получателем(ями), полезной нагрузкой, приоритетом; **idempotency key** на уровне бизнес-операции.
+- **Шаблоны**: версионируемые шаблоны по каналу и локали; хранилище метаданных + опционально тела в [[ARCH-COMPONENT-006]].
+- **Настройки пользователя**: каналы, quiet hours, категории (marketing vs transactional).
+- **Журнал доставки**: статус по каналу (queued, sent, failed, bounced), провайдер, timestamp, для аудита и поддержки.
+- **Дедупликация**: скользящее окно по `(user_id, template_id, dedup_key)` в Redis/БД.
+
+## Шаг 5: API
+- **Внутренний HTTP/gRPC** от продуктовых сервисов: `POST /v1/notifications` с валидацией схемы и ответом `202 Accepted` + `notification_id`.
+- **Админ/API шаблонов** и **webhook-и провайдеров** (доставка, bounce) — отдельные защищённые endpoint-ы.
+- Публичный REST для in-app inbox при необходимости (список, отметка прочитанным).
+
+## Шаг 6: Углубление по компонентам
+- **Очередь / event bus**: буфер при burst; партиционирование по `user_id` или типу канала для упорядочивания per-user.
+- **Orchestrator**: правила (если push отключён → только email), персонализация полей шаблона, маршрутизация в очереди worker-ов.
+- **Worker на канал**: изоляция сбоев провайдера; отдельные лимиты concurrency.
+- **Rate limit / dedup**: до вызова внешнего API, чтобы не получить бан от FCM/SMS/email-провайдера.
+
+## Шаг 7: Масштабирование
+- Горизонтально: API, orchestrator (stateless), workers; очередь — кластер Kafka/SQS/RabbitMQ.
+- Тяжёлые рассылки: отдельные topic-и и пулы worker-ов, приоритетная очередь для transactional.
+
+## Шаг 8: Отказы и надёжность
+- **At-least-once** из очереди + идемпотентность на worker (повторная обработка `event_id` без двойной отправки пользователю).
+- Exponential backoff и **DLQ**; ручной replay из DLQ после фикса.
+- Circuit breaker на вызовы провайдеров при массовых 5xx.
+
+## Шаг 9: Наблюдаемость
+- Метрики: глубина очереди, latency end-to-end, success rate по каналу, quota провайдера.
+- Алерты: рост DLQ, падение доставки transactional выше порога.
+
+## Шаг 10: Резюме
+Типичная схема: синхронный приём запроса, асинхронная обработка ([[ARCH-TRADEOFF-002]]). Критичны идемпотентность, дедуп, лимиты и честные SLA по каналам. Связь с [[ARCH-TRADEOFF-003]]: история и настройки можно читать с реплик с допустимым отставанием.

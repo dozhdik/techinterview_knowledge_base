@@ -9,6 +9,8 @@ tags:
   - databases
   - distributed_systems
   - tradeoffs
+  - must_know
+  - core
 difficulty: "senior"
 roles:
   - "backend"
@@ -31,7 +33,7 @@ sources:
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-10"
-date_updated: "2026-04-10"
+date_updated: "2026-04-11"
 status: "review"
 ---
 

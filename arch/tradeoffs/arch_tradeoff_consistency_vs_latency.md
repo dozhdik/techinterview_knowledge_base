@@ -9,6 +9,8 @@ tags:
   - distributed_systems
   - replication
   - tradeoffs
+  - must_know
+  - core
 difficulty: "senior"
 roles:
   - "backend"
@@ -25,13 +27,13 @@ related:
   - "ARCH-TRADEOFF-004"
 prerequisites: []
 sources:
-  - "Martin Kleppmann — Designing Data-Intensive Applications"
-  - "CAP Theorem resources"
-  - "Google Spanner Paper"
+  - "Kleppmann M. Designing Data-Intensive Applications. O'Reilly, 2017 (гл. 9: согласованность и консенсус)"
+  - "Brewer E. Towards Robust Distributed Systems (PODC 2000) — введение в компромиссы CAP"
+  - "Corbett J. et al. Spanner: Google's Globally-Distributed Database (OSDI 2012)"
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-10"
-date_updated: "2026-04-10"
+date_updated: "2026-04-11"
 status: "review"
 ---
 

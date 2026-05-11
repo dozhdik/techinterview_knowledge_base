@@ -1,0 +1,148 @@
+/* =========================================================
+   themes.css — CSS-переменные для светлой и тёмной темы
+   Тема устанавливается через data-theme на <html>
+   ========================================================= */
+
+/* Плавный переход при смене темы */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* =========================================================
+   Светлая тема (по умолчанию)
+   ========================================================= */
+[data-theme="light"] {
+  /* Фоны */
+  --bg-page:        #f8f9fc;
+  --bg-surface:     #ffffff;
+  --bg-surface-2:   #f1f3f9;
+  --bg-hover:       #eef0f7;
+
+  /* Текст */
+  --text-primary:   #0f1117;
+  --text-secondary: #4b5563;
+  --text-muted:     #9ca3af;
+
+  /* Бордеры */
+  --border:         #e5e7eb;
+  --border-focus:   #3b82f6;
+
+  /* Bubble — пользователь */
+  --bubble-user-bg:   #3b82f6;
+  --bubble-user-text: #ffffff;
+
+  /* Bubble — ассистент */
+  --bubble-ai-bg:   #ffffff;
+  --bubble-ai-text: #0f1117;
+  --bubble-ai-border: #e5e7eb;
+
+  /* Кнопка отправки */
+  --btn-primary-bg:    #3b82f6;
+  --btn-primary-hover: #2563eb;
+  --btn-primary-text:  #ffffff;
+
+  /* Skeleton */
+  --skeleton-base:      #e5e7eb;
+  --skeleton-highlight: #f3f4f6;
+
+  /* Toast */
+  --toast-success-bg:   #ecfdf5;
+  --toast-success-text: #065f46;
+  --toast-error-bg:     #fef2f2;
+  --toast-error-text:   #991b1b;
+
+  /* Header */
+  --header-bg:     #ffffff;
+  --header-border: #e5e7eb;
+
+  /* Input area */
+  --input-bg:     #ffffff;
+  --input-border: #d1d5db;
+
+  /* Prism тема — подключается в JS */
+  --prism-theme: "light";
+
+  /* Scrollbar */
+  --scrollbar-thumb: #d1d5db;
+  --scrollbar-track: transparent;
+}
+
+/* =========================================================
+   Тёмная тема
+   ========================================================= */
+[data-theme="dark"] {
+  /* Фоны */
+  --bg-page:        #0d0f14;
+  --bg-surface:     #161b27;
+  --bg-surface-2:   #1e2535;
+  --bg-hover:       #252d3d;
+
+  /* Текст */
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+
+  /* Бордеры */
+  --border:         #2a3347;
+  --border-focus:   #60a5fa;
+
+  /* Bubble — пользователь */
+  --bubble-user-bg:   #2563eb;
+  --bubble-user-text: #ffffff;
+
+  /* Bubble — ассистент */
+  --bubble-ai-bg:   #1e2535;
+  --bubble-ai-text: #f1f5f9;
+  --bubble-ai-border: #2a3347;
+
+  /* Кнопка отправки */
+  --btn-primary-bg:    #3b82f6;
+  --btn-primary-hover: #60a5fa;
+  --btn-primary-text:  #ffffff;
+
+  /* Skeleton */
+  --skeleton-base:      #1e2535;
+  --skeleton-highlight: #252d3d;
+
+  /* Toast */
+  --toast-success-bg:   #064e3b;
+  --toast-success-text: #6ee7b7;
+  --toast-error-bg:     #7f1d1d;
+  --toast-error-text:   #fca5a5;
+
+  /* Header */
+  --header-bg:     #161b27;
+  --header-border: #2a3347;
+
+  /* Input area */
+  --input-bg:     #1e2535;
+  --input-border: #2a3347;
+
+  /* Prism тема */
+  --prism-theme: "dark";
+
+  /* Scrollbar */
+  --scrollbar-thumb: #2a3347;
+  --scrollbar-track: transparent;
+}
+
+/* =========================================================
+   Акцентные цвета по доменам БЗ
+   ========================================================= */
+:root {
+  --domain-cs-color:      #3b82f6;  /* синий */
+  --domain-cs-bg:         #eff6ff;
+  --domain-cs-bg-dark:    #1e3a5f;
+
+  --domain-arch-color:    #8b5cf6;  /* фиолетовый */
+  --domain-arch-bg:       #f5f3ff;
+  --domain-arch-bg-dark:  #2e1b5e;
+
+  --domain-proc-color:    #10b981;  /* зелёный */
+  --domain-proc-bg:       #ecfdf5;
+  --domain-proc-bg-dark:  #064e3b;
+
+  --domain-glb-color:     #f59e0b;  /* янтарный */
+  --domain-glb-bg:        #fffbeb;
+  --domain-glb-bg-dark:   #451a03;
+}

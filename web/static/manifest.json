@@ -1,0 +1,21 @@
+{
+  "name": "TechInterview Knowledge Base",
+  "short_name": "TechInterview KB",
+  "description": "База знаний для подготовки к техническим собеседованиям в IT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fc",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

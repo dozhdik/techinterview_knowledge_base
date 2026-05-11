@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="База знаний для подготовки к техническим собеседованиям в IT" />
+  <title>TechInterview KB</title>
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Темы -->
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/styles.css" />
+
+  <!-- Prism.js — подсветка кода (две темы, переключаются через JS) -->
+  <link id="prism-light" rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism.min.css" />
+  <link id="prism-dark" rel="stylesheet" disabled
+    href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism-tomorrow.min.css" />
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ===== Header ===== -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo" aria-hidden="true">📚</div>
+      <div class="header-text">
+        <div class="header-title">TechInterview KB</div>
+        <div class="header-subtitle">CS · System Design · Процесс собеседования</div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Очистить историю -->
+      <button id="clear-btn" class="icon-btn" type="button" aria-label="Очистить историю чата" title="Очистить историю (Ctrl+L)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </button>
+
+      <!-- Переключатель темы -->
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Переключить тему" title="Переключить тему">
+        <!-- Sun (показывается в тёмной теме) -->
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             style="display:none">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <!-- Moon (показывается в светлой теме) -->
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Messages area ===== -->
+  <main id="messages-area" class="messages-area" role="log" aria-live="polite" aria-label="История чата">
+
+    <!-- Welcome screen (скрывается после первого сообщения) -->
+    <div id="welcome-screen" class="welcome-screen"></div>
+
+  </main>
+
+  <!-- ===== Input area ===== -->
+  <footer class="input-area">
+    <div class="input-wrapper">
+      <label for="chat-input" class="visually-hidden">Введите вопрос</label>
+      <textarea
+        id="chat-input"
+        class="chat-textarea"
+        placeholder="Спроси про алгоритмы, System Design или собеседование... (Enter — отправить, Shift+Enter — новая строка)"
+        rows="1"
+        maxlength="1000"
+        autocomplete="off"
+        spellcheck="true"
+      ></textarea>
+      <button
+        id="send-btn"
+        class="send-btn"
+        type="button"
+        disabled
+        aria-label="Отправить вопрос"
+        title="Отправить (Enter)"
+      >
+        <!-- Иконка отправки -->
+        <svg id="send-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+        <!-- Spinner при загрузке -->
+        <div id="send-spinner" class="spinner" style="display:none" aria-hidden="true"></div>
+      </button>
+    </div>
+    <p class="input-hint">
+      <kbd>Enter</kbd> — отправить &nbsp;·&nbsp;
+      <kbd>Shift+Enter</kbd> — новая строка &nbsp;·&nbsp;
+      <kbd>Esc</kbd> — очистить &nbsp;·&nbsp;
+      <kbd>Ctrl+K</kbd> — фокус
+    </p>
+  </footer>
+
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+<!-- CDN: marked.js -->
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+
+<!-- CDN: Prism.js (core + languages) -->
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-go.min.js"></script>
+
+<!-- Настройка marked.js -->
+<script>
+  if (window.marked) {
+    marked.setOptions({ breaks: true, gfm: true });
+  }
+</script>
+
+<!-- Приложение (ES modules) -->
+<script type="module" src="/js/app.js"></script>
+
+</body>
+</html>

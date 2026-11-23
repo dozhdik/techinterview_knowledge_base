@@ -23,9 +23,10 @@ frequency: "high"
 related:
   - "ARCH-COMPONENT-002"   # Cache (реляция: кеш часто используется с БД)
   - "ARCH-COMPONENT-003"   # Message Queue (асинхронная запись в БД)
-  - "ARCH-TRADEOFF-002"    # Consistency vs Availability (связанный компромисс)
+  - "ARCH-TRADEOFF-001"    # Consistency vs Availability (связанный компромисс)
+  - "ARCH-SYSDESIGN-005"   # URL Shortener (пример применения)
 prerequisites:
-  - "CS-CONCEPT-008"       # Базы данных (фундамент)
+  - "ARCH-COMPONENT-009"  # Реляционная база данных (фундамент)
 sources:
   - "Kleppmann M. Designing Data-Intensive Applications. Chapter 2: Data Models and Query Languages. O'Reilly, 2017."
   - "Xu A. System Design Interview – An Insider's Guide. Chapter 7: Databases. ByteByteGo, 2020."
@@ -109,9 +110,9 @@ status: "review"
 
 - [[ARCH-COMPONENT-002]] — Cache (часто используется вместе с БД)
 - [[ARCH-COMPONENT-003]] — Message Queue (асинхронная запись)
-- [[ARCH-TRADEOFF-002]] — Consistency vs Availability (extends)
-- [[CS-CONCEPT-008]] — Базы данных (фундамент, prerequisite_for)
-- [[ARCH-SYSDESIGN-001]] — URL Shortener (applied_in)
+- [[ARCH-TRADEOFF-001]] — Consistency vs Availability (extends)
+- [[ARCH-COMPONENT-009]] — Реляционная база данных (фундамент, prerequisite_for)
+- [[ARCH-SYSDESIGN-005]] — URL Shortener (applied_in)
 
 ## Источники
 

@@ -23,7 +23,7 @@ interview_stage:
 frequency: "medium"
 related:
   - "ARCH-COMPONENT-008"
-  - "ARCH-TRADEOFF-002"
+  - "ARCH-TRADEOFF-007"
   - "ARCH-TRADEOFF-004"
 prerequisites: []
 sources:
@@ -102,5 +102,5 @@ status: "review"
 
 ## Связанные темы
 - [[ARCH-COMPONENT-008]] — database replication напрямую создаёт компромисс между свежестью данных и задержкой
-- [[ARCH-TRADEOFF-002]] — async-коммуникация часто увеличивает eventual consistency, но помогает latency и resilience
+- [[ARCH-TRADEOFF-007]] — async-коммуникация часто увеличивает eventual consistency, но помогает latency и resilience
 - [[ARCH-TRADEOFF-004]] — sharding и масштабирование тоже влияют на consistency model

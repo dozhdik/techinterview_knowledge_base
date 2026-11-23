@@ -23,11 +23,11 @@ frequency: "high"
 related:
   - "ARCH-COMPONENT-002"   # Cache (кеш влияет на консистентность)
   - "ARCH-COMPONENT-003"   # Message Queue (eventual consistency через асинхронность)
-  - "ARCH-TRADEOFF-001"    # SQL vs NoSQL (связанный компромисс)
-  - "ARCH-SYSDESIGN-001"   # URL Shortener (применение trade-off)
+  - "ARCH-TRADEOFF-006"    # SQL vs NoSQL (связанный компромисс)
+  - "ARCH-SYSDESIGN-005"   # URL Shortener (применение trade-off)
 prerequisites:
-  - "CS-CONCEPT-008"       # Базы данных (фундамент)
-  - "CS-CONCEPT-007"       # Компьютерные сети (распределённые системы)
+  - "ARCH-COMPONENT-009"  # Реляционная база данных (фундамент)
+  - "CS-CONCEPT-028"      # TCP и UDP (сетевое взаимодействие)
 sources:
   - "Kleppmann M. Designing Data-Intensive Applications. Chapter 5: Replication. O'Reilly, 2017."
   - "Brewer E. CAP Twelve Years Later: How the 'Rules' Have Changed. IEEE Computer, 2012."
@@ -108,9 +108,10 @@ status: "review"
 
 - [[ARCH-COMPONENT-002]] — Cache (кеш влияет на консистентность, relates_to)
 - [[ARCH-COMPONENT-003]] — Message Queue (асинхронность → eventual consistency, relates_to)
-- [[ARCH-TRADEOFF-001]] — SQL vs NoSQL (многие NoSQL выбирают AP, contrasts_with)
-- [[ARCH-SYSDESIGN-001]] — URL Shortener (пример применения trade-off, applied_in)
-- [[CS-CONCEPT-008]] — Базы данных (фундамент, prerequisite_for)
+- [[ARCH-TRADEOFF-006]] — SQL vs NoSQL (связанный компромисс, contrasts_with)
+- [[ARCH-SYSDESIGN-005]] — URL Shortener (пример применения trade-off, applied_in)
+- [[ARCH-COMPONENT-009]] — Реляционная база данных (фундамент, prerequisite_for)
+- [[CS-CONCEPT-028]] — TCP и UDP (сетевое взаимодействие, prerequisite_for)
 
 ## Источники
 

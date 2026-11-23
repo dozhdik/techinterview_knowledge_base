@@ -1,59 +1,31 @@
-"""
-kb/search.py
-
-Поиск по базе знаний TechInterview.
-
-Поддерживает:
-- поиск по тегам
-- поиск по домену (cs / arch / process / global)
-- поиск по категории (concept / problem / sysdesign и т.д.)
-- поиск по уровню сложности (junior / middle / senior / staff)
-- поиск по роли (backend / frontend и т.д.)
-- поиск по этапу собеседования (coding / behavioral и т.д.)
-- полнотекстовый поиск по заголовку и содержимому
-- комбинированный поиск (несколько фильтров одновременно)
-"""
-
 from dataclasses import dataclass, field
+from collections import Counter
+from math import log
+import re
+from pathlib import Path
 from typing import Optional
 
 from .parser import KnowledgeUnit
 
 
-# ---------------------------------------------------------------------------
-# Dataclass — параметры поиска
-# ---------------------------------------------------------------------------
-
 @dataclass
 class SearchQuery:
-    """
-    Параметры поискового запроса.
-    Все поля необязательные — указывай только нужные фильтры.
-
-    Пример:
-        query = SearchQuery(domain="cs", difficulty="junior", tags=["arrays"])
-    """
-    domain:           Optional[str]       = None  # cs | arch | process | global
-    category:         Optional[str]       = None  # concept | problem | sysdesign | ...
-    difficulty:       Optional[str]       = None  # junior | middle | senior | staff
-    role:             Optional[str]       = None  # backend | frontend | ...
-    interview_stage:  Optional[str]       = None  # coding | behavioral | ...
+    domain:           Optional[str]       = None
+    category:         Optional[str]       = None
+    difficulty:       Optional[str]       = None
+    role:             Optional[str]       = None
+    interview_stage:  Optional[str]       = None
     tags:             list[str]           = field(default_factory=list)
-    text:             Optional[str]       = None  # полнотекстовый поиск
-    status:           Optional[str]       = None  # draft | review | approved
-    frequency:        Optional[str]       = None  # high | medium | low
+    text:             Optional[str]       = None
+    status:           Optional[str]       = None
+    frequency:        Optional[str]       = None
 
-
-# ---------------------------------------------------------------------------
-# Dataclass — результат поиска
-# ---------------------------------------------------------------------------
 
 @dataclass
 class SearchResult:
-    """Один результат поиска с информацией о релевантности."""
     unit:      KnowledgeUnit
-    score:     int    # очки релевантности (чем больше — тем лучше совпадение)
-    matched:   list[str] = field(default_factory=list)  # что именно совпало
+    score:     int
+    matched:   list[str] = field(default_factory=list)
 
     def __repr__(self) -> str:
         return (
@@ -62,24 +34,10 @@ class SearchResult:
         )
 
 
-# ---------------------------------------------------------------------------
-# Основные функции поиска
-# ---------------------------------------------------------------------------
-
 def search(
     units: list[KnowledgeUnit],
     query: SearchQuery,
 ) -> list[SearchResult]:
-    """
-    Ищет единицы знаний по заданным критериям.
-    Возвращает список SearchResult, отсортированный по релевантности (score).
-
-    Пример:
-        units = parse_directory(".")
-        results = search(units, SearchQuery(domain="cs", difficulty="junior"))
-        for r in results:
-            print(r.unit.id, r.unit.title)
-    """
     results = []
 
     for unit in units:
@@ -87,75 +45,153 @@ def search(
         if score > 0:
             results.append(SearchResult(unit=unit, score=score, matched=matched))
 
-    # Сортируем по убыванию релевантности
     results.sort(key=lambda r: r.score, reverse=True)
     return results
+
+
+_QUESTION_STOP_WORDS = set("""
+    а без быть в во вот вы где да для до его ее есть еще же за зачем и из или их
+    к как какая какие какой когда кто ли мне на над не но о об он она они от по
+    под при про с со так там то такое у что это этой этот я
+    расскажи расскажите объясни объясните устроен устроена устроены работает
+    спроектируй подготовиться отвечать выбирать каждый чем отличается
+    выбрать проекта дай дайте определение определению определении
+    определите покажи покажите карточку термин понятие означает значит
+    the a an and or to of in on is are how what when why does do can i define
+""".split())
+_RUSSIAN_ENDINGS = (
+    "иями", "ами", "ями", "ого", "ему", "ому", "ыми", "ими", "ией",
+    "ий", "ый", "ой", "ая", "яя", "ое", "ее", "ые", "ие", "ов", "ев",
+    "ом", "ем", "ам", "ям", "ах", "ях", "ую", "юю", "а", "я", "ы", "и", "у", "ю", "е", "о",
+)
+
+
+def _question_words(text: str) -> list[str]:
+    terms = []
+    for word in re.findall(r"[a-zа-я0-9]+", text.lower().replace("ё", "е")):
+        if len(word) < 2 or word.isdigit() or word in _QUESTION_STOP_WORDS:
+            continue
+        word = {"hash": "хеш", "хэш": "хеш", "table": "таблиц", "tables": "таблиц"}.get(word, word)
+        if re.fullmatch(r"[а-я]+", word):
+            for ending in _RUSSIAN_ENDINGS:
+                if word.endswith(ending) and len(word) - len(ending) >= 3:
+                    word = word[:-len(ending)]
+                    break
+        terms.append(word)
+    return terms
+
+
+def _question_terms(text: str) -> set[str]:
+    return set(_question_words(text))
+
+
+def requested_card_ids(question: str) -> list[str]:
+    return list(dict.fromkeys(re.findall(r"\b[A-Z]+-[A-Z]+-\d+\b", question.upper())))
+
+
+def _is_definition_question(question: str) -> bool:
+    return bool(re.search(r"\b(?:что\s+такое|что\s+значит|дай(?:те)?\s+определение|"
+                          r"определение\s+|what\s+is|define\s+)", question.lower()))
+
+
+def _has_named_definition(unit: KnowledgeUnit, words: list[str], tags: set[str]) -> bool:
+    if not words:
+        return False
+    title = _question_words(unit.title)
+    filename = _question_words(Path(unit.file_path).stem)
+    if len(words) == 1:
+        return words[0] in set(title) | set(filename) | tags
+    width = len(words)
+    return (any(title[i:i + width] == words for i in range(len(title) - width + 1))
+            or any(filename[i:i + width] == words for i in range(len(filename) - width + 1))
+            or set(words).issubset(tags))
+
+
+def search_question(
+    units: list[KnowledgeUnit], question: str, limit: int = 3,
+) -> list[SearchResult]:
+    if limit <= 0:
+        return []
+    requested_ids = set(requested_card_ids(question))
+    if requested_ids:
+        return [SearchResult(unit=u, score=100, matched=["id"])
+                for u in units if u.id.upper() in requested_ids][:limit]
+
+    query_words = _question_words(question)
+    query_terms = set(query_words)
+    if not query_terms:
+        return []
+    documents = [(_question_terms(u.title + " " + Path(u.file_path).stem), _question_terms(" ".join(u.tags)),
+                  _question_terms(u.content)) for u in units]
+    frequency = Counter(term for fields in documents for term in set.union(*fields))
+    results = []
+    for unit, (title, tags, content) in zip(units, documents):
+        matched = query_terms & (title | tags | content)
+        coverage = len(matched) / len(query_terms)
+        if coverage < 0.75 or not matched & (title | tags):
+            continue
+        if _is_definition_question(question) and not _has_named_definition(unit, query_words, tags):
+            continue
+        score = sum(
+            (8 if term in title else 4 if term in tags else 1)
+            * (1 + log((len(units) + 1) / (frequency[term] + 1)))
+            for term in matched
+        ) * coverage
+        results.append(SearchResult(unit=unit, score=round(score * 100), matched=sorted(matched)))
+    results.sort(key=lambda result: (-result.score, result.unit.id))
+    return results[:limit]
 
 
 def _score_unit(
     unit: KnowledgeUnit,
     query: SearchQuery,
 ) -> tuple[int, list[str]]:
-    """
-    Вычисляет очки релевантности единицы знаний для данного запроса.
-    Возвращает (score, matched_fields).
-    score == 0 означает что единица не соответствует запросу.
-    """
     score = 0
     matched = []
 
-    # --- Фильтры — при несовпадении сразу исключаем (score=0) ---
 
-    # domain — точное совпадение
     if query.domain is not None:
         if unit.domain != query.domain:
             return 0, []
         score += 10
         matched.append(f"domain={unit.domain}")
 
-    # category — точное совпадение
     if query.category is not None:
         if unit.category != query.category:
             return 0, []
         score += 10
         matched.append(f"category={unit.category}")
 
-    # difficulty — точное совпадение
     if query.difficulty is not None:
         if unit.difficulty != query.difficulty:
             return 0, []
         score += 10
         matched.append(f"difficulty={unit.difficulty}")
 
-    # role — единица подходит если содержит "all_roles" или указанную роль
     if query.role is not None:
         if "all_roles" not in unit.roles and query.role not in unit.roles:
             return 0, []
         score += 8
         matched.append(f"role={query.role}")
 
-    # interview_stage — точное совпадение в списке
     if query.interview_stage is not None:
         if query.interview_stage not in unit.interview_stage:
             return 0, []
         score += 8
         matched.append(f"stage={query.interview_stage}")
 
-    # status — точное совпадение
     if query.status is not None:
         if unit.status != query.status:
             return 0, []
         score += 5
         matched.append(f"status={unit.status}")
 
-    # frequency — точное совпадение
     if query.frequency is not None:
         if unit.frequency != query.frequency:
             return 0, []
         score += 5
         matched.append(f"frequency={unit.frequency}")
 
-    # tags — единица должна содержать ВСЕ указанные теги
     if query.tags:
         for tag in query.tags:
             if tag not in unit.tags:
@@ -163,37 +199,30 @@ def _score_unit(
             score += 5
             matched.append(f"tag={tag}")
 
-    # --- Полнотекстовый поиск (мягкий — влияет только на score) ---
     if query.text:
         text_lower = query.text.lower()
         title_lower = unit.title.lower()
         content_lower = unit.content.lower()
 
-        # Совпадение в заголовке — высокий вес
         if text_lower in title_lower:
             score += 20
             matched.append(f"title contains '{query.text}'")
 
-        # Совпадение в ID
         elif text_lower in unit.id.lower():
             score += 15
             matched.append(f"id contains '{query.text}'")
 
-        # Совпадение в тегах
         elif any(text_lower in tag for tag in unit.tags):
             score += 10
             matched.append(f"tag contains '{query.text}'")
 
-        # Совпадение в содержимом
         elif text_lower in content_lower:
             score += 5
             matched.append(f"content contains '{query.text}'")
 
-        # Если текстовый поиск задан но ничего не нашли — исключаем
         else:
             return 0, []
 
-    # Если не задано ни одного фильтра — возвращаем все единицы с базовым score
     if score == 0:
         score = 1
         matched.append("no filters (match all)")
@@ -201,15 +230,10 @@ def _score_unit(
     return score, matched
 
 
-# ---------------------------------------------------------------------------
-# Удобные функции-обёртки для частых случаев
-# ---------------------------------------------------------------------------
-
 def search_by_domain(
     units: list[KnowledgeUnit],
     domain: str,
 ) -> list[SearchResult]:
-    """Возвращает все единицы знаний указанного домена."""
     return search(units, SearchQuery(domain=domain))
 
 
@@ -217,7 +241,6 @@ def search_by_difficulty(
     units: list[KnowledgeUnit],
     difficulty: str,
 ) -> list[SearchResult]:
-    """Возвращает все единицы знаний указанного уровня сложности."""
     return search(units, SearchQuery(difficulty=difficulty))
 
 
@@ -225,7 +248,6 @@ def search_by_tag(
     units: list[KnowledgeUnit],
     tag: str,
 ) -> list[SearchResult]:
-    """Возвращает все единицы знаний с указанным тегом."""
     return search(units, SearchQuery(tags=[tag]))
 
 
@@ -233,7 +255,6 @@ def search_by_role(
     units: list[KnowledgeUnit],
     role: str,
 ) -> list[SearchResult]:
-    """Возвращает все единицы знаний релевантные для указанной роли."""
     return search(units, SearchQuery(role=role))
 
 
@@ -241,22 +262,10 @@ def search_by_text(
     units: list[KnowledgeUnit],
     text: str,
 ) -> list[SearchResult]:
-    """Полнотекстовый поиск по заголовку, ID, тегам и содержимому."""
     return search(units, SearchQuery(text=text))
 
 
-# ---------------------------------------------------------------------------
-# Вывод результатов
-# ---------------------------------------------------------------------------
-
 def print_results(results: list[SearchResult], verbose: bool = False) -> None:
-    """
-    Выводит результаты поиска в консоль.
-
-    Параметры:
-        results — список SearchResult
-        verbose — если True, выводит дополнительную информацию
-    """
     if not results:
         print("🔍 Ничего не найдено.")
         return

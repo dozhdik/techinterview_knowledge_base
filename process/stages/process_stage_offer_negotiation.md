@@ -149,7 +149,6 @@ Offer Negotiation — финальный этап процесса найма, �
 ## Связанные темы
 
 - [[PROC-STRATEGY-001]] — Offer Negotiation Strategy
-- [[GLB-PROFILE-002]] — Профиль Backend Developer (рыночные данные)
 
 ## Источники
 

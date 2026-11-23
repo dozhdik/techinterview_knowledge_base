@@ -1,35 +1,9 @@
-"""
-kb/generator.py
-
-Генерация новых единиц знаний по шаблонам из ТЗ.
-
-Поддерживает все типы единиц знаний:
-- concept     — карточка концепции CS
-- problem     — карточка алгоритмической задачи
-- sysdesign   — разбор system design задачи
-- behavioral  — карточка behavioral-вопроса
-- pitfall     — карточка типичной ошибки
-- tradeoff    — карточка trade-off
-- glossary    — глоссарная статья
-- cheatsheet  — шпаргалка
-- component   — карточка компонента системы
-- stage       — карточка этапа собеседования
-- pattern     — паттерн решения задач
-- checklist   — чек-лист
-- strategy    — стратегия подготовки
-"""
-
 from datetime import date
 from pathlib import Path
 
 from .registry import Registry
 
 
-# ---------------------------------------------------------------------------
-# Маппинги
-# ---------------------------------------------------------------------------
-
-# Домен → папка в репозитории
 DOMAIN_TO_DIR = {
     "cs":      "cs",
     "arch":    "arch",
@@ -37,29 +11,24 @@ DOMAIN_TO_DIR = {
     "global":  "global",
 }
 
-# Категория → подпапка внутри домена
 CATEGORY_TO_SUBDIR = {
-    # CS
     "concept":    "concepts",
     "problem":    "problems",
     "pattern":    "patterns",
     "question":   "questions",
     "cheatsheet": "cheatsheets",
     "pitfall":    "pitfalls",
-    # ARCH
     "component":  "components",
     "designpat":  "design_patterns",
     "sysdesign":  "system_design",
     "tradeoff":   "tradeoffs",
     "checklist":  "checklists",
-    # PROCESS
     "behavioral": "behavioral",
     "stage":      "stages",
     "strategy":   "strategies",
     "softskill":  "softskills",
     "company":    "companies",
     "framework":  "frameworks",
-    # GLOBAL
     "glossary":   "glossary",
     "cross":      "cross_domain",
     "profile":    "role_profiles",
@@ -68,7 +37,6 @@ CATEGORY_TO_SUBDIR = {
     "onto":       "ontology",
 }
 
-# Домен → код для префикса файла
 DOMAIN_TO_FILE_PREFIX = {
     "cs":      "cs",
     "arch":    "arch",
@@ -76,10 +44,6 @@ DOMAIN_TO_FILE_PREFIX = {
     "global":  "global",
 }
 
-
-# ---------------------------------------------------------------------------
-# Шаблоны единиц знаний
-# ---------------------------------------------------------------------------
 
 def _frontmatter(
     id_: str,
@@ -90,7 +54,6 @@ def _frontmatter(
     author: str,
     today: str,
 ) -> str:
-    """Генерирует YAML-фронтматтер."""
     return f"""\
 ---
 id: "{id_}"
@@ -120,7 +83,6 @@ status: "draft"
 
 TEMPLATES: dict[str, str] = {
 
-    # ------------------------------------------------------------------
     "concept": """\
 {frontmatter}
 # {title}
@@ -173,7 +135,6 @@ TEMPLATES: dict[str, str] = {
 1. <!-- Ссылка -->
 """,
 
-    # ------------------------------------------------------------------
     "problem": """\
 {frontmatter}
 # {title}
@@ -238,7 +199,6 @@ def solution(input):
 1. <!-- LeetCode / другой ресурс -->
 """,
 
-    # ------------------------------------------------------------------
     "sysdesign": """\
 {frontmatter}
 # {title}
@@ -308,7 +268,6 @@ def solution(input):
 1. <!-- Ссылка -->
 """,
 
-    # ------------------------------------------------------------------
     "behavioral": """\
 {frontmatter}
 # {title}
@@ -351,7 +310,6 @@ def solution(input):
 - <!-- [[ID]] — связь -->
 """,
 
-    # ------------------------------------------------------------------
     "pitfall": """\
 {frontmatter}
 # {title}
@@ -384,7 +342,6 @@ def solution(input):
 - <!-- [[ID]] — связь -->
 """,
 
-    # ------------------------------------------------------------------
     "tradeoff": """\
 {frontmatter}
 # {title}
@@ -427,7 +384,6 @@ def solution(input):
 - <!-- [[ID]] — связь -->
 """,
 
-    # ------------------------------------------------------------------
     "glossary": """\
 {frontmatter}
 # {title}
@@ -452,7 +408,6 @@ def solution(input):
 - <!-- [[ID]] — термин -->
 """,
 
-    # ------------------------------------------------------------------
     "cheatsheet": """\
 {frontmatter}
 # {title}: Шпаргалка
@@ -480,7 +435,6 @@ def solution(input):
 3. <!-- Пункт 3 -->
 """,
 
-    # ------------------------------------------------------------------
     "component": """\
 {frontmatter}
 # {title}
@@ -521,7 +475,6 @@ def solution(input):
 1. <!-- Ссылка -->
 """,
 
-    # ------------------------------------------------------------------
     "stage": """\
 {frontmatter}
 # {title}
@@ -554,7 +507,6 @@ def solution(input):
 - <!-- [[ID]] — связь -->
 """,
 
-    # ------------------------------------------------------------------
     "pattern": """\
 {frontmatter}
 # {title}
@@ -586,7 +538,6 @@ def solution(input):
 1. <!-- Ссылка -->
 """,
 
-    # ------------------------------------------------------------------
     "checklist": """\
 {frontmatter}
 # {title}
@@ -604,7 +555,6 @@ def solution(input):
 - [ ] <!-- Пункт 2 -->
 """,
 
-    # ------------------------------------------------------------------
     "strategy": """\
 {frontmatter}
 # {title}
@@ -637,16 +587,11 @@ def solution(input):
 """,
 }
 
-# Для категорий без отдельного шаблона используем concept как базовый
 for _cat in ["designpat", "question", "softskill", "company", "framework", "cross",
              "profile", "matrix", "trajectory", "onto"]:
     if _cat not in TEMPLATES:
         TEMPLATES[_cat] = TEMPLATES["concept"]
 
-
-# ---------------------------------------------------------------------------
-# Основная функция генерации
-# ---------------------------------------------------------------------------
 
 def generate_unit(
     title: str,
@@ -658,50 +603,21 @@ def generate_unit(
     root_dir: str | Path = ".",
     dry_run: bool = False,
 ) -> tuple[str, str]:
-    """
-    Генерирует новую единицу знаний по шаблону.
-
-    Параметры:
-        title      — название единицы знаний
-        domain     — домен (cs / arch / process / global)
-        category   — категория (concept / problem / sysdesign / ...)
-        difficulty — уровень (junior / middle / senior / staff)
-        author     — имя автора
-        registry   — реестр для генерации следующего ID (если None — ID будет TODO)
-        root_dir   — корневая папка репозитория
-        dry_run    — если True, файл не создаётся (только возвращает содержимое)
-
-    Возвращает:
-        (file_path, content) — путь к файлу и его содержимое
-
-    Пример:
-        path, content = generate_unit(
-            title="Binary Search",
-            domain="cs",
-            category="concept",
-            difficulty="junior",
-            author="Инженер знаний №1",
-        )
-    """
     today = date.today().isoformat()
 
-    # Генерируем ID
     if registry is not None:
         id_ = registry.next_id(domain, category)
     else:
         id_ = f"{domain.upper()}-{category.upper()}-TODO"
 
-    # Генерируем имя файла
     slug = _title_to_slug(title)
     domain_prefix = DOMAIN_TO_FILE_PREFIX.get(domain, domain)
     filename = f"{domain_prefix}_{category}_{slug}.md"
 
-    # Определяем путь к файлу
     domain_dir  = DOMAIN_TO_DIR.get(domain, domain)
     subdir      = CATEGORY_TO_SUBDIR.get(category, category)
     file_path   = Path(root_dir) / domain_dir / subdir / filename
 
-    # Генерируем содержимое
     frontmatter = _frontmatter(id_, title, domain, category, difficulty, author, today)
     template    = TEMPLATES.get(category, TEMPLATES["concept"])
     content     = template.format(frontmatter=frontmatter, title=title)
@@ -715,17 +631,8 @@ def generate_unit(
     return str(file_path), content
 
 
-# ---------------------------------------------------------------------------
-# Вспомогательные функции
-# ---------------------------------------------------------------------------
-
 def _title_to_slug(title: str) -> str:
-    """
-    Преобразует заголовок в snake_case имя файла (только латиница).
-    Например: "Hash Table" → "hash_table"
-    """
     import re
-    # Транслитерация кириллицы
     translit = {
         'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo',
         'ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m',
@@ -737,17 +644,13 @@ def _title_to_slug(title: str) -> str:
     for char in title.lower():
         result += translit.get(char, char)
 
-    # Оставляем только буквы, цифры, пробелы
     result = re.sub(r"[^\w\s]", "", result)
-    # Заменяем пробелы на подчёркивания
     result = re.sub(r"\s+", "_", result.strip())
-    # Убираем множественные подчёркивания
     result = re.sub(r"_+", "_", result)
     return result or "untitled"
 
 
 def list_templates() -> None:
-    """Выводит список доступных шаблонов."""
     print("📄 Доступные шаблоны (категории):")
     for category in sorted(TEMPLATES.keys()):
         subdir = CATEGORY_TO_SUBDIR.get(category, category)

@@ -22,17 +22,17 @@ related:
   - "ARCH-COMPONENT-001"
   - "ARCH-COMPONENT-003"
   - "ARCH-COMPONENT-004"
-  - "ARCH-TRADEOFF-002"
+  - "ARCH-TRADEOFF-001"
 prerequisites:
   - "ARCH-COMPONENT-001"
-  - "CS-CONCEPT-017"
+  - "CS-CONCEPT-009"
 sources:
   - "Xu A. System Design Interview – An Insider's Guide. Chapter 9. ByteByteGo, 2020."
   - "The System Design Primer by Donne Martin. https://github.com/donnemartin/system-design-primer"
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-10"
-date_updated: "2026-04-10"
+date_updated: "2026-11-23"
 status: "review"
 ---
 
@@ -145,8 +145,8 @@ status: "review"
 - [[ARCH-COMPONENT-001]] — Load Balancer (applied_in)
 - [[ARCH-COMPONENT-003]] — Message Queue (альтернатива асинхронного ограничения)
 - [[ARCH-COMPONENT-004]] — API Gateway (applied_in)
-- [[ARCH-TRADEOFF-002]] — Consistency vs Availability (relates_to)
-- [[CS-CONCEPT-017]] — Hash Table (relates_to, структура для локального кеша)
+- [[ARCH-TRADEOFF-001]] — Consistency vs Availability (relates_to)
+- [[CS-CONCEPT-009]] — Hash Table (relates_to, структура для локального кеша)
 - [[PROC-FRAMEWORK-003]] — Фреймворк решения SD задачи (is_part_of)
 
 ## Источники

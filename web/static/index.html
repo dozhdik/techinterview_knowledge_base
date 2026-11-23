@@ -7,11 +7,9 @@
   <title>TechInterview KB</title>
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- Темы -->
   <link rel="stylesheet" href="/css/themes.css" />
   <link rel="stylesheet" href="/css/styles.css" />
 
-  <!-- Prism.js — подсветка кода (две темы, переключаются через JS) -->
   <link id="prism-light" rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism.min.css" />
   <link id="prism-dark" rel="stylesheet" disabled
@@ -21,7 +19,6 @@
 
 <div class="app-layout">
 
-  <!-- ===== Header ===== -->
   <header class="app-header">
     <div class="header-brand">
       <div class="header-logo" aria-hidden="true">📚</div>
@@ -32,7 +29,6 @@
     </div>
 
     <div class="header-actions">
-      <!-- Очистить историю -->
       <button id="clear-btn" class="icon-btn" type="button" aria-label="Очистить историю чата" title="Очистить историю (Ctrl+L)">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -41,9 +37,7 @@
         </svg>
       </button>
 
-      <!-- Переключатель темы -->
       <button id="theme-toggle" class="icon-btn" type="button" aria-label="Переключить тему" title="Переключить тему">
-        <!-- Sun (показывается в тёмной теме) -->
         <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
              style="display:none">
@@ -53,7 +47,6 @@
           <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
           <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
         </svg>
-        <!-- Moon (показывается в светлой теме) -->
         <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
@@ -62,15 +55,12 @@
     </div>
   </header>
 
-  <!-- ===== Messages area ===== -->
   <main id="messages-area" class="messages-area" role="log" aria-live="polite" aria-label="История чата">
 
-    <!-- Welcome screen (скрывается после первого сообщения) -->
     <div id="welcome-screen" class="welcome-screen"></div>
 
   </main>
 
-  <!-- ===== Input area ===== -->
   <footer class="input-area">
     <div class="input-wrapper">
       <label for="chat-input" class="visually-hidden">Введите вопрос</label>
@@ -91,13 +81,11 @@
         aria-label="Отправить вопрос"
         title="Отправить (Enter)"
       >
-        <!-- Иконка отправки -->
         <svg id="send-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"/>
           <polygon points="22 2 15 22 11 13 2 9 22 2"/>
         </svg>
-        <!-- Spinner при загрузке -->
         <div id="send-spinner" class="spinner" style="display:none" aria-hidden="true"></div>
       </button>
     </div>
@@ -111,13 +99,11 @@
 
 </div>
 
-<!-- Toast container -->
 <div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
 
-<!-- CDN: marked.js -->
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 
-<!-- CDN: Prism.js (core + languages) -->
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
@@ -127,14 +113,12 @@
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-go.min.js"></script>
 
-<!-- Настройка marked.js -->
 <script>
   if (window.marked) {
     marked.setOptions({ breaks: true, gfm: true });
   }
 </script>
 
-<!-- Приложение (ES modules) -->
 <script type="module" src="/js/app.js"></script>
 
 </body>

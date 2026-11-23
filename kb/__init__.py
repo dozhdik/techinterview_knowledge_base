@@ -1,7 +1,3 @@
-"""
-kb — пакет для работы с базой знаний TechInterview.
-"""
-
 from .parser import (
     KnowledgeUnit,
     ParseError,

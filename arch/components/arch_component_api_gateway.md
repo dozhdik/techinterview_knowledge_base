@@ -23,8 +23,9 @@ related:
   - "ARCH-COMPONENT-002"   # Cache (может кешировать ответы)
   - "ARCH-COMPONENT-003"   # Message Queue (асинхронная обработка)
   - "ARCH-TRADEOFF-003"    # Monolith vs Microservices (связанный компромисс)
+  - "ARCH-SYSDESIGN-005"   # URL Shortener (пример использования)
 prerequisites:
-  - "CS-CONCEPT-007"       # Компьютерные сети
+  - "CS-CONCEPT-028"       # Компьютерные сети
   - "ARCH-COMPONENT-001"   # Load Balancer
 sources:
   - "Kleppmann M. Designing Data-Intensive Applications. Chapter 11. O'Reilly, 2017."
@@ -33,7 +34,7 @@ sources:
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-09"
-date_updated: "2026-04-09"
+date_updated: "2026-11-23"
 status: "review"
 ---
 
@@ -159,7 +160,7 @@ API Gateway — компонент распределённой системы, 
 - [[ARCH-COMPONENT-002]] — Cache (кеширование на уровне gateway)
 - [[ARCH-COMPONENT-003]] — Message Queue (асинхронная обработка через gateway)
 - [[ARCH-TRADEOFF-003]] — Monolith vs Microservices (контекст применения)
-- [[ARCH-SYSDESIGN-001]] — URL Shortener (пример использования gateway)
+- [[ARCH-SYSDESIGN-005]] — URL Shortener (пример использования gateway)
 
 ## Источники
 

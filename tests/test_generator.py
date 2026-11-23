@@ -1,10 +1,3 @@
-"""
-tests/test_generator.py
-
-Тесты для kb/generator.py
-Запуск: python3 -m pytest tests/test_generator.py -v
-"""
-
 import os
 import sys
 import tempfile
@@ -24,10 +17,6 @@ from kb.generator import (
 from kb.registry import Registry
 from kb.parser import parse_file
 
-
-# ---------------------------------------------------------------------------
-# Тесты: _title_to_slug
-# ---------------------------------------------------------------------------
 
 class TestTitleToSlug:
 
@@ -60,10 +49,6 @@ class TestTitleToSlug:
         slug = _title_to_slug("HASH TABLE")
         assert slug == slug.lower()
 
-
-# ---------------------------------------------------------------------------
-# Тесты: generate_unit — dry_run
-# ---------------------------------------------------------------------------
 
 class TestGenerateUnitDryRun:
 
@@ -206,10 +191,6 @@ class TestGenerateUnitDryRun:
         assert 'status: "draft"' in content
 
 
-# ---------------------------------------------------------------------------
-# Тесты: generate_unit с registry
-# ---------------------------------------------------------------------------
-
 class TestGenerateUnitWithRegistry:
 
     def test_uses_registry_for_id(self):
@@ -250,10 +231,6 @@ class TestGenerateUnitWithRegistry:
         )
         assert "TODO" in content
 
-
-# ---------------------------------------------------------------------------
-# Тесты: generate_unit создаёт файл
-# ---------------------------------------------------------------------------
 
 class TestGenerateUnitCreatesFile:
 
@@ -301,10 +278,6 @@ class TestGenerateUnitCreatesFile:
             assert "system_design" in path
 
 
-# ---------------------------------------------------------------------------
-# Тесты: шаблоны для разных категорий
-# ---------------------------------------------------------------------------
-
 class TestTemplates:
 
     @pytest.mark.parametrize("category,expected_section", [
@@ -344,10 +317,6 @@ class TestTemplates:
             assert category in TEMPLATES, f"Шаблон для '{category}' не найден"
 
 
-# ---------------------------------------------------------------------------
-# Тесты: list_templates
-# ---------------------------------------------------------------------------
-
 class TestListTemplates:
 
     def test_list_templates_runs(self, capsys):
@@ -357,10 +326,6 @@ class TestListTemplates:
         assert "sysdesign" in captured
         assert "behavioral" in captured
 
-
-# ---------------------------------------------------------------------------
-# Тесты: маппинги
-# ---------------------------------------------------------------------------
 
 class TestMappings:
 

@@ -20,7 +20,7 @@ interview_stage:
 frequency: "high"
 related:
   - "PROC-STAGE-004"
-  - "ARCH-SYSDESIGN-001"
+  - "ARCH-SYSDESIGN-005"
 prerequisites:
   - "PROC-STAGE-003"
 sources:
@@ -142,7 +142,7 @@ status: "review"
 ## Связанные темы
 
 - [[PROC-STAGE-004]] — System Design Interview (applied_in)
-- [[ARCH-SYSDESIGN-001]] — URL Shortener (exemplifies)
+- [[ARCH-SYSDESIGN-005]] — URL Shortener (exemplifies)
 - [[ARCH-COMPONENT-001]] — Load Balancer (relates_to)
 
 ## Источники

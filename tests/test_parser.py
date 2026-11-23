@@ -1,10 +1,3 @@
-"""
-tests/test_parser.py
-
-Тесты для kb/parser.py
-Запуск: python -m pytest tests/test_parser.py -v
-"""
-
 import os
 import sys
 import tempfile
@@ -22,12 +15,7 @@ from kb.parser import (
 )
 
 
-# ---------------------------------------------------------------------------
-# Вспомогательная функция — создаёт временный .md файл
-# ---------------------------------------------------------------------------
-
 def make_md(content: str, suffix=".md") -> str:
-    """Создаёт временный файл с переданным содержимым, возвращает путь."""
     f = tempfile.NamedTemporaryFile(
         mode="w", suffix=suffix, delete=False, encoding="utf-8"
     )
@@ -70,10 +58,6 @@ status: "approved"
 Структура данных с O(1) поиском.
 """
 
-
-# ---------------------------------------------------------------------------
-# Тесты: parse_file — успешные сценарии
-# ---------------------------------------------------------------------------
 
 class TestParseFileSuccess:
 
@@ -135,10 +119,6 @@ class TestParseFileSuccess:
         os.unlink(path)
 
 
-# ---------------------------------------------------------------------------
-# Тесты: parse_file — ошибочные сценарии
-# ---------------------------------------------------------------------------
-
 class TestParseFileErrors:
 
     def test_file_not_found(self):
@@ -180,10 +160,6 @@ class TestParseFileErrors:
         os.unlink(path)
 
 
-# ---------------------------------------------------------------------------
-# Тесты: parse_file_safe
-# ---------------------------------------------------------------------------
-
 class TestParseFileSafe:
 
     def test_returns_unit_on_valid(self):
@@ -204,14 +180,9 @@ class TestParseFileSafe:
         os.unlink(path)
 
 
-# ---------------------------------------------------------------------------
-# Тесты: parse_directory
-# ---------------------------------------------------------------------------
-
 class TestParseDirectory:
 
     def setup_method(self):
-        """Создаём временную директорию с несколькими .md файлами."""
         self.tmpdir = tempfile.mkdtemp()
 
     def teardown_method(self):
@@ -278,10 +249,6 @@ difficulty: "junior"
         domains = {u.domain for u in units}
         assert domains == {"cs", "arch"}
 
-
-# ---------------------------------------------------------------------------
-# Тест: summary (просто не должен падать)
-# ---------------------------------------------------------------------------
 
 class TestSummary:
 

@@ -1,10 +1,3 @@
-"""
-tests/test_search.py
-
-Тесты для kb/search.py
-Запуск: python3 -m pytest tests/test_search.py -v
-"""
-
 import os
 import sys
 
@@ -25,10 +18,6 @@ from kb.search import (
     print_results,
 )
 
-
-# ---------------------------------------------------------------------------
-# Вспомогательная функция
-# ---------------------------------------------------------------------------
 
 def make_unit(**kwargs) -> KnowledgeUnit:
     defaults = dict(
@@ -56,7 +45,6 @@ def make_unit(**kwargs) -> KnowledgeUnit:
     return KnowledgeUnit(**defaults)
 
 
-# Набор единиц для тестов коллекции
 def make_collection() -> list[KnowledgeUnit]:
     return [
         make_unit(
@@ -110,10 +98,6 @@ def make_collection() -> list[KnowledgeUnit]:
     ]
 
 
-# ---------------------------------------------------------------------------
-# Тесты: SearchQuery
-# ---------------------------------------------------------------------------
-
 class TestSearchQuery:
 
     def test_default_query_all_none(self):
@@ -129,10 +113,6 @@ class TestSearchQuery:
         assert q.difficulty == "junior"
         assert q.tags == ["arrays"]
 
-
-# ---------------------------------------------------------------------------
-# Тесты: search — фильтр по domain
-# ---------------------------------------------------------------------------
 
 class TestSearchByDomain:
 
@@ -163,10 +143,6 @@ class TestSearchByDomain:
         assert all(r.unit.domain == "cs" for r in results)
 
 
-# ---------------------------------------------------------------------------
-# Тесты: search — фильтр по difficulty
-# ---------------------------------------------------------------------------
-
 class TestSearchByDifficulty:
 
     def test_filters_junior(self):
@@ -191,10 +167,6 @@ class TestSearchByDifficulty:
         assert all(r.unit.difficulty == "junior" for r in results)
 
 
-# ---------------------------------------------------------------------------
-# Тесты: search — фильтр по тегам
-# ---------------------------------------------------------------------------
-
 class TestSearchByTags:
 
     def test_single_tag(self):
@@ -205,7 +177,6 @@ class TestSearchByTags:
 
     def test_multiple_tags_AND_logic(self):
         units = make_collection()
-        # Оба тега должны присутствовать
         results = search(units, SearchQuery(tags=["hash_tables", "arrays"]))
         assert len(results) == 1
         assert results[0].unit.id == "CS-PROBLEM-001"
@@ -221,15 +192,10 @@ class TestSearchByTags:
         assert all("must_know" in r.unit.tags for r in results)
 
 
-# ---------------------------------------------------------------------------
-# Тесты: search — фильтр по роли
-# ---------------------------------------------------------------------------
-
 class TestSearchByRole:
 
     def test_all_roles_matches_any_role(self):
         units = make_collection()
-        # CS-CONCEPT-001 имеет all_roles — должен попасть при любой роли
         results = search(units, SearchQuery(role="frontend"))
         ids = [r.unit.id for r in results]
         assert "CS-CONCEPT-001" in ids
@@ -243,7 +209,6 @@ class TestSearchByRole:
     def test_nonexistent_role_returns_only_all_roles(self):
         units = make_collection()
         results = search(units, SearchQuery(role="quantum_engineer"))
-        # Только единицы с all_roles
         assert all("all_roles" in r.unit.roles for r in results)
 
     def test_wrapper_function(self):
@@ -251,10 +216,6 @@ class TestSearchByRole:
         results = search_by_role(units, "backend")
         assert len(results) > 0
 
-
-# ---------------------------------------------------------------------------
-# Тесты: search — фильтр по interview_stage
-# ---------------------------------------------------------------------------
 
 class TestSearchByStage:
 
@@ -276,10 +237,6 @@ class TestSearchByStage:
         assert len(results) == 1
         assert results[0].unit.id == "PROC-BEHAVIORAL-001"
 
-
-# ---------------------------------------------------------------------------
-# Тесты: search — полнотекстовый поиск
-# ---------------------------------------------------------------------------
 
 class TestSearchByText:
 
@@ -316,10 +273,6 @@ class TestSearchByText:
         results = search_by_text(units, "Tree")
         assert any(r.unit.id == "CS-CONCEPT-002" for r in results)
 
-
-# ---------------------------------------------------------------------------
-# Тесты: комбинированный поиск
-# ---------------------------------------------------------------------------
 
 class TestCombinedSearch:
 
@@ -362,10 +315,6 @@ class TestCombinedSearch:
         assert len(results) == 2
 
 
-# ---------------------------------------------------------------------------
-# Тесты: пустые входные данные
-# ---------------------------------------------------------------------------
-
 class TestEdgeCases:
 
     def test_empty_units_list(self):
@@ -388,10 +337,6 @@ class TestEdgeCases:
         results = search(units, SearchQuery(domain="cs", tags=["must_know"]))
         assert all(len(r.matched) > 0 for r in results)
 
-
-# ---------------------------------------------------------------------------
-# Тесты: print_results
-# ---------------------------------------------------------------------------
 
 class TestPrintResults:
 

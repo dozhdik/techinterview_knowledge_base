@@ -1,10 +1,3 @@
-/* =========================================================
-   styles.css — основные стили и компоненты
-   ========================================================= */
-
-/* =========================================================
-   Сброс и базовые стили
-   ========================================================= */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { height: 100%; font-size: 16px; }
@@ -18,14 +11,10 @@ body {
   overflow: hidden;
 }
 
-/* Кастомный скроллбар */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
 
-/* =========================================================
-   Layout — grid: header / messages / input
-   ========================================================= */
 .app-layout {
   display: grid;
   grid-template-rows: auto 1fr auto;
@@ -34,9 +23,6 @@ body {
   margin: 0 auto;
 }
 
-/* =========================================================
-   Header
-   ========================================================= */
 .app-header {
   display: flex;
   align-items: center;
@@ -114,9 +100,6 @@ body {
 
 .icon-btn svg { width: 16px; height: 16px; }
 
-/* =========================================================
-   Messages area
-   ========================================================= */
 .messages-area {
   overflow-y: auto;
   padding: 24px 20px;
@@ -126,9 +109,6 @@ body {
   scroll-behavior: smooth;
 }
 
-/* =========================================================
-   Welcome screen
-   ========================================================= */
 .welcome-screen {
   display: flex;
   flex-direction: column;
@@ -208,15 +188,11 @@ body {
   line-height: 1.4;
 }
 
-/* Цвета доменов на карточках */
 .domain-cs   { color: var(--domain-cs-color); }
 .domain-arch { color: var(--domain-arch-color); }
 .domain-proc { color: var(--domain-proc-color); }
 .domain-glb  { color: var(--domain-glb-color); }
 
-/* =========================================================
-   Message bubbles
-   ========================================================= */
 .message {
   display: flex;
   gap: 10px;
@@ -282,7 +258,6 @@ body {
   border-bottom-left-radius: 4px;
 }
 
-/* Markdown внутри bubble */
 .message-bubble h1,
 .message-bubble h2,
 .message-bubble h3 {
@@ -361,9 +336,6 @@ body {
 .message-bubble strong { font-weight: 600; }
 .message-bubble em     { font-style: italic; }
 
-/* =========================================================
-   Sources
-   ========================================================= */
 .message-sources {
   display: flex;
   flex-wrap: wrap;
@@ -381,10 +353,14 @@ body {
   font-weight: 500;
   text-decoration: none;
   transition: opacity 0.15s;
-  cursor: default;
+  cursor: pointer;
 }
 
 .source-badge:hover { opacity: 0.8; }
+
+body.card-page { height: auto; min-height: 100vh; overflow: auto; }
+.card-document { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+.card-meta { margin: 20px 0 12px; color: var(--text-secondary); }
 
 .source-badge--cs {
   background: var(--domain-cs-bg);
@@ -414,9 +390,6 @@ body {
   opacity: 0.7;
 }
 
-/* =========================================================
-   Message actions (Copy, Like/Dislike)
-   ========================================================= */
 .message-actions {
   display: flex;
   gap: 4px;
@@ -451,7 +424,6 @@ body {
 .action-btn--liked    { color: #10b981; border-color: #10b981; }
 .action-btn--disliked { color: #ef4444; border-color: #ef4444; }
 
-/* Confidence badge */
 .confidence-badge {
   font-size: 11px;
   color: var(--text-muted);
@@ -461,9 +433,6 @@ body {
   gap: 4px;
 }
 
-/* =========================================================
-   Skeleton loader
-   ========================================================= */
 .skeleton-message {
   display: flex;
   gap: 10px;
@@ -508,9 +477,6 @@ body {
   100% { background-position: -200% 0; }
 }
 
-/* =========================================================
-   Input area
-   ========================================================= */
 .input-area {
   padding: 14px 20px 18px;
   background: var(--header-bg);
@@ -578,7 +544,6 @@ body {
 
 .send-btn svg { width: 16px; height: 16px; }
 
-/* Spinner внутри кнопки при загрузке */
 .send-btn .spinner {
   width: 16px;
   height: 16px;
@@ -599,9 +564,6 @@ body {
   padding: 0 4px;
 }
 
-/* =========================================================
-   Toast notifications
-   ========================================================= */
 .toast-container {
   position: fixed;
   bottom: 24px;
@@ -647,9 +609,6 @@ body {
   to { opacity: 0; transform: translateY(4px) scale(0.96); }
 }
 
-/* =========================================================
-   Анимации появления
-   ========================================================= */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -660,9 +619,6 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================================================
-   Утилиты
-   ========================================================= */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -672,9 +628,6 @@ body {
   white-space: nowrap;
 }
 
-/* =========================================================
-   Адаптивность
-   ========================================================= */
 @media (max-width: 640px) {
   .app-layout { max-width: 100%; }
   .messages-area { padding: 16px 12px; }

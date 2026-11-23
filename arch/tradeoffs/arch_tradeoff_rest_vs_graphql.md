@@ -21,8 +21,8 @@ interview_stage:
   - "phone_screen"
 frequency: "medium"
 related:
-  - "ARCH-SYSDESIGN-003"
-  - "ARCH-TRADEOFF-002"
+  - "ARCH-SYSDESIGN-004"
+  - "ARCH-TRADEOFF-007"
 prerequisites: []
 sources:
   - "GraphQL Documentation"
@@ -102,5 +102,5 @@ status: "review"
 Не нужно продавать GraphQL как “современную замену REST” — это инфантильный ответ. Сильный ответ звучит так: REST выигрывает там, где важны простота, HTTP caching, predictability и низкая операционная сложность. GraphQL выигрывает там, где клиентам нужна гибкая выборка и агрегация данных через одну схему. Хороший кандидат также проговаривает риски GraphQL: N+1, сложный caching, query cost analysis, depth limiting и observability. Ещё лучше — сказать, что в реальной системе часто используют гибрид: REST для публичных и простых API, GraphQL для BFF или complex client data aggregation.
 
 ## Связанные темы
-- [[ARCH-SYSDESIGN-003]] — search autocomplete как пример API, где важно понимать форму запроса и latency trade-offs
-- [[ARCH-TRADEOFF-002]] — synchronous vs asynchronous communication как соседний архитектурный компромисс
+- [[ARCH-SYSDESIGN-004]] — search autocomplete как пример API, где важно понимать форму запроса и latency trade-offs
+- [[ARCH-TRADEOFF-007]] — synchronous vs asynchronous communication как соседний архитектурный компромисс

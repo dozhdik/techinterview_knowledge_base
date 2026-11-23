@@ -1,10 +1,3 @@
-"""
-tests/test_registry.py
-
-Тесты для kb/registry.py
-Запуск: python3 -m pytest tests/test_registry.py -v
-"""
-
 import os
 import sys
 import tempfile
@@ -20,10 +13,6 @@ from kb.registry import (
     generate_registry,
 )
 
-
-# ---------------------------------------------------------------------------
-# Вспомогательные функции
-# ---------------------------------------------------------------------------
 
 def make_unit(**kwargs) -> KnowledgeUnit:
     defaults = dict(
@@ -76,10 +65,6 @@ def make_collection() -> list[KnowledgeUnit]:
     ]
 
 
-# ---------------------------------------------------------------------------
-# Тесты: RegistryEntry
-# ---------------------------------------------------------------------------
-
 class TestRegistryEntry:
 
     def test_to_md_row_contains_id(self):
@@ -105,14 +90,9 @@ class TestRegistryEntry:
             file_path="/repo/cs/test.md",
         )
         row = entry.to_md_row()
-        # Markdown-таблица начинается и заканчивается на |
         assert row.startswith("|")
         assert row.endswith("|")
 
-
-# ---------------------------------------------------------------------------
-# Тесты: Registry.build
-# ---------------------------------------------------------------------------
 
 class TestRegistryBuild:
 
@@ -147,10 +127,6 @@ class TestRegistryBuild:
         assert entry.status == "approved"
 
 
-# ---------------------------------------------------------------------------
-# Тесты: Registry — проверка дублей
-# ---------------------------------------------------------------------------
-
 class TestRegistryDuplicates:
 
     def test_no_duplicates_in_valid_collection(self):
@@ -182,10 +158,6 @@ class TestRegistryDuplicates:
         assert registry.find_duplicates() == {}
 
 
-# ---------------------------------------------------------------------------
-# Тесты: Registry.get_by_id и exists
-# ---------------------------------------------------------------------------
-
 class TestRegistryLookup:
 
     def test_get_by_id_found(self):
@@ -208,10 +180,6 @@ class TestRegistryLookup:
         assert registry.exists("XX-UNKNOWN-999") is False
 
 
-# ---------------------------------------------------------------------------
-# Тесты: Registry.next_id
-# ---------------------------------------------------------------------------
-
 class TestRegistryNextId:
 
     def test_next_id_after_existing(self):
@@ -224,7 +192,6 @@ class TestRegistryNextId:
         assert next_id == "CS-CONCEPT-003"
 
     def test_next_id_first_in_category(self):
-        # Нет ни одного PROC-STRATEGY-*
         registry = Registry.build(make_collection())
         next_id = registry.next_id("process", "strategy")
         assert next_id == "PROC-STRATEGY-001"
@@ -232,7 +199,6 @@ class TestRegistryNextId:
     def test_next_id_format(self):
         registry = Registry.build(make_collection())
         next_id = registry.next_id("arch", "component")
-        # Формат: ARCH-COMPONENT-NNN
         parts = next_id.split("-")
         assert len(parts) == 3
         assert parts[0] == "ARCH"
@@ -245,7 +211,6 @@ class TestRegistryNextId:
         assert next_id == "CS-CONCEPT-001"
 
     def test_next_id_skips_gaps(self):
-        # Если есть 001 и 005, следующий должен быть 006
         units = [
             make_unit(id="CS-CONCEPT-001"),
             make_unit(id="CS-CONCEPT-005"),
@@ -254,10 +219,6 @@ class TestRegistryNextId:
         next_id = registry.next_id("cs", "concept")
         assert next_id == "CS-CONCEPT-006"
 
-
-# ---------------------------------------------------------------------------
-# Тесты: Registry.stats
-# ---------------------------------------------------------------------------
 
 class TestRegistryStats:
 
@@ -296,10 +257,6 @@ class TestRegistryStats:
         assert stats["duplicates"] == 1
 
 
-# ---------------------------------------------------------------------------
-# Тесты: Registry.to_markdown
-# ---------------------------------------------------------------------------
-
 class TestRegistryToMarkdown:
 
     def test_to_markdown_is_string(self):
@@ -316,7 +273,7 @@ class TestRegistryToMarkdown:
         registry = Registry.build(make_collection())
         md = registry.to_markdown()
         assert "Статистика" in md
-        assert "5" in md  # total count
+        assert "5" in md
 
     def test_to_markdown_has_table(self):
         registry = Registry.build(make_collection())
@@ -340,10 +297,6 @@ class TestRegistryToMarkdown:
         md = registry.to_markdown()
         assert "дублир" in md.lower()
 
-
-# ---------------------------------------------------------------------------
-# Тесты: Registry.save и generate_registry
-# ---------------------------------------------------------------------------
 
 class TestRegistrySave:
 

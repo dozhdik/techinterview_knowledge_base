@@ -1,0 +1,3 @@
+_data/*.sqlite3
+_data/*.sqlite3-shm
+_data/*.sqlite3-wal

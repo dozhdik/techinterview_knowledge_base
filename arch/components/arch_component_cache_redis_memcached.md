@@ -22,9 +22,9 @@ frequency: "high"
 related:
   - "ARCH-COMPONENT-001"   # Load Balancer (часто используется вместе)
   - "ARCH-COMPONENT-004"   # API Gateway (может кешировать на уровне gateway)
-  - "ARCH-TRADEOFF-002"    # Consistency vs Availability (кеш влияет на консистентность)
+  - "ARCH-TRADEOFF-001"    # Consistency vs Availability (кеш влияет на консистентность)
 prerequisites:
-  - "CS-CONCEPT-017"       # Hash Table (структура данных для кеша)
+  - "CS-CONCEPT-009"       # Hash Table (структура данных для кеша)
 sources:
   - "Kleppmann M. Designing Data-Intensive Applications. Chapter 6: Replication & Chapter 11: Stream Processing. O'Reilly, 2017."
   - "Xu A. System Design Interview – An Insider's Guide. Chapter 4: Cache. ByteByteGo, 2020."
@@ -32,7 +32,7 @@ sources:
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-09"
-date_updated: "2026-04-09"
+date_updated: "2026-11-23"
 status: "review"
 ---
 
@@ -120,8 +120,8 @@ Cache (кеш) — компонент распределённой систем�
 
 - [[ARCH-COMPONENT-001]] — Load Balancer (распределение нагрузки на кеш-кластер)
 - [[ARCH-COMPONENT-003]] — Message Queue (асинхронное обновление кеша)
-- [[ARCH-TRADEOFF-002]] — Consistency vs Availability (компромисс при кешировании)
-- [[CS-CONCEPT-017]] — Hash Table (структура данных для in-memory кеша)
+- [[ARCH-TRADEOFF-001]] — Consistency vs Availability (компромисс при кешировании)
+- [[CS-CONCEPT-009]] — Hash Table (структура данных для in-memory кеша)
 
 ## Источники
 

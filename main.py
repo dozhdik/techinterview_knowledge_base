@@ -1,42 +1,15 @@
-"""
-main.py
-
-CLI-интерфейс базы знаний TechInterview.
-
-Команды:
-    search      — поиск по базе знаний
-    validate    — валидация всей БЗ или одного файла
-    registry    — генерация реестра идентификаторов
-    new         — создание новой единицы знаний
-    stats       — статистика по БЗ
-
-Примеры:
-    python3 main.py search --domain cs --difficulty junior
-    python3 main.py search --tag arrays --text "binary search"
-    python3 main.py validate
-    python3 main.py validate --file cs/concepts/data_structures/cs_concept_hash_table.md
-    python3 main.py registry
-    python3 main.py new --title "Binary Search" --domain cs --category concept --difficulty junior
-    python3 main.py stats
-"""
-
 import argparse
 import sys
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Определяем корень БЗ — папка где лежат cs/, arch/, process/, global/
-# ---------------------------------------------------------------------------
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-KB_ROOT = SCRIPT_DIR  # main.py лежит рядом с cs/, arch/ и т.д.
+KB_ROOT = SCRIPT_DIR
 
 
 def _load_units(skip_errors: bool = True):
-    """Загружает все единицы знаний из БЗ."""
     from kb.parser import parse_directory
 
-    # Ищем только в папках доменов БЗ, не трогая venv и системные папки
     KB_DOMAINS = ["cs", "arch", "process", "global", "_meta"]
     units = []
     for domain_dir in KB_DOMAINS:
@@ -50,12 +23,7 @@ def _load_units(skip_errors: bool = True):
     return units
 
 
-# ---------------------------------------------------------------------------
-# Команда: search
-# ---------------------------------------------------------------------------
-
 def cmd_search(args) -> None:
-    """Поиск по базе знаний."""
     from kb.search import SearchQuery, search, print_results
 
     units = _load_units()
@@ -78,22 +46,15 @@ def cmd_search(args) -> None:
     print_results(results, verbose=args.verbose)
 
 
-# ---------------------------------------------------------------------------
-# Команда: validate
-# ---------------------------------------------------------------------------
-
 def cmd_validate(args) -> None:
-    """Валидация БЗ или отдельного файла."""
     from kb.validator import validate_all, validate_file
 
     if args.file:
-        # Валидация одного файла
         print(f"🔍 Валидация файла: {args.file}\n")
         result = validate_file(args.file)
         result.print_report()
         sys.exit(0 if result.is_valid else 1)
     else:
-        # Валидация всей БЗ
         units = _load_units(skip_errors=True)
         if not units:
             return
@@ -103,12 +64,7 @@ def cmd_validate(args) -> None:
         sys.exit(0 if result.is_valid else 1)
 
 
-# ---------------------------------------------------------------------------
-# Команда: registry
-# ---------------------------------------------------------------------------
-
 def cmd_registry(args) -> None:
-    """Генерация реестра идентификаторов."""
     from kb.registry import generate_registry
 
     units = _load_units()
@@ -120,21 +76,14 @@ def cmd_registry(args) -> None:
     registry.print_stats()
 
 
-# ---------------------------------------------------------------------------
-# Команда: new
-# ---------------------------------------------------------------------------
-
 def cmd_new(args) -> None:
-    """Создание новой единицы знаний."""
     from kb.generator import generate_unit, list_templates
     from kb.registry import Registry
 
-    # Если запрошен список шаблонов
     if args.list_templates:
         list_templates()
         return
 
-    # Проверяем обязательные аргументы
     required = ["title", "domain", "category", "difficulty"]
     missing = [f"--{r}" for r in required if not getattr(args, r, None)]
     if missing:
@@ -142,7 +91,6 @@ def cmd_new(args) -> None:
         print("   Используй --list-templates чтобы увидеть доступные категории.")
         sys.exit(1)
 
-    # Строим реестр для генерации ID
     units = _load_units(skip_errors=True)
     registry = Registry.build(units) if units else None
 
@@ -163,12 +111,7 @@ def cmd_new(args) -> None:
         print(f"🔍 Dry run — файл не создан: {path}")
 
 
-# ---------------------------------------------------------------------------
-# Команда: stats
-# ---------------------------------------------------------------------------
-
 def cmd_stats(args) -> None:
-    """Статистика по базе знаний."""
     from kb.parser import summary
     from kb.registry import Registry
     from kb.validator import validate_all
@@ -177,15 +120,12 @@ def cmd_stats(args) -> None:
     if not units:
         return
 
-    # Общая статистика
     summary(units)
 
-    # Статистика реестра
     print()
     registry = Registry.build(units)
     registry.print_stats()
 
-    # Краткий отчёт по валидации
     if args.validate:
         print()
         print("🔍 Запуск валидации...")
@@ -198,9 +138,52 @@ def cmd_stats(args) -> None:
             print("   ❌ Есть критические ошибки. Запусти validate для деталей.")
 
 
-# ---------------------------------------------------------------------------
-# Парсер аргументов
-# ---------------------------------------------------------------------------
+def cmd_vector_build(args) -> None:
+    from kb.vector_store import VectorIndexError, build_index
+
+    try:
+        result = build_index(KB_ROOT, args.index, args.backend, args.model, args.max_chars)
+    except (VectorIndexError, ValueError) as exc:
+        print(f"Ошибка построения индекса: {exc}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Индекс: {result['path']}")
+    print(f"Backend: {result['backend']} ({result['model']})")
+    print(f"Карточек: {result['cards']}, фрагментов: {result['chunks']}")
+    print(f"Обновлено фрагментов: {result['updated']}, удалено: {result['removed']}")
+
+
+def cmd_vector_status(args) -> None:
+    from kb.vector_store import VectorIndexError, index_status
+
+    try:
+        result = index_status(KB_ROOT, args.index)
+    except VectorIndexError as exc:
+        print(f"Ошибка индекса: {exc}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Индекс: {result['path']}")
+    print(f"Backend: {result['backend']} ({result['model']})")
+    print(f"Размерность: {result['dimensions']}")
+    print(f"Карточек: {result['cards']}, фрагментов: {result['chunks']}")
+    print(f"Актуальность: {'актуален' if result['fresh'] else 'требует обновления'}")
+
+
+def cmd_vector_search(args) -> None:
+    from kb.vector_store import VectorIndexError, search_index
+
+    try:
+        results = search_index(KB_ROOT, args.question, args.index,
+                               args.limit, args.domain, args.min_score)
+    except VectorIndexError as exc:
+        print(f"Ошибка поиска: {exc}", file=sys.stderr)
+        sys.exit(1)
+    if not results:
+        print("Совпадений нет.")
+        return
+    for hit in results:
+        print(f"{hit.score:.3f}  {hit.chunk_id}  {hit.title}")
+        print(f"  {hit.source_path}")
+        print(f"  {hit.text[:220].replace(chr(10), ' ')}")
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -224,9 +207,6 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", metavar="КОМАНДА")
     subparsers.required = True
 
-    # ------------------------------------------------------------------
-    # search
-    # ------------------------------------------------------------------
     p_search = subparsers.add_parser(
         "search",
         help="Поиск по базе знаний",
@@ -246,9 +226,6 @@ def build_parser() -> argparse.ArgumentParser:
                           help="Подробный вывод (score, matched)")
     p_search.set_defaults(func=cmd_search)
 
-    # ------------------------------------------------------------------
-    # validate
-    # ------------------------------------------------------------------
     p_validate = subparsers.add_parser(
         "validate",
         help="Валидация БЗ",
@@ -260,9 +237,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_validate.set_defaults(func=cmd_validate)
 
-    # ------------------------------------------------------------------
-    # registry
-    # ------------------------------------------------------------------
     p_registry = subparsers.add_parser(
         "registry",
         help="Генерация реестра идентификаторов",
@@ -274,9 +248,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_registry.set_defaults(func=cmd_registry)
 
-    # ------------------------------------------------------------------
-    # new
-    # ------------------------------------------------------------------
     p_new = subparsers.add_parser(
         "new",
         help="Создание новой единицы знаний",
@@ -293,9 +264,6 @@ def build_parser() -> argparse.ArgumentParser:
                        help="Показать список доступных шаблонов")
     p_new.set_defaults(func=cmd_new)
 
-    # ------------------------------------------------------------------
-    # stats
-    # ------------------------------------------------------------------
     p_stats = subparsers.add_parser(
         "stats",
         help="Статистика по БЗ",
@@ -307,12 +275,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_stats.set_defaults(func=cmd_stats)
 
+    p_vector_build = subparsers.add_parser(
+        "vector-build", help="Построить или обновить локальный векторный индекс"
+    )
+    p_vector_build.add_argument("--index", help="Путь к SQLite-индексу")
+    p_vector_build.add_argument("--backend", choices=("hash", "sentence-transformers"),
+                                default="hash", help="Способ получения векторов")
+    p_vector_build.add_argument("--model", help="Имя модели Sentence Transformers")
+    p_vector_build.add_argument("--max-chars", type=int, default=1400,
+                                help="Максимальный размер фрагмента в символах")
+    p_vector_build.set_defaults(func=cmd_vector_build)
+
+    p_vector_search = subparsers.add_parser(
+        "vector-search", help="Найти фрагменты во векторном индексе"
+    )
+    p_vector_search.add_argument("question", help="Поисковый вопрос")
+    p_vector_search.add_argument("--index", help="Путь к SQLite-индексу")
+    p_vector_search.add_argument("--limit", type=int, default=5)
+    p_vector_search.add_argument("--domain", choices=("cs", "arch", "process", "global"))
+    p_vector_search.add_argument("--min-score", type=float, default=0.0)
+    p_vector_search.set_defaults(func=cmd_vector_search)
+
+    p_vector_status = subparsers.add_parser(
+        "vector-status", help="Проверить состояние векторного индекса"
+    )
+    p_vector_status.add_argument("--index", help="Путь к SQLite-индексу")
+    p_vector_status.set_defaults(func=cmd_vector_status)
+
     return parser
 
-
-# ---------------------------------------------------------------------------
-# Точка входа
-# ---------------------------------------------------------------------------
 
 def main() -> None:
     parser = build_parser()

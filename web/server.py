@@ -1,34 +1,31 @@
-"""
-server.py — FastAPI-сервер для веб-MVP базы знаний TechInterview.
-
-Запуск:
-    python3 web/server.py
-    # или
-    uvicorn web.server:app --reload --port 8000
-
-Открыть: http://localhost:8000
-"""
-
-import random
+import sys
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, Response, FileResponse
-from pydantic import BaseModel
+from fastapi.responses import HTMLResponse, Response
+from pydantic import BaseModel, Field
 
-# ---------------------------------------------------------------------------
-# Пути
-# ---------------------------------------------------------------------------
 
-BASE_DIR = Path(__file__).resolve().parent          # web/
-STATIC_DIR = BASE_DIR / "static"                    # web/static/
-KB_ROOT = BASE_DIR.parent                           # корень репозитория
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+KB_ROOT = BASE_DIR.parent
 
-# ---------------------------------------------------------------------------
-# Приложение
-# ---------------------------------------------------------------------------
+if __package__ in (None, ""):
+    sys.path.insert(0, str(KB_ROOT))
+
+from kb.parser import parse_directory
+from kb.content import has_material
+from kb.search import requested_card_ids, search_question
+from kb.rag import RagConfig, RagError, generate, retrieve
+
+
+def load_units():
+    return [unit for domain in ("cs", "arch", "process", "global")
+            if (KB_ROOT / domain).is_dir()
+            for unit in parse_directory(KB_ROOT / domain)]
+
 
 app = FastAPI(title="TechInterview Knowledge Base", version="0.1.0")
 
@@ -39,12 +36,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------------------------------------------------------------------
-# Pydantic-модели (структура совместима с будущей RAG-системой)
-# ---------------------------------------------------------------------------
 
 class AskRequest(BaseModel):
-    question: str
+    question: str = Field(max_length=1000)
 
 
 class SourceItem(BaseModel):
@@ -54,112 +48,12 @@ class SourceItem(BaseModel):
 
 
 class AskResponse(BaseModel):
-    status: str                 # "success" | "error"
-    answer: str                 # Markdown-текст ответа
-    sources: list[SourceItem]   # список карточек из БЗ
-    confidence: float           # 0.0–1.0, уверенность модели
-    is_rag_enabled: bool        # false в MVP, true после подключения RAG
+    status: str
+    answer: str
+    sources: list[SourceItem]
+    confidence: float | None = None
+    is_rag_enabled: bool = False
 
-
-# ---------------------------------------------------------------------------
-# Мок-данные (заменяются RAG на этапе 2)
-# ---------------------------------------------------------------------------
-
-_MOCK_ANSWERS = [
-    {
-        "answer": (
-            "## Хеш-таблица (Hash Table)\n\n"
-            "Структура данных, реализующая ассоциативный массив. "
-            "Обеспечивает **O(1)** в среднем для операций вставки, удаления и поиска.\n\n"
-            "### Ключевые моменты\n"
-            "- Коллизии решаются через **chaining** или **open addressing**\n"
-            "- Load factor > 0.75 → rehashing\n"
-            "- В Python — встроенный `dict`\n\n"
-            "### Сложность\n"
-            "| Операция | Average | Worst |\n"
-            "|----------|---------|-------|\n"
-            "| Insert   | O(1)    | O(n)  |\n"
-            "| Search   | O(1)    | O(n)  |\n"
-            "| Delete   | O(1)    | O(n)  |"
-        ),
-        "sources": [
-            {"title": "Хеш-таблица", "id": "CS-CONCEPT-009", "url": "#"},
-            {"title": "Когда hash table перестаёт быть O(1)", "id": "CS-QUESTION-002", "url": "#"},
-        ],
-        "confidence": 0.92,
-    },
-    {
-        "answer": (
-            "## URL Shortener — System Design\n\n"
-            "Классическая задача на System Design интервью.\n\n"
-            "### Компоненты\n"
-            "1. **API Gateway** — принимает запросы\n"
-            "2. **Hash-функция** — генерирует короткий код (Base62, 6–8 символов)\n"
-            "3. **БД** — хранит маппинг `short → long`\n"
-            "4. **Cache (Redis)** — ускоряет redirect\n"
-            "5. **CDN** — для глобального распределения\n\n"
-            "### Оценка нагрузки\n"
-            "- 100M URL/день → ~1200 write RPS\n"
-            "- Read/Write ratio ≈ 100:1 → ~120K read RPS"
-        ),
-        "sources": [
-            {"title": "URL Shortener (TinyURL/bit.ly)", "id": "ARCH-SYSDESIGN-005", "url": "#"},
-            {"title": "Cache (Кеширование)", "id": "ARCH-COMPONENT-002", "url": "#"},
-            {"title": "API Gateway", "id": "ARCH-COMPONENT-004", "url": "#"},
-        ],
-        "confidence": 0.88,
-    },
-    {
-        "answer": (
-            "## Метод STAR для behavioral-вопросов\n\n"
-            "Структурированный фреймворк для ответов на поведенческие вопросы.\n\n"
-            "- **S**ituation — опиши контекст и ситуацию\n"
-            "- **T**ask — какая задача стояла перед тобой\n"
-            "- **A**ction — что конкретно ты сделал\n"
-            "- **R**esult — каков был результат (в цифрах, если возможно)\n\n"
-            "> Пример: *«Расскажите о конфликте в команде»* → "
-            "опиши ситуацию → твою роль → действия → итог."
-        ),
-        "sources": [
-            {"title": "Метод STAR", "id": "PROC-FRAMEWORK-001", "url": "#"},
-            {"title": "Расскажите о конфликте в команде", "id": "PROC-BEHAVIORAL-002", "url": "#"},
-        ],
-        "confidence": 0.95,
-    },
-]
-
-
-def get_mock_answer(question: str) -> dict:
-    """
-    Возвращает мок-ответ на основе ключевых слов в вопросе.
-
-    # TODO: RAG INTEGRATION — заменить эту функцию на вызов rag_search(question):
-    #
-    #   from rag.pipeline import rag_search
-    #   return rag_search(question)
-    #
-    # rag_search должна:
-    #   1. Векторизовать question через sentence-transformers
-    #   2. Найти top-k карточек в ChromaDB/Qdrant
-    #   3. Передать контекст + вопрос в LLM (OpenAI/Anthropic/local)
-    #   4. Вернуть dict с полями answer, sources, confidence
-    """
-    q = question.lower()
-
-    if any(w in q for w in ["hash", "хеш", "словарь", "dict"]):
-        return _MOCK_ANSWERS[0]
-    if any(w in q for w in ["url", "shortener", "tinyurl", "систем", "design", "дизайн"]):
-        return _MOCK_ANSWERS[1]
-    if any(w in q for w in ["star", "behavioral", "поведен", "конфликт", "расскажи"]):
-        return _MOCK_ANSWERS[2]
-
-    # Дефолтный ответ — случайный мок
-    return random.choice(_MOCK_ANSWERS)
-
-
-# ---------------------------------------------------------------------------
-# Эндпоинты
-# ---------------------------------------------------------------------------
 
 @app.get("/", include_in_schema=False)
 async def serve_index():
@@ -168,36 +62,110 @@ async def serve_index():
 
 @app.post("/api/ask", response_model=AskResponse)
 async def ask(request: AskRequest) -> AskResponse:
-    """
-    Принимает вопрос пользователя, возвращает ответ из БЗ.
-
-    MVP: возвращает мок-ответ.
-    Этап 2: здесь будет вызов RAG-пайплайна.
-    """
     if not request.question.strip():
+        return AskResponse(status="error", answer="Пожалуйста, введите вопрос.", sources=[])
+
+    units = load_units()
+    requested_ids = requested_card_ids(request.question)
+    if requested_ids:
+        by_id = {unit.id.upper(): unit for unit in units}
+        missing = [card_id for card_id in requested_ids if card_id not in by_id]
+        unfinished = [card_id for card_id in requested_ids
+                      if card_id in by_id and not has_material(by_id[card_id])]
+        ready = [by_id[card_id] for card_id in requested_ids
+                 if card_id in by_id and has_material(by_id[card_id])]
+        notices = []
+        if missing:
+            notices.append("Карточки пока нет в базе: " + ", ".join(missing) + ".")
+        if unfinished:
+            notices.append("Материал ещё не заполнен: " + ", ".join(unfinished) + ".")
+        if ready:
+            return AskResponse(
+                status="success",
+                answer=("\n\n".join(notices) + "\n\n" if notices else "")
+                + "Материал из базы знаний:\n\n" + ready[0].content,
+                sources=[SourceItem(title=unit.title, id=unit.id, url=f"/cards/{unit.id}")
+                         for unit in ready[:3]],
+            )
         return AskResponse(
-            status="error",
-            answer="Пожалуйста, введите вопрос.",
+            status="not_ready" if unfinished and not missing else "not_found",
+            answer=" ".join(notices) + " Проверьте ID или спросите о другой теме.",
             sources=[],
-            confidence=0.0,
-            is_rag_enabled=False,
         )
 
-    # TODO: RAG INTEGRATION — заменить get_mock_answer на rag_search
-    result = get_mock_answer(request.question)
+    rag_notice = ""
+    try:
+        rag_config = RagConfig.from_env()
+        if rag_config:
+            hits = await retrieve(KB_ROOT, request.question, units, rag_config)
+            if hits:
+                rag_result = await generate(request.question, hits, rag_config)
+                if rag_result is None:
+                    return AskResponse(
+                        status="not_found",
+                        answer="В найденных материалах нет достаточного ответа на вопрос. Уточните тему.",
+                        sources=[],
+                    )
+                source_hits = list({hit.card_id: hit for hit in rag_result.hits}.values())
+                return AskResponse(
+                    status="success", answer=rag_result.answer,
+                    sources=[SourceItem(title=hit.title, id=hit.card_id,
+                                        url=f"/cards/{hit.card_id}") for hit in source_hits],
+                    is_rag_enabled=True,
+                )
+    except RagError:
+        rag_notice = "Генерация сейчас недоступна; показываю материал карточки.\n\n"
+
+    results = search_question(units, request.question)
+    if not results:
+        return AskResponse(
+            status="not_found",
+            answer=(rag_notice + "Подходящего определения или карточки пока нет в базе знаний. "
+                    "Уточните название темы или укажите ID карточки."),
+            sources=[],
+        )
+
+    if not has_material(results[0].unit):
+        return AskResponse(
+            status="not_ready",
+            answer=(f"Карточка «{results[0].unit.title}» ({results[0].unit.id}) есть в базе, "
+                    "но её материал пока не заполнен. Попробуйте другую тему."),
+            sources=[],
+        )
 
     return AskResponse(
         status="success",
-        answer=result["answer"],
-        sources=[SourceItem(**s) for s in result["sources"]],
-        confidence=result["confidence"],
-        is_rag_enabled=False,  # TODO: RAG INTEGRATION — установить True после подключения
+        answer=rag_notice + "Материал из базы знаний:\n\n" + results[0].unit.content,
+        sources=[SourceItem(title=r.unit.title, id=r.unit.id,
+                            url=f"/cards/{r.unit.id}") for r in results
+                 if has_material(r.unit)],
     )
 
 
-# ---------------------------------------------------------------------------
-# Статика — кастомный роутер без anyio/threadpool (обход битого sniffio в venv)
-# ---------------------------------------------------------------------------
+@app.get("/api/units/{unit_id}")
+async def get_unit(unit_id: str):
+    units = load_units()
+    unit = next((u for u in units if u.id == unit_id), None)
+    if unit is None:
+        raise HTTPException(status_code=404, detail="Карточка не найдена")
+    if not has_material(unit):
+        raise HTTPException(status_code=409, detail="Материал карточки пока не заполнен")
+    return {"id": unit.id, "title": unit.title, "domain": unit.domain,
+            "difficulty": unit.difficulty, "status": unit.status,
+            "content": unit.content}
+
+
+@app.get("/cards/{unit_id}", include_in_schema=False)
+async def serve_card(unit_id: str):
+    page = (STATIC_DIR / "card.html").read_text(encoding="utf-8")
+    try:
+        await get_unit(unit_id)
+    except HTTPException as exc:
+        message = ("Карточка не найдена. Она могла быть удалена или ещё не добавлена."
+                   if exc.status_code == 404 else "Материал этой карточки пока не заполнен.")
+        return HTMLResponse(page.replace("Загрузка карточки…", message), status_code=exc.status_code)
+    return HTMLResponse(page)
+
 
 MIME_TYPES = {
     ".html": "text/html; charset=utf-8",
@@ -212,7 +180,6 @@ MIME_TYPES = {
 
 @app.get("/{full_path:path}", include_in_schema=False)
 async def serve_static(full_path: str) -> Response:
-    # Нормализуем путь и предотвращаем path traversal
     try:
         target = (STATIC_DIR / full_path).resolve()
         target.relative_to(STATIC_DIR.resolve())
@@ -232,47 +199,5 @@ async def serve_static(full_path: str) -> Response:
     return Response(content=target.read_bytes(), media_type=mime)
 
 
-# ---------------------------------------------------------------------------
-# Точка входа
-# ---------------------------------------------------------------------------
-
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True, app_dir=str(BASE_DIR))
-
-
-# ===========================================================================
-# КАК ПОДКЛЮЧИТЬ RAG НА ЭТАПЕ 2
-# ===========================================================================
-#
-# 1. Установить зависимости:
-#       pip install langchain chromadb sentence-transformers openai
-#    или для локальной LLM:
-#       pip install langchain qdrant-client sentence-transformers ollama
-#
-# 2. Создать файл rag/pipeline.py:
-#
-#       from kb.parser import parse_directory          # уже есть в проекте!
-#       from sentence_transformers import SentenceTransformer
-#       import chromadb
-#
-#       def build_index():
-#           units = parse_directory("cs") + parse_directory("arch") + parse_directory("process")
-#           # векторизовать unit.content, сохранить в ChromaDB
-#           ...
-#
-#       def rag_search(question: str) -> dict:
-#           # 1. embed question
-#           # 2. similarity search в ChromaDB → top-k units
-#           # 3. передать в LLM с промптом
-#           # 4. вернуть {"answer": "...", "sources": [...], "confidence": 0.9}
-#           ...
-#
-# 3. В этом файле заменить:
-#       result = get_mock_answer(request.question)
-#    на:
-#       from rag.pipeline import rag_search
-#       result = await rag_search(request.question)
-#
-# 4. Установить is_rag_enabled=True в AskResponse.
-#
-# ===========================================================================
+    uvicorn.run("web.server:app", host="0.0.0.0", port=8000, reload=True, app_dir=str(KB_ROOT))

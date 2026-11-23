@@ -21,7 +21,7 @@ frequency: "high"
 related:
   - "PROC-STAGE-003"   # Coding Interview (предыдущий этап)
   - "PROC-FRAMEWORK-003"   # System Design Approach
-  - "ARCH-SYSDESIGN-001"   # URL Shortener (пример задачи)
+  - "ARCH-SYSDESIGN-005"   # URL Shortener (пример задачи)
 prerequisites:
   - "PROC-STAGE-003"   # Coding Interview
 sources:
@@ -186,9 +186,9 @@ System Design Interview — этап, где кандидат проектиру
 
 - [[PROC-STAGE-003]] — Coding Interview (предыдущий этап)
 - [[PROC-FRAMEWORK-003]] — System Design Approach (методика)
-- [[ARCH-SYSDESIGN-001]] — URL Shortener (пример задачи)
+- [[ARCH-SYSDESIGN-005]] — URL Shortener (пример задачи)
 - [[ARCH-COMPONENT-001]] — Load Balancer (компонент)
-- [[ARCH-TRADEOFF-001]] — SQL vs NoSQL (компромисс)
+- [[ARCH-TRADEOFF-006]] — SQL vs NoSQL (компромисс)
 
 ## Источники
 

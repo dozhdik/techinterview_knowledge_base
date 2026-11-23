@@ -1,9 +1,6 @@
-/**
- * chat.js — логика чата: история, рендеринг сообщений, fetch
- */
-
 import {
   escapeHtml,
+  renderMarkdown,
   copyToClipboard,
   showToast,
   formatConfidence,
@@ -13,15 +10,11 @@ import {
   formatTime,
 } from "./utils.js";
 
-// ---------------------------------------------------------------------------
-// Константы
-// ---------------------------------------------------------------------------
 
 const STORAGE_KEY = "techinterview_chat_history";
 const MAX_HISTORY = 50;
-const FETCH_TIMEOUT_MS = 15000;
+const FETCH_TIMEOUT_MS = 60000;
 
-// Примеры для welcome screen
 const WELCOME_EXAMPLES = [
   { domain: "cs",   text: "Как устроена хеш-таблица и когда она перестаёт быть O(1)?" },
   { domain: "arch", text: "Спроектируй URL Shortener (TinyURL)" },
@@ -31,23 +24,14 @@ const WELCOME_EXAMPLES = [
   { domain: "proc", text: "Как подготовиться к System Design интервью?" },
 ];
 
-// ---------------------------------------------------------------------------
-// Состояние
-// ---------------------------------------------------------------------------
 
-let history = [];       // [{id, role, content, sources, confidence, timestamp}]
+let history = [];
 let isLoading = false;
 
-// ---------------------------------------------------------------------------
-// DOM-ссылки (инициализируются в init())
-// ---------------------------------------------------------------------------
 
 let messagesArea = null;
 let welcomeScreen = null;
 
-// ---------------------------------------------------------------------------
-// История (localStorage)
-// ---------------------------------------------------------------------------
 
 function loadHistory() {
   try {
@@ -62,13 +46,9 @@ function saveHistory() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-MAX_HISTORY)));
   } catch {
-    // localStorage может быть недоступен
   }
 }
 
-// ---------------------------------------------------------------------------
-// Welcome screen
-// ---------------------------------------------------------------------------
 
 function renderWelcome() {
   if (!welcomeScreen) return;
@@ -78,7 +58,7 @@ function renderWelcome() {
       <h2 class="welcome-title">TechInterview Knowledge Base</h2>
       <p class="welcome-desc">
         Задай вопрос по алгоритмам, System Design или процессу собеседования —
-        получи структурированный ответ из базы знаний.
+        найди материал из базы знаний и открой карточки источников.
       </p>
     </div>
     <div class="welcome-cards">
@@ -101,9 +81,6 @@ function domainLabel(domain) {
   return { cs: "CS", arch: "Architecture", proc: "Process", glb: "Global" }[domain] ?? domain.toUpperCase();
 }
 
-// ---------------------------------------------------------------------------
-// Skeleton loader
-// ---------------------------------------------------------------------------
 
 function renderSkeleton() {
   const el = document.createElement("div");
@@ -127,9 +104,6 @@ function removeSkeleton() {
   document.getElementById("skeleton-loader")?.remove();
 }
 
-// ---------------------------------------------------------------------------
-// Рендеринг сообщений
-// ---------------------------------------------------------------------------
 
 function renderMessage(msg) {
   const isUser = msg.role === "user";
@@ -139,29 +113,26 @@ function renderMessage(msg) {
 
   const avatarEmoji = isUser ? "👤" : "📚";
 
-  // Контент: для ассистента — Markdown, для пользователя — plain text
   let contentHtml;
   if (isUser) {
     contentHtml = `<p>${escapeHtml(msg.content)}</p>`;
   } else {
-    // marked.parse возвращает HTML — используем его напрямую (контент из нашего API)
-    contentHtml = window.marked ? marked.parse(msg.content) : escapeHtml(msg.content);
+    contentHtml = renderMarkdown(msg.content);
   }
 
-  // Источники
   const sourcesHtml = (!isUser && msg.sources && msg.sources.length > 0)
     ? `<div class="message-sources">
         ${msg.sources.map((s) => {
           const domain = getDomainFromId(s.id);
-          return `<span class="source-badge source-badge--${domain}" title="${escapeHtml(s.id)}">
+          return `<a class="source-badge source-badge--${domain}" title="${escapeHtml(s.id)}"
+            href="/cards/${encodeURIComponent(s.id)}" target="_blank" rel="noopener noreferrer">
             ${escapeHtml(s.title)}
             <span class="source-id">${escapeHtml(s.id)}</span>
-          </span>`;
+          </a>`;
         }).join("")}
       </div>`
     : "";
 
-  // Кнопки действий (только для ассистента)
   const actionsHtml = !isUser
     ? `<div class="message-actions" role="group" aria-label="Действия с ответом">
         <button class="action-btn js-copy" type="button" aria-label="Скопировать ответ">
@@ -186,6 +157,7 @@ function renderMessage(msg) {
               ${formatConfidence(msg.confidence)}
             </span>`
           : ""}
+        ${msg.ragEnabled ? '<span class="confidence-badge">RAG</span>' : ""}
       </div>`
     : "";
 
@@ -198,12 +170,10 @@ function renderMessage(msg) {
     </div>
   `;
 
-  // Подсветка кода через Prism
   if (!isUser && window.Prism) {
     requestAnimationFrame(() => Prism.highlightAllUnder(el));
   }
 
-  // Обработчики кнопок
   el.querySelector(".js-copy")?.addEventListener("click", async () => {
     const ok = await copyToClipboard(msg.content);
     showToast(ok ? "Скопировано в буфер обмена" : "Не удалось скопировать", ok ? "success" : "error");
@@ -224,9 +194,6 @@ function renderMessage(msg) {
   return el;
 }
 
-// ---------------------------------------------------------------------------
-// Отправка сообщения
-// ---------------------------------------------------------------------------
 
 export async function sendMessage(question) {
   if (isLoading || !question.trim()) return;
@@ -234,7 +201,6 @@ export async function sendMessage(question) {
 
   hideWelcome();
 
-  // Добавить user bubble
   const userMsg = {
     id: generateId(),
     role: "user",
@@ -245,11 +211,10 @@ export async function sendMessage(question) {
   messagesArea.appendChild(renderMessage(userMsg));
   scrollToBottom(messagesArea);
 
-  // Skeleton
   const skeleton = renderSkeleton();
 
   try {
-    const data = await fetchWithRetry("/api/ask", { question: question.trim() });
+    const data = await fetchWithRetry("/api/ask", { question: question.trim() }, 0);
 
     removeSkeleton();
 
@@ -262,6 +227,7 @@ export async function sendMessage(question) {
         content: data.answer,
         sources: data.sources || [],
         confidence: data.confidence,
+        ragEnabled: data.is_rag_enabled === true,
         timestamp: Date.now(),
       };
       history.push(aiMsg);
@@ -279,9 +245,6 @@ export async function sendMessage(question) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Fetch с retry и timeout
-// ---------------------------------------------------------------------------
 
 async function fetchWithRetry(url, body, retries = 1) {
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -302,29 +265,22 @@ async function fetchWithRetry(url, body, retries = 1) {
     } catch (err) {
       clearTimeout(timer);
       if (attempt === retries) {
-        if (err.name === "AbortError") throw new Error("Превышено время ожидания (15 сек)");
+        if (err.name === "AbortError") throw new Error("Превышено время ожидания (60 сек)");
         throw err;
       }
-      // Небольшая пауза перед retry
       await new Promise((r) => setTimeout(r, 800));
     }
   }
 }
 
-// ---------------------------------------------------------------------------
-// Очистка чата
-// ---------------------------------------------------------------------------
 
 export function clearChat() {
   history = [];
   saveHistory();
-  messagesArea.innerHTML = "";
+  messagesArea.replaceChildren(welcomeScreen);
   renderWelcome();
 }
 
-// ---------------------------------------------------------------------------
-// Восстановление истории из localStorage
-// ---------------------------------------------------------------------------
 
 function restoreHistory() {
   if (history.length === 0) {
@@ -338,9 +294,6 @@ function restoreHistory() {
   scrollToBottom(messagesArea, false);
 }
 
-// ---------------------------------------------------------------------------
-// Инициализация
-// ---------------------------------------------------------------------------
 
 export function initChat(messagesEl, welcomeEl) {
   messagesArea = messagesEl;
@@ -349,13 +302,11 @@ export function initChat(messagesEl, welcomeEl) {
   loadHistory();
   restoreHistory();
 
-  // Клик по карточке welcome screen
   welcomeScreen.addEventListener("click", (e) => {
     const card = e.target.closest(".welcome-card");
     if (!card) return;
     const question = card.dataset.question;
     if (question) {
-      // Диспатчим кастомное событие — app.js подставит в textarea и отправит
       document.dispatchEvent(new CustomEvent("chat:example-click", { detail: { question } }));
     }
   });

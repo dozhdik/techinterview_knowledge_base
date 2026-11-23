@@ -22,9 +22,9 @@ frequency: "high"
 related:
   - "ARCH-COMPONENT-002"   # Cache (зависит от ....)
   - "ARCH-COMPONENT-004"   # API Gateway (часто используется вместе)
-  - "ARCH-TRADEOFF-002"    # Availability vs Consistency (связанный компромисс)
+  - "ARCH-TRADEOFF-001"    # Availability vs Consistency (связанный компромисс)
 prerequisites:
-  - "CS-CONCEPT-007"       # Компьютерные сети (базовое понимание) //подождать остальные карточки и сопоставит
+  - "CS-CONCEPT-028"       # Компьютерные сети (базовое понимание) //подождать остальные карточки и сопоставит
 sources:
   - "Kleppmann M. Designing Data-Intensive Applications. Chapter 11: Load Balancing. O'Reilly, 2017."
   - "Xu A. System Design Interview – An Iвременноnsider's Guide. Chapter 3: Load Balancer. ByteByteGo, 2020."
@@ -32,7 +32,7 @@ sources:
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-09"
-date_updated: "2026-04-09"
+date_updated: "2026-11-23"
 status: "review"
 ---
 

@@ -24,7 +24,7 @@ related:
   - "ARCH-COMPONENT-002"
   - "ARCH-COMPONENT-004"
   - "ARCH-TRADEOFF-001"
-  - "ARCH-TRADEOFF-002"
+  - "ARCH-TRADEOFF-006"
 prerequisites:
   - "ARCH-COMPONENT-001"
   - "ARCH-COMPONENT-002"
@@ -142,8 +142,8 @@ status: "approved"
 - [[ARCH-COMPONENT-001]] — Load Balancer (applied_in)
 - [[ARCH-COMPONENT-002]] — Cache (applied_in)
 - [[ARCH-COMPONENT-004]] — API Gateway (applied_in)
-- [[ARCH-TRADEOFF-001]] — SQL vs NoSQL (applied_in)
-- [[ARCH-TRADEOFF-002]] — Consistency vs Availability (relates_to)
+- [[ARCH-TRADEOFF-006]] — SQL vs NoSQL (applied_in)
+- [[ARCH-TRADEOFF-001]] — Consistency vs Availability (relates_to)
 - [[PROC-FRAMEWORK-003]] — Фреймворк решения SD задачи (is_part_of)
 
 ## Источники

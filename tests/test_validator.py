@@ -1,10 +1,3 @@
-"""
-tests/test_validator.py
-
-Тесты для kb/validator.py
-Запуск: python -m pytest tests/test_validator.py -v
-"""
-
 import os
 import sys
 import tempfile
@@ -23,12 +16,7 @@ from kb.validator import (
 )
 
 
-# ---------------------------------------------------------------------------
-# Вспомогательные функции
-# ---------------------------------------------------------------------------
-
 def make_unit(**kwargs) -> KnowledgeUnit:
-    """Создаёт валидную единицу знаний, поля можно переопределить через kwargs."""
     defaults = dict(
         id="CS-CONCEPT-001",
         title="Test Unit",
@@ -55,7 +43,6 @@ def make_unit(**kwargs) -> KnowledgeUnit:
 
 
 def make_md_file(content: str) -> str:
-    """Создаёт временный .md файл, возвращает путь."""
     f = tempfile.NamedTemporaryFile(
         mode="w", suffix=".md", delete=False, encoding="utf-8"
     )
@@ -95,10 +82,6 @@ status: "approved"
 """
 
 
-# ---------------------------------------------------------------------------
-# Тесты: ValidationResult
-# ---------------------------------------------------------------------------
-
 class TestValidationResult:
 
     def test_is_valid_when_no_errors(self):
@@ -135,10 +118,6 @@ class TestValidationResult:
         assert "❌" in captured
 
 
-# ---------------------------------------------------------------------------
-# Тесты: validate_unit — успешные сценарии
-# ---------------------------------------------------------------------------
-
 class TestValidateUnitSuccess:
 
     def test_valid_unit_has_no_errors(self):
@@ -167,10 +146,6 @@ class TestValidateUnitSuccess:
             errors = [e for e in result.errors if e.field == "category"]
             assert errors == []
 
-
-# ---------------------------------------------------------------------------
-# Тесты: validate_unit — ошибки в полях
-# ---------------------------------------------------------------------------
 
 class TestValidateUnitErrors:
 
@@ -217,10 +192,6 @@ class TestValidateUnitErrors:
         assert len(errors) == 1
 
 
-# ---------------------------------------------------------------------------
-# Тесты: validate_unit — предупреждения
-# ---------------------------------------------------------------------------
-
 class TestValidateUnitWarnings:
 
     def test_empty_content_gives_warning(self):
@@ -265,10 +236,6 @@ class TestValidateUnitWarnings:
         warnings = [w for w in result.warnings if w.field == "frequency"]
         assert len(warnings) == 1
 
-
-# ---------------------------------------------------------------------------
-# Тесты: validate_all
-# ---------------------------------------------------------------------------
 
 class TestValidateAll:
 
@@ -326,10 +293,6 @@ class TestValidateAll:
         result = validate_all(units)
         assert len(result.errors) >= 3
 
-
-# ---------------------------------------------------------------------------
-# Тесты: validate_file
-# ---------------------------------------------------------------------------
 
 class TestValidateFile:
 

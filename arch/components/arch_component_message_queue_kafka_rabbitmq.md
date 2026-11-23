@@ -22,10 +22,10 @@ related:
   - "ARCH-COMPONENT-001"   # Load Balancer (масштабирование потребителей)
   - "ARCH-COMPONENT-002"   # Cache (асинхронное обновление кеша)
   - "ARCH-COMPONENT-004"   # API Gateway (очередь для rate limiting)
-  - "ARCH-TRADEOFF-002"    # Consistency vs Availability (eventual consistency)
+  - "ARCH-TRADEOFF-001"    # Consistency vs Availability (eventual consistency)
 prerequisites:
-  - "CS-CONCEPT-007"       # Компьютерные сети
-  - "CS-CONCEPT-042"       # Связный список (очередь как структура)
+  - "CS-CONCEPT-028"       # Компьютерные сети
+  - "CS-CONCEPT-013"       # Связный список (очередь как структура)
 sources:
   - "Kleppmann M. Designing Data-Intensive Applications. Chapter 11: Stream Processing. O'Reilly, 2017."
   - "Xu A. System Design Interview – An Insider's Guide. Chapter 5: Message Queues. ByteByteGo, 2020."
@@ -33,7 +33,7 @@ sources:
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-09"
-date_updated: "2026-04-09"
+date_updated: "2026-11-23"
 status: "review"
 ---
 
@@ -180,7 +180,7 @@ Message Queue (очередь сообщений) — компонент рас�
 - [[ARCH-COMPONENT-001]] — Load Balancer (масштабирование consumers)
 - [[ARCH-COMPONENT-002]] — Cache (асинхронное обновление)
 - [[ARCH-COMPONENT-004]] — API Gateway (rate limiting через очередь)
-- [[ARCH-TRADEOFF-002]] — Consistency vs Availability (eventual consistency)
+- [[ARCH-TRADEOFF-001]] — Consistency vs Availability (eventual consistency)
 - [[ARCH-SYSDESIGN-002]] — Notification Service (применение очереди)
 
 

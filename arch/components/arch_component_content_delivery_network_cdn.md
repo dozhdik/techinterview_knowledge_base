@@ -23,9 +23,10 @@ frequency: "high"
 related:
   - "ARCH-COMPONENT-002"   # Cache (реляция: CDN — распределённый кеш)
   - "ARCH-COMPONENT-001"   # Load Balancer (часто используется вместе)
-  - "ARCH-TRADEOFF-002"    # Consistency vs Availability (кеш и актуальность)
+  - "ARCH-TRADEOFF-001"    # Consistency vs Availability (кеш и актуальность)
+  - "ARCH-SYSDESIGN-005"   # URL Shortener (CDN для редиректов)
 prerequisites:
-  - "CS-CONCEPT-007"       # Компьютерные сети
+  - "CS-CONCEPT-028"       # Компьютерные сети
   - "ARCH-COMPONENT-002"   # Cache (базовое понимание кеширования)
 sources:
   - "Kleppmann M. Designing Data-Intensive Applications. Chapter 11. O'Reilly, 2017."
@@ -34,7 +35,7 @@ sources:
 author: "Инженер знаний №2"
 version: "1.0"
 date_created: "2026-04-09"
-date_updated: "2026-04-09"
+date_updated: "2026-11-23"
 status: "review"
 ---
 
@@ -137,8 +138,8 @@ CDN (Content Delivery Network) — географически распредел
 
 - [[ARCH-COMPONENT-002]] — Cache (CDN — распределённый кеш, extends)
 - [[ARCH-COMPONENT-001]] — Load Balancer (часто используется вместе, relates_to)
-- [[ARCH-TRADEOFF-002]] — Consistency vs Availability (кеш и актуальность, relates_to)
-- [[ARCH-SYSDESIGN-001]] — URL Shortener (CDN для редиректов, applied_in)
+- [[ARCH-TRADEOFF-001]] — Consistency vs Availability (кеш и актуальность, relates_to)
+- [[ARCH-SYSDESIGN-005]] — URL Shortener (CDN для редиректов, applied_in)
 
 ## Источники
 

@@ -21,10 +21,10 @@ frequency: "high"
 related:
   - "ARCH-COMPONENT-004"
   - "ARCH-COMPONENT-003"
-  - "ARCH-TRADEOFF-002"
-  - "ARCH-SYSDESIGN-001"
+  - "ARCH-TRADEOFF-001"
+  - "ARCH-SYSDESIGN-005"
 prerequisites:
-  - "CS-CONCEPT-009"
+  - "ARCH-COMPONENT-012"
   - "ARCH-COMPONENT-001"
 sources:
   - "Kleppmann M. Designing Data-Intensive Applications. Chapter 11. O'Reilly, 2017."
@@ -131,9 +131,9 @@ status: "review"
 
 - [[ARCH-COMPONENT-004]] — API Gateway (applied_in)
 - [[ARCH-COMPONENT-003]] — Message Queue (applied_in)
-- [[ARCH-TRADEOFF-002]] — Consistency vs Availability (relates_to)
-- [[ARCH-SYSDESIGN-001]] — URL Shortener (exemplifies)
-- [[CS-CONCEPT-009]] — Основы ООП (prerequisite_for)
+- [[ARCH-TRADEOFF-001]] — Consistency vs Availability (relates_to)
+- [[ARCH-SYSDESIGN-005]] — URL Shortener (exemplifies)
+- [[ARCH-COMPONENT-012]] — Service Discovery (prerequisite_for)
 
 ## Источники
 

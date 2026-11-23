@@ -1,26 +1,9 @@
-"""
-kb/validator.py
-
-Валидация единиц знаний базы знаний TechInterview.
-
-Проверяет:
-1. Корректность значений полей метаданных (domain, category, difficulty и т.д.)
-2. Уникальность ID во всей БЗ
-3. Корректность перекрёстных ссылок (related, prerequisites)
-4. Заполненность обязательных полей
-5. Формат ID (ДОМЕН-КАТЕГОРИЯ-НН)
-"""
-
 import re
 from dataclasses import dataclass, field
 from collections import defaultdict
 
 from .parser import KnowledgeUnit
 
-
-# ---------------------------------------------------------------------------
-# Допустимые значения полей
-# ---------------------------------------------------------------------------
 
 VALID_DOMAINS = {"cs", "arch", "process", "global"}
 
@@ -48,34 +31,23 @@ VALID_INTERVIEW_STAGES = {
     "behavioral", "take_home", "team_match", "offer", "hr_screening",
 }
 
-# Формат ID: ДОМЕН-КАТЕГОРИЯ-НН (например CS-CONCEPT-017)
 ID_PATTERN = re.compile(r"^[A-Z]+-[A-Z]+-\d+$")
 
 
-# ---------------------------------------------------------------------------
-# Dataclass — одна проблема валидации
-# ---------------------------------------------------------------------------
-
 @dataclass
 class ValidationIssue:
-    """Одна найденная проблема."""
-    unit_id:   str   # ID единицы знаний (или путь если ID не распарсился)
-    field:     str   # Поле, в котором найдена проблема
-    severity:  str   # "error" | "warning"
-    message:   str   # Описание проблемы
+    unit_id:   str
+    field:     str
+    severity:  str
+    message:   str
 
     def __str__(self) -> str:
         icon = "❌" if self.severity == "error" else "⚠️ "
         return f"{icon} [{self.unit_id}] {self.field}: {self.message}"
 
 
-# ---------------------------------------------------------------------------
-# Dataclass — результат валидации
-# ---------------------------------------------------------------------------
-
 @dataclass
 class ValidationResult:
-    """Итог валидации всей БЗ или одного файла."""
     issues: list[ValidationIssue] = field(default_factory=list)
 
     @property
@@ -97,7 +69,6 @@ class ValidationResult:
         self.issues.append(ValidationIssue(unit_id, field, "warning", message))
 
     def print_report(self) -> None:
-        """Выводит отчёт о валидации."""
         if not self.issues:
             print("✅ Валидация пройдена — проблем не найдено.")
             return
@@ -119,23 +90,10 @@ class ValidationResult:
             print(f"❌ Валидация не пройдена: {len(self.errors)} ошибок.")
 
 
-# ---------------------------------------------------------------------------
-# Валидация одной единицы знаний
-# ---------------------------------------------------------------------------
-
 def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
-    """
-    Проверяет корректность полей одной единицы знаний.
-    Не проверяет перекрёстные ссылки (для этого нужна вся БЗ).
-
-    Пример:
-        result = validate_unit(unit)
-        result.print_report()
-    """
     result = ValidationResult()
     uid = unit.id or unit.file_path
 
-    # --- id ---
     if not unit.id:
         result.add_error(uid, "id", "Поле не заполнено.")
     elif not ID_PATTERN.match(unit.id):
@@ -145,13 +103,11 @@ def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
             f"(например CS-CONCEPT-017)."
         )
 
-    # --- title ---
     if not unit.title:
         result.add_error(uid, "title", "Поле не заполнено.")
     elif len(unit.title) < 3:
         result.add_warning(uid, "title", "Слишком короткое название.")
 
-    # --- domain ---
     if unit.domain not in VALID_DOMAINS:
         result.add_error(
             uid, "domain",
@@ -159,7 +115,6 @@ def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
             f"Допустимые: {sorted(VALID_DOMAINS)}."
         )
 
-    # --- category ---
     if unit.category not in VALID_CATEGORIES:
         result.add_error(
             uid, "category",
@@ -167,7 +122,6 @@ def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
             f"Допустимые: {sorted(VALID_CATEGORIES)}."
         )
 
-    # --- difficulty ---
     if unit.difficulty not in VALID_DIFFICULTIES:
         result.add_error(
             uid, "difficulty",
@@ -175,7 +129,6 @@ def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
             f"Допустимые: {sorted(VALID_DIFFICULTIES)}."
         )
 
-    # --- frequency (необязательное, но если задано — проверяем) ---
     if unit.frequency and unit.frequency not in VALID_FREQUENCIES:
         result.add_warning(
             uid, "frequency",
@@ -183,7 +136,6 @@ def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
             f"Допустимые: {sorted(VALID_FREQUENCIES - {''})}."
         )
 
-    # --- status ---
     if unit.status not in VALID_STATUSES:
         result.add_warning(
             uid, "status",
@@ -191,7 +143,6 @@ def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
             f"Допустимые: {sorted(VALID_STATUSES)}."
         )
 
-    # --- roles ---
     for role in unit.roles:
         if role not in VALID_ROLES:
             result.add_warning(
@@ -200,7 +151,6 @@ def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
                 f"Допустимые: {sorted(VALID_ROLES)}."
             )
 
-    # --- interview_stage ---
     for stage in unit.interview_stage:
         if stage not in VALID_INTERVIEW_STAGES:
             result.add_warning(
@@ -209,38 +159,20 @@ def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
                 f"Допустимые: {sorted(VALID_INTERVIEW_STAGES)}."
             )
 
-    # --- content ---
     if not unit.content:
         result.add_warning(uid, "content", "Тело документа пустое (заглушка).")
     elif len(unit.content.strip()) < 50:
         result.add_warning(uid, "content", "Тело документа очень короткое (< 50 символов).")
 
-    # --- sources (предупреждение если нет источников) ---
     if not unit.sources:
         result.add_warning(uid, "sources", "Источники не указаны.")
 
     return result
 
 
-# ---------------------------------------------------------------------------
-# Валидация всей БЗ
-# ---------------------------------------------------------------------------
-
 def validate_all(units: list[KnowledgeUnit]) -> ValidationResult:
-    """
-    Проверяет все единицы знаний:
-    - поля каждой единицы (через validate_unit)
-    - уникальность ID
-    - корректность перекрёстных ссылок (related, prerequisites)
-
-    Пример:
-        units = parse_directory(".")
-        result = validate_all(units)
-        result.print_report()
-    """
     result = ValidationResult()
 
-    # Собираем все ID для проверки ссылок и дублей
     id_to_units: dict[str, list[KnowledgeUnit]] = defaultdict(list)
     for unit in units:
         id_to_units[unit.id].append(unit)
@@ -250,11 +182,9 @@ def validate_all(units: list[KnowledgeUnit]) -> ValidationResult:
     for unit in units:
         uid = unit.id or unit.file_path
 
-        # 1. Валидация полей
         unit_result = validate_unit(unit)
         result.issues.extend(unit_result.issues)
 
-        # 2. Уникальность ID
         if len(id_to_units[unit.id]) > 1:
             paths = [u.file_path for u in id_to_units[unit.id]]
             result.add_error(
@@ -262,7 +192,6 @@ def validate_all(units: list[KnowledgeUnit]) -> ValidationResult:
                 f"Дублирующийся ID. Встречается в файлах: {paths}."
             )
 
-        # 3. Перекрёстные ссылки — related
         for ref_id in unit.related:
             if ref_id not in all_ids:
                 result.add_warning(
@@ -270,7 +199,6 @@ def validate_all(units: list[KnowledgeUnit]) -> ValidationResult:
                     f"Ссылка на несуществующий ID '{ref_id}'."
                 )
 
-        # 4. Перекрёстные ссылки — prerequisites
         for ref_id in unit.prerequisites:
             if ref_id not in all_ids:
                 result.add_warning(
@@ -281,18 +209,7 @@ def validate_all(units: list[KnowledgeUnit]) -> ValidationResult:
     return result
 
 
-# ---------------------------------------------------------------------------
-# Быстрая проверка одного файла (без контекста всей БЗ)
-# ---------------------------------------------------------------------------
-
 def validate_file(file_path: str) -> ValidationResult:
-    """
-    Удобная функция: парсит файл и сразу валидирует.
-
-    Пример:
-        result = validate_file("cs/concepts/data_structures/cs_concept_hash_table.md")
-        result.print_report()
-    """
     from .parser import parse_file, ParseError
 
     result = ValidationResult()

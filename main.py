@@ -198,11 +198,20 @@ def cmd_passage_build(args) -> None:
                      ensure_ascii=False, indent=2))
 
 
+def cmd_representation_build(args) -> None:
+    import json
+
+    from kb.representation import build
+
+    print(json.dumps(build(KB_ROOT, args.index), ensure_ascii=False, indent=2))
+
+
 def cmd_search_diagnose(args) -> None:
     import json
     from time import perf_counter
 
     from kb.qa_reader import load_reader
+    from kb.representation import get_representation
     from kb.retrieval import configured_reranker, get_engine
 
     if args.qa_mode != "off" and not args.qa_path:
@@ -210,10 +219,13 @@ def cmd_search_diagnose(args) -> None:
     reader = load_reader(args.qa_path) if args.qa_mode != "off" else None
     started = perf_counter()
     engine = get_engine(KB_ROOT, args.index)
+    representations = (get_representation(KB_ROOT, args.representation_index)
+                       if args.representation_mode != "off" else None)
     ready = perf_counter()
     answer, debug = engine.ask(args.question, _load_units(), domain=args.domain,
                                links=args.links, reranker=configured_reranker(), depth=args.depth,
-                               reader=reader, qa_mode=args.qa_mode)
+                               reader=reader, qa_mode=args.qa_mode, representations=representations,
+                               representation_mode=args.representation_mode)
     debug["answer"] = answer.answer if answer else None
     debug["seconds"]["startup"] = ready - started
     debug["seconds"]["total"] = perf_counter() - started
@@ -229,13 +241,15 @@ def cmd_search_benchmark(args) -> None:
         raise SystemExit("QA требует --qa-path и структурного поиска.")
     report = evaluate(KB_ROOT, _load_units(), args.cases, args.split, args.method,
                       args.output, args.reranker, index_path=args.index, depth=args.depth,
-                      qa_path=args.qa_path, qa_mode=args.qa_mode)
+                      qa_path=args.qa_path, qa_mode=args.qa_mode, representation_mode=args.representation_mode,
+                      representation_index=args.representation_index)
     print(json.dumps({k: report[k] for k in ("overall", "warm", "by_domain", "by_type")},
                      ensure_ascii=False, indent=2))
 
 
 def build_parser() -> argparse.ArgumentParser:
     from kb.evidence import DEFAULT_DEPTH
+    from kb.representation import MODES
 
     parser = argparse.ArgumentParser(
         prog="main.py",
@@ -359,6 +373,10 @@ def build_parser() -> argparse.ArgumentParser:
     build_passages.add_argument("--model", help="Модель эмбеддингов или локальный каталог")
     build_passages.add_argument("--e5", action="store_true", help="Использовать префиксы query и passage для E5")
     build_passages.set_defaults(func=cmd_passage_build)
+    representation_build = subparsers.add_parser(
+        "representation-build", help="Построить отдельный индекс назначений и потенциальных вопросов")
+    representation_build.add_argument("--index", type=Path, help="Отдельный путь для SQLite")
+    representation_build.set_defaults(func=cmd_representation_build)
 
     diagnose = subparsers.add_parser("search-diagnose", help="Показать этапы гибридного поиска")
     diagnose.add_argument("question")
@@ -381,6 +399,8 @@ def build_parser() -> argparse.ArgumentParser:
     for search_parser in (diagnose, benchmark):
         search_parser.add_argument("--qa-mode", choices=("off", "all", "selective"), default="off")
         search_parser.add_argument("--qa-path", type=Path, help="Локальный каталог экспериментального QA")
+        search_parser.add_argument("--representation-mode", choices=MODES, default="off")
+        search_parser.add_argument("--representation-index", type=Path, help="Отдельный индекс поисковых представлений")
 
     return parser
 

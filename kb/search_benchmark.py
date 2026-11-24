@@ -42,6 +42,8 @@ def _metrics(case, ranked, answer, used):
         result["relevant_sources"] = len(targets & set(used)) / max(1, len(used))
         result["extra_sources"] = float(bool(set(used) - targets))
         result["answered"] = float(bool(used))
+        if case.get("status") in (None, "full", "partial"):
+            result["false_refusal"] = float(not used)
     else:
         result["correct_abstention"] = float(not used)
         result["false_positive"] = float(bool(used))
@@ -63,7 +65,8 @@ def summarize(rows):
 
 
 def evaluate(root, units, cases_path, split, method, output=None, reranker_path=None, *,
-             index_path=None, depth=DEFAULT_DEPTH, qa_path=None, qa_mode="off"):
+             index_path=None, depth=DEFAULT_DEPTH, qa_path=None, qa_mode="off",
+             representation_mode="off", representation_index=None):
     load_start = perf_counter()
     cases = json.loads(Path(cases_path).read_text())
     cases = [case for case in cases if split == "all" or case["split"] == split]
@@ -72,6 +75,13 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
     engine = None
     reranker = None
     reader = None
+    representations = None
+    if representation_mode != "off":
+        if method == "legacy":
+            raise ValueError("Дополнительное представление требует структурного поиска.")
+        from .representation import get_representation
+
+        representations = get_representation(root, representation_index)
     if method == "legacy":
         status, tags = _index_snapshot(root, None)
     else:
@@ -116,13 +126,18 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
         else:
             result, info = engine.ask(q, units, method="hybrid" if method in ("links", "cross_encoder") else method,
                                       links=method == "links", reranker=reranker, depth=depth,
-                                      reader=reader, qa_mode=qa_mode)
+                                      reader=reader, qa_mode=qa_mode, representations=representations,
+                                      representation_mode=representation_mode)
             ranking = info["ranked_cards"]
             times = info["seconds"]
         answer = result.answer if result else ""
         used = [u.id for u in result.units] if result else []
-        rows.append({"query": q, "domain": case["domain"], "type": case.get("type", case.get("status", "unknown")),
+        rows.append({"id": case.get("id"), "query": q, "domain": case["domain"],
+                     "type": case.get("type", case.get("status", "unknown")),
                      "ranking": list(dict.fromkeys(ranking))[:10], "sources": used, "answer": answer,
+                     "state": info["state"] if engine is not None else None,
+                     "selected": info["selected"] if engine is not None else [],
+                     "unanswered": info["unanswered"] if engine is not None else [],
                      "seconds": {**times, "total": perf_counter() - start},
                      "metrics": _metrics(case, ranking, answer, used)})
     try:
@@ -139,7 +154,13 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
         from .retrieval import FIELD_WEIGHTS, RRF_K, POOL, DENSE_WEIGHTS
         report["retrieval_index"] = engine.metadata
         report["config"] = dict(field_weights=FIELD_WEIGHTS, rrf_k=RRF_K, candidate_pool=POOL,
-                                dense_weight=DENSE_WEIGHTS, evidence_depth=depth, qa_mode=qa_mode)
+                                dense_weight=DENSE_WEIGHTS, evidence_depth=depth, qa_mode=qa_mode,
+                                representation_mode=representation_mode)
+        if representations is not None:
+            from .representation import CHANNEL_WEIGHTS
+
+            report["representation_index"] = representations.metadata
+            report["config"]["representation_weights"] = CHANNEL_WEIGHTS
     if reranker_path:
         weights = Path(reranker_path) / "model.safetensors"
         report["reranker"] = {"directory": str(reranker_path)}

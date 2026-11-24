@@ -190,6 +190,23 @@ class EvidenceScorer:
         return sorted((self.assess(card, i) for i, card in enumerate(self.ranked)),
                       key=self.priority, reverse=True)
 
+    def has_answer_material(self, blocks):
+        """A stated task alone is thematic evidence for a request about a mechanism."""
+        if not {"mechanism", "procedure", "design", "quantity"} & set(self.query.intents):
+            return True
+        if "definition" in self.query.intents:
+            return True
+        for block in blocks:
+            path = self.engine.passages[block.index].heading
+            if path and normalize(path[-1]) in {"условие", "задача", "постановка задачи", "цель проверки"}:
+                continue
+            if path and normalize(path[-1]) == "подход" and re.search(
+                    r"\b(?:должен|должна|нужен|нужно|необходимо)\b", block.text, re.I):
+                if not re.search(r"[.!?]\s+\S", block.text.strip()):
+                    continue
+            return True
+        return False
+
     def covers(self, block):
         """A directly matched section can answer a facet selected elsewhere."""
         passage = self.engine.passages[block.index]

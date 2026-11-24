@@ -16,6 +16,7 @@ from .extractive import ExtractiveResult
 from .passage_index import INDEX, VERSION, Passage, close_code_fence, corpus_key
 from .qa_reader import apply_reader
 from .query import Query, facets, terms, with_facet_context
+from .representation import CHANNEL_WEIGHTS
 from .vector_store import VectorIndexError, _embedder, source_fingerprint
 
 POOL = 30
@@ -78,15 +79,21 @@ class Retrieval:
                 scores[ix] += self.idf[term] * 2.2 * tf / (1.2 + tf)
         return scores
 
-    def dense(self, query):
-        import numpy as np
-
+    def _query_vector(self, query):
         before = perf_counter()
         prompt = self.metadata.get("query_prefix", "") + query.normalized
         vector = _embedder("sentence-transformers", self.metadata["model"]).embed_query(prompt)
-        duration = perf_counter() - before
+        return vector, perf_counter() - before
+
+    def _dense_values(self, vector):
+        import numpy as np
+
         values = self.matrix @ np.asarray(vector, dtype=self.matrix.dtype)
-        return np.maximum.reduceat(values, self.starts), duration
+        return np.maximum.reduceat(values, self.starts)
+
+    def dense(self, query):
+        vector, duration = self._query_vector(query)
+        return self._dense_values(vector), duration
 
     def _pool(self, scores, allowed, minimum):
         cards = {}
@@ -96,11 +103,19 @@ class Retrieval:
             cards.setdefault(self.passages[ix].card_id, ix)
         return cards
 
-    def rank(self, query, method, domain=None, links=False, reranker=None):
+    def rank(self, query, method, domain=None, links=False, reranker=None, *,
+             representations=None, representation_mode="off"):
         begin = perf_counter()
         allowed = [i for i, p in enumerate(self.passages) if not domain or p.domain == domain]
         lexical = self.lexical(query)
-        dense, embedding = self.dense(query) if method != "bm25" else (lexical * 0, 0)
+        dense_query = representations is not None and representation_mode in ("questions", "combined")
+        if dense_query:
+            if representations.metadata["model"] != self.metadata["model"] or self.metadata.get("query_prefix"):
+                raise VectorIndexError("Индексы исходных блоков и вопросов должны использовать одну MiniLM.")
+            vector, embedding = self._query_vector(query)
+            dense = self._dense_values(vector) if method != "bm25" else lexical * 0
+        else:
+            dense, embedding = self.dense(query) if method != "bm25" else (lexical * 0, 0)
         bm25 = self._pool(lexical, allowed, 0)
         semantic = self._pool(dense, allowed, -2) if method != "bm25" else {}
         rrf = defaultdict(float)
@@ -109,6 +124,15 @@ class Retrieval:
             channels = channels[:1]
         elif method == "dense":
             channels = channels[1:]
+        additional = {}
+        if representations is not None and representation_mode != "off":
+            allowed_cards = {self.passages[i].card_id for i in allowed}
+            if representation_mode in ("metadata", "combined"):
+                additional["metadata"] = representations.lexical(query, allowed_cards, POOL)
+            if dense_query:
+                additional["questions"] = representations.dense(vector, allowed_cards, POOL)
+            channels += tuple((dict.fromkeys(key for key, _, _ in rows), CHANNEL_WEIGHTS[name])
+                              for name, rows in additional.items())
         for channel, weight in channels:
             for rank, card in enumerate(channel, 1):
                 rrf[card] += weight / (RRF_K + rank)
@@ -143,6 +167,8 @@ class Retrieval:
             pairs = []
             for card in leaders:
                 ix = bm25.get(card, semantic.get(card))
+                if ix is None:
+                    ix = max(self.cards[card], key=lambda i: dense[i])
                 p = self.passages[ix]
                 pairs.append((query.normalized, f"{p.title} {' / '.join(p.heading)}\n{p.text}"))
             scores = reranker.predict(pairs, batch_size=12, show_progress_bar=False)
@@ -152,6 +178,11 @@ class Retrieval:
             "bm25": [(c, round(float(lexical[i]), 4)) for c, i in bm25.items()],
             "dense": [(c, round(float(dense[i]), 4)) for c, i in semantic.items()],
             "fusion": base, "reranked": rank, "cross_encoder_scores": reranker_scores,
+            "representations": {
+                name: [{"card": key, "score": round(value, 4), "provenance": origin}
+                       for key, value, origin in rows]
+                for name, rows in additional.items()
+            },
             "seconds": {"embedding": embedding, "retrieval": rerank_started - begin - embedding,
                         "rerank": perf_counter() - rerank_started},
         }
@@ -171,7 +202,7 @@ class Retrieval:
                 for group in groups.values()]
 
     def ask(self, question, units, method="hybrid", domain=None, links=False, reranker=None, *,
-            depth=DEFAULT_DEPTH, reader=None, qa_mode="off"):
+            depth=DEFAULT_DEPTH, reader=None, qa_mode="off", representations=None, representation_mode="off"):
         grouped = defaultdict(list)
         diagnostics = []
         selections = []
@@ -189,7 +220,13 @@ class Retrieval:
             if query is bare:
                 previous = bare
             needs_clarification = lacks_referent(bare) and query is bare
-            ranked, evidence, lexical, dense, details = self.rank(query, method, domain, links, reranker)
+            if representations is None or representation_mode == "off":
+                ranked, evidence, lexical, dense, details = self.rank(query, method, domain, links, reranker)
+            else:
+                ranked, evidence, lexical, dense, details = self.rank(
+                    query, method, domain, links, reranker,
+                    representations=representations, representation_mode=representation_mode,
+                )
             rankings.append(ranked)
             timings.update(details["seconds"])
             started = perf_counter()
@@ -203,7 +240,10 @@ class Retrieval:
             qa_elapsed = perf_counter() - qa_start
             timings["qa"] += qa_elapsed
             chosen = [] if needs_clarification else choose_sections(candidates, scorer)
-            if not chosen:
+            if chosen and not scorer.has_answer_material(chosen):
+                details["reason"] = "overview_without_answer"
+                chosen = []
+            elif not chosen:
                 details["reason"] = "unspecified_referent" if needs_clarification else "insufficient_evidence"
             selections.append((part, scorer, details, chosen))
             details["checked_candidates"] = [
@@ -226,7 +266,8 @@ class Retrieval:
                           and a.text in b.text for a in chosen for b in retained)
             if visible:
                 continue
-            if any(scorer.covers(block) for block in retained):
+            if (details.get("reason") != "unspecified_referent"
+                    and any(scorer.has_answer_material([block]) and scorer.covers(block) for block in retained)):
                 details["reason"] = "covered_in_selected_sections"
             else:
                 missing.append(part)
@@ -258,7 +299,9 @@ class Retrieval:
             state = "partial" if missing or overflow else "complete"
         elif clarification or overflow:
             state = "clarification"
-        elif any(cos >= .49 and coverage >= .30 for part in diagnostics for _, (cos, coverage) in part["evidence"]):
+        elif (any(part.get("reason") == "overview_without_answer" for part in diagnostics)
+              or any(cos >= .49 and coverage >= .30
+                     for part in diagnostics for _, (cos, coverage) in part["evidence"])):
             state = "related_only"
         else:
             state = "absent"

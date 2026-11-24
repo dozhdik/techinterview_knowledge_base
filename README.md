@@ -9,11 +9,11 @@ CLI-инструмент для управления базой знаний п�
 
 ```bash
 cd ~/techinterview_knowledge_base
-.venv-rag/bin/python main.py vector-status
+.venv-rag/bin/python main.py passage-build
 ./scripts/run_rag.sh
 ```
 
-Откройте http://127.0.0.1:8000. Чат выполняет гибридный поиск и показывает целые разделы карточки с отдельной ссылкой на источник. Ollama и интернет для этого сценария не требуются. Генерация остаётся необязательной: она включается только при `RAG_ENABLED=true` вместе с `RAG_BASE_URL` и `RAG_MODEL`. Подробности и ограничения — в [документации](docs/extractive_search.md).
+Откройте http://127.0.0.1:8000. Чат объединяет BM25 и семантический поиск, извлекает исходные блоки Markdown и показывает ссылки на использованные карточки. После изменения карточек выполните `passage-build` повторно. Ollama и интернет для этого сценария не требуются. Генерация остаётся необязательной: она включается только при `RAG_ENABLED=true` вместе с `RAG_BASE_URL` и `RAG_MODEL`. Подробности и ограничения — в [документации по поиску](docs/extractive_search.md) и [отчёте benchmark](docs/retrieval_benchmark.md).
 
 ---
 

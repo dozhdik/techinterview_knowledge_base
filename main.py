@@ -185,6 +185,39 @@ def cmd_vector_search(args) -> None:
         print(f"  {hit.text[:220].replace(chr(10), ' ')}")
 
 
+def cmd_passage_build(args) -> None:
+    import json
+
+    from kb.passage_index import build
+    print(json.dumps(build(KB_ROOT), ensure_ascii=False, indent=2))
+
+
+def cmd_search_diagnose(args) -> None:
+    import json
+    from time import perf_counter
+
+    from kb.retrieval import configured_reranker, get_engine
+    started = perf_counter()
+    engine = get_engine(KB_ROOT)
+    ready = perf_counter()
+    answer, debug = engine.ask(args.question, _load_units(), domain=args.domain,
+                               links=args.links, reranker=configured_reranker())
+    debug["answer"] = answer.answer if answer else None
+    debug["seconds"]["startup"] = ready - started
+    debug["seconds"]["total"] = perf_counter() - started
+    print(json.dumps(debug, ensure_ascii=False, indent=2))
+
+
+def cmd_search_benchmark(args) -> None:
+    import json
+
+    from kb.search_benchmark import evaluate
+    report = evaluate(KB_ROOT, _load_units(), args.cases, args.split, args.method,
+                      args.output, args.reranker)
+    print(json.dumps({k: report[k] for k in ("overall", "warm", "by_domain", "by_type")},
+                     ensure_ascii=False, indent=2))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="main.py",
@@ -302,6 +335,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_vector_status.add_argument("--index", help="Путь к SQLite-индексу")
     p_vector_status.set_defaults(func=cmd_vector_status)
+
+    build_passages = subparsers.add_parser("passage-build", help="Обновить структурный индекс Markdown")
+    build_passages.set_defaults(func=cmd_passage_build)
+
+    diagnose = subparsers.add_parser("search-diagnose", help="Показать этапы гибридного поиска")
+    diagnose.add_argument("question")
+    diagnose.add_argument("--domain", choices=("cs", "arch", "process", "global"))
+    diagnose.add_argument("--links", action="store_true")
+    diagnose.set_defaults(func=cmd_search_diagnose)
+
+    benchmark = subparsers.add_parser("search-benchmark", help="Оценить поиск по размеченным запросам")
+    benchmark.add_argument("--cases", type=Path, default=KB_ROOT / "evaluation/search_cases.json")
+    benchmark.add_argument("--split", choices=("development", "test", "all"), default="test")
+    benchmark.add_argument("--method", choices=("legacy", "bm25", "dense", "plain_rrf", "hybrid", "links",
+                                              "cross_encoder"), default="hybrid")
+    benchmark.add_argument("--reranker", help="Локальный каталог модели Cross-Encoder")
+    benchmark.add_argument("--output", type=Path, required=True)
+    benchmark.set_defaults(func=cmd_search_benchmark)
 
     return parser
 

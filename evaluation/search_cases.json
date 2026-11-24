@@ -1,0 +1,3534 @@
+[
+  {
+    "query": "Как раздать входящие соединения нескольким здоровым серверам?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "development",
+    "group": "ARCH-COMPONENT-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-001",
+        "grade": 2,
+        "sections": [
+          "Алгоритмы балансировки"
+        ],
+        "facts": [
+          "Round Robin"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что произойдёт с закешированным чтением после записи в основное хранилище?",
+    "domain": "arch",
+    "type": "tradeoff",
+    "split": "development",
+    "group": "ARCH-COMPONENT-002",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-002",
+        "grade": 2,
+        "sections": [
+          "Проблемы и решения"
+        ],
+        "facts": [
+          "кеш"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Зачем отделять постановку фоновой работы от её исполнения через очередь?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "test",
+    "group": "ARCH-COMPONENT-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-003",
+        "grade": 2,
+        "sections": [
+          "Назначение"
+        ],
+        "facts": [
+          "асинхрон"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Какой компонент даёт клиенту одну точку входа в микросервисы?",
+    "domain": "arch",
+    "type": "definition",
+    "split": "development",
+    "group": "ARCH-COMPONENT-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-004",
+        "grade": 2,
+        "sections": [
+          "Назначение"
+        ],
+        "facts": [
+          "маршрутиз"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Где хранить большие файлы по ключу вместе с метаданными?",
+    "domain": "arch",
+    "type": "definition",
+    "split": "development",
+    "group": "ARCH-COMPONENT-006",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-006",
+        "grade": 2,
+        "sections": [
+          "Как работает"
+        ],
+        "facts": [
+          "объект"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Зачем полнотекстовому движку инвертированный индекс?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "test",
+    "group": "ARCH-COMPONENT-007",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-007",
+        "grade": 2,
+        "sections": [
+          "Как работает"
+        ],
+        "facts": [
+          "инвертирован"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как дать базе читать с нескольких копий и что это меняет для записи?",
+    "domain": "arch",
+    "type": "tradeoff",
+    "split": "development",
+    "group": "ARCH-COMPONENT-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-008",
+        "grade": 2,
+        "sections": [
+          "Как работает"
+        ],
+        "facts": [
+          "реплик"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как хранить связанные таблицы и проверять связи между строками?",
+    "domain": "arch",
+    "type": "definition",
+    "split": "test",
+    "group": "ARCH-COMPONENT-009",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-009",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "SQL"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда вложенные записи удобнее хранить в документе?",
+    "domain": "arch",
+    "type": "tradeoff",
+    "split": "test",
+    "group": "ARCH-COMPONENT-010",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-010",
+        "grade": 2,
+        "sections": [
+          "Практический пример"
+        ],
+        "facts": [
+          "документ"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Куда за адресом хоста пойдёт приложение и зачем кешировать ответ по TTL?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "test",
+    "group": "ARCH-COMPONENT-011",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-011",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "TTL"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как экземпляр приложения узнаёт текущие адреса других сервисов?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "development",
+    "group": "ARCH-COMPONENT-012",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-012",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "реестр"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как проксировать внешние запросы к внутренним приложениям?",
+    "domain": "arch",
+    "type": "definition",
+    "split": "test",
+    "group": "ARCH-COMPONENT-013",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-013",
+        "grade": 2,
+        "sections": [
+          "Назначение"
+        ],
+        "facts": [
+          "прокси"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как запускать периодическую работу и избегать повторного выполнения?",
+    "domain": "arch",
+    "type": "practice",
+    "split": "development",
+    "group": "ARCH-COMPONENT-015",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-015",
+        "grade": 2,
+        "sections": [
+          "Практический пример"
+        ],
+        "facts": [
+          "задач"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Чем распределённая трассировка полезна рядом с метриками и логами?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "test",
+    "group": "ARCH-COMPONENT-017",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-017",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "трасс"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как включить новую возможность части пользователей без очередного деплоя?",
+    "domain": "arch",
+    "type": "practice",
+    "split": "test",
+    "group": "ARCH-COMPONENT-018",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-018",
+        "grade": 2,
+        "sections": [
+          "Практический пример"
+        ],
+        "facts": [
+          "пользовател"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему истечение аренды распределённого lock опасно для старого владельца?",
+    "domain": "arch",
+    "type": "pitfall",
+    "split": "test",
+    "group": "ARCH-COMPONENT-020",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-020",
+        "grade": 2,
+        "sections": [
+          "Ограничения"
+        ],
+        "facts": [
+          "аренд"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Зачем поточному обработчику хранить позицию чтения событий?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "development",
+    "group": "ARCH-COMPONENT-025",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-025",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "событи"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как избежать создания отдельного соединения к БД на каждый запрос?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "development",
+    "group": "ARCH-COMPONENT-028",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-028",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "соединени"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как убедиться, что данные действительно можно поднять из бэкапа?",
+    "domain": "arch",
+    "type": "practice",
+    "split": "development",
+    "group": "ARCH-COMPONENT-029",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-029",
+        "grade": 2,
+        "sections": [
+          "Практический пример"
+        ],
+        "facts": [
+          "восстанов"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как избежать двойного списания при повторе одного запроса оплаты?",
+    "domain": "arch",
+    "type": "pitfall",
+    "split": "development",
+    "group": "ARCH-DESIGNPAT-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-001",
+        "grade": 2,
+        "sections": [
+          "Практический пример"
+        ],
+        "facts": [
+          "idempotency key"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как повторять временно неуспешные вызовы без лавины одновременных запросов?",
+    "domain": "arch",
+    "type": "practice",
+    "split": "development",
+    "group": "ARCH-DESIGNPAT-002",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-002",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "jitter"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как временно прекратить вызовы зависимого сервиса, который постоянно падает?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "test",
+    "group": "ARCH-DESIGNPAT-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-003",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "вызов"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как не дать одному перегруженному классу запросов занять все ресурсы?",
+    "domain": "arch",
+    "type": "practice",
+    "split": "development",
+    "group": "ARCH-DESIGNPAT-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-004",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "ресурс"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Чем компенсировать уже выполненные шаги при ошибке позднего шага распределённой операции?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "test",
+    "group": "ARCH-DESIGNPAT-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-005",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "компенсац"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как записать бизнес-изменение и намерение отправить событие одной транзакцией?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "development",
+    "group": "ARCH-DESIGNPAT-006",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-006",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "транзакц"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Зачем системе разные представления для записи и чтения?",
+    "domain": "arch",
+    "type": "tradeoff",
+    "split": "development",
+    "group": "ARCH-DESIGNPAT-007",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-007",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "чтени"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Кто заполняет кеш после промаха при cache miss?",
+    "domain": "arch",
+    "type": "principle",
+    "split": "development",
+    "group": "ARCH-DESIGNPAT-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-008",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "кеш"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как распределить общий таймаут запроса по цепочке зависимостей?",
+    "domain": "arch",
+    "type": "practice",
+    "split": "development",
+    "group": "ARCH-DESIGNPAT-009",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-009",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "deadline"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как хранить переписку и доставлять сообщения онлайн-получателям?",
+    "domain": "arch",
+    "type": "design",
+    "split": "development",
+    "group": "ARCH-SYSDESIGN-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-001",
+        "grade": 2,
+        "sections": [
+          "Шаг 6: Углубление по компонентам"
+        ],
+        "facts": [
+          "сообщени"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как разнести доставку уведомлений по каналам и повторять сбои?",
+    "domain": "arch",
+    "type": "design",
+    "split": "development",
+    "group": "ARCH-SYSDESIGN-002",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-002",
+        "grade": 2,
+        "sections": [
+          "Шаг 6: Углубление по компонентам"
+        ],
+        "facts": [
+          "очеред"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как не дать отдельному клиенту исчерпать пропускную способность API?",
+    "domain": "arch",
+    "type": "design",
+    "split": "test",
+    "group": "ARCH-SYSDESIGN-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-003",
+        "grade": 2,
+        "sections": [
+          "Шаг 4: Deep Dive"
+        ],
+        "facts": [
+          "Token Bucket"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как подсказывать продолжение запроса за небольшую задержку при наборе текста?",
+    "domain": "arch",
+    "type": "design",
+    "split": "development",
+    "group": "ARCH-SYSDESIGN-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-004",
+        "grade": 2,
+        "sections": [
+          "Шаг 4: Модель данных и индекс"
+        ],
+        "facts": [
+          "trie"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как проектировать короткую ссылку с перенаправлением на длинный адрес?",
+    "domain": "arch",
+    "type": "design",
+    "split": "development",
+    "group": "ARCH-SYSDESIGN-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-005",
+        "grade": 2,
+        "sections": [
+          "Шаг 4: Deep Dive"
+        ],
+        "facts": [
+          "URL"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда заранее разносить публикацию подписчикам, а когда собирать выдачу на чтении?",
+    "domain": "arch",
+    "type": "design",
+    "split": "test",
+    "group": "ARCH-SYSDESIGN-006",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-006",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "чтени"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как адаптировать качество видео при нестабильном канале?",
+    "domain": "arch",
+    "type": "design",
+    "split": "test",
+    "group": "ARCH-SYSDESIGN-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-008",
+        "grade": 2,
+        "sections": [
+          "Практический пример"
+        ],
+        "facts": [
+          "битрейт"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как хранить переходы состояния оплаты при повторных запросах?",
+    "domain": "arch",
+    "type": "design",
+    "split": "development",
+    "group": "ARCH-SYSDESIGN-009",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-009",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "идемпотент"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как организовать приём и поиск журналов множества сервисов?",
+    "domain": "arch",
+    "type": "design",
+    "split": "development",
+    "group": "ARCH-SYSDESIGN-012",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-012",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "лог"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как не продать дважды одно и то же место при одновременных запросах?",
+    "domain": "arch",
+    "type": "design",
+    "split": "test",
+    "group": "ARCH-SYSDESIGN-014",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-014",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "мест"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как хранить исходное фото и раздавать уменьшенные версии через CDN?",
+    "domain": "arch",
+    "type": "design",
+    "split": "development",
+    "group": "ARCH-SYSDESIGN-017",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-SYSDESIGN-017",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "изображени"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Чем приходится пожертвовать при сетевом разделении распределённой БД?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "development",
+    "group": "ARCH-TRADEOFF-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-001",
+        "grade": 2,
+        "sections": [
+          "Суть компромисса"
+        ],
+        "facts": [
+          "partition"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда стоит выделить отдельно развёртываемые сервисы из единого приложения?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "test",
+    "group": "ARCH-TRADEOFF-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-003",
+        "grade": 2,
+        "sections": [
+          "Суть компромисса"
+        ],
+        "facts": [
+          "микросервис"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда клиенту выгодно запрашивать выбранные поля вместо фиксированного ресурса REST?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "test",
+    "group": "ARCH-TRADEOFF-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-004",
+        "grade": 2,
+        "sections": [
+          "Суть компромисса"
+        ],
+        "facts": [
+          "GraphQL"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда размер данных и запись оправдывают разделение БД на узлы?",
+    "domain": "arch",
+    "type": "tradeoff",
+    "split": "test",
+    "group": "ARCH-TRADEOFF-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-005",
+        "grade": 2,
+        "sections": [
+          "Суть компромисса"
+        ],
+        "facts": [
+          "sharding"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Лучше периодически опрашивать сервер или держать двустороннее соединение?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "development",
+    "group": "ARCH-TRADEOFF-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-008",
+        "grade": 2,
+        "sections": [
+          "Суть выбора"
+        ],
+        "facts": [
+          "WebSocket"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что меняется, если запись ждёт подтверждения реплики?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "development",
+    "group": "ARCH-TRADEOFF-010",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-010",
+        "grade": 2,
+        "sections": [
+          "Суть выбора"
+        ],
+        "facts": [
+          "реплик"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что выбрать для типизированных внутренних вызовов, REST или RPC поверх HTTP/2?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "development",
+    "group": "ARCH-TRADEOFF-012",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-012",
+        "grade": 2,
+        "sections": [
+          "Суть выбора"
+        ],
+        "facts": [
+          "gRPC"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда пакетная обработка уступает по задержке обработке событий на лету?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "test",
+    "group": "ARCH-TRADEOFF-013",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-013",
+        "grade": 2,
+        "sections": [
+          "Суть выбора"
+        ],
+        "facts": [
+          "stream"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как TTL в кеше связан с риском показать старое значение?",
+    "domain": "arch",
+    "type": "tradeoff",
+    "split": "test",
+    "group": "ARCH-TRADEOFF-015",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-015",
+        "grade": 2,
+        "sections": [
+          "Ограничения"
+        ],
+        "facts": [
+          "TTL"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что даёт последовательный ключ по сравнению со случайным для вставок в индекс?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "development",
+    "group": "ARCH-TRADEOFF-017",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-017",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "индекс"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Чем доступ к объектам по API отличается от доступа к блочному устройству?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "development",
+    "group": "ARCH-TRADEOFF-019",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-019",
+        "grade": 2,
+        "sections": [
+          "Практический пример"
+        ],
+        "facts": [
+          "диск"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда выгоднее добавить экземпляры приложения вместо увеличения памяти одного узла?",
+    "domain": "arch",
+    "type": "comparison",
+    "split": "development",
+    "group": "ARCH-TRADEOFF-020",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-TRADEOFF-020",
+        "grade": 2,
+        "sections": [
+          "Когда выбирать"
+        ],
+        "facts": [
+          "горизонталь"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как свойство порядка ключей позволяет искать в поддереве?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "test",
+    "group": "CS-CONCEPT-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-001",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "поддерев"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему вставка в середину непрерывного массива дороже доступа по индексу?",
+    "domain": "cs",
+    "type": "complexity",
+    "split": "development",
+    "group": "CS-CONCEPT-002",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-002",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "O(n)"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что хранить, чтобы быстро проверять начало слова в словаре?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "test",
+    "group": "CS-CONCEPT-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-003",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "префикс"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как быстро объединять группы и проверять принадлежность к одной компоненте?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "test",
+    "group": "CS-CONCEPT-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-004",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "union"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как упорядочить задачи с зависимостями и распознать невозможный порядок?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "development",
+    "group": "CS-CONCEPT-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-005",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "цикл"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "На каком уровне изоляции возможны грязные чтения?",
+    "domain": "cs",
+    "type": "tradeoff",
+    "split": "development",
+    "group": "CS-CONCEPT-006",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-006",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "Read Uncommitted"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что вызывает циклическое ожидание блокировок между потоками?",
+    "domain": "cs",
+    "type": "pitfall",
+    "split": "development",
+    "group": "CS-CONCEPT-007",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-007",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "ожидани"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему редкое копирование массива совместимо с постоянной амортизированной ценой append?",
+    "domain": "cs",
+    "type": "complexity",
+    "split": "development",
+    "group": "CS-CONCEPT-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-008",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "амортиз"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему словарь может сразу найти бакет по ключу без перебора всех записей?",
+    "domain": "cs",
+    "type": "definition",
+    "split": "test",
+    "group": "CS-CONCEPT-009",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-009",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "хеш-функци"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "От чего зависит худший случай сортировки вокруг pivot?",
+    "domain": "cs",
+    "type": "complexity",
+    "split": "development",
+    "group": "CS-CONCEPT-010",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-010",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "O(n²)"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда в цепочке узлов можно вставить значение без сдвига соседних элементов?",
+    "domain": "cs",
+    "type": "tradeoff",
+    "split": "development",
+    "group": "CS-CONCEPT-011",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-011",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "указател"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что использовать, если последним добавленный элемент надо снять первым?",
+    "domain": "cs",
+    "type": "definition",
+    "split": "development",
+    "group": "CS-CONCEPT-012",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-012",
+        "grade": 2,
+        "sections": [
+          "Определение"
+        ],
+        "facts": [
+          "LIFO"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что выбрать, если добавляю с одного конца и удаляю с другого?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "development",
+    "group": "CS-CONCEPT-013",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-013",
+        "grade": 2,
+        "sections": [
+          "Определение"
+        ],
+        "facts": [
+          "FIFO"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как получать следующий элемент по приоритету без полной сортировки?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-CONCEPT-014",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-014",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "O(log n)"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как отличаются матрица рёбер и списки соседей по памяти?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "development",
+    "group": "CS-CONCEPT-015",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-015",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "матриц"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Сколько времени и памяти занимает волновой обход графа у BFS?",
+    "domain": "cs",
+    "type": "complexity",
+    "split": "test",
+    "group": "CS-CONCEPT-016",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-016",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "O(V + E)"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему рекурсивный DFS опасен на длинной цепочке?",
+    "domain": "cs",
+    "type": "pitfall",
+    "split": "test",
+    "group": "CS-CONCEPT-017",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-017",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "глубин"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как найти первое значение не меньше заданного при дубликатах?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-CONCEPT-018",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-018",
+        "grade": 2,
+        "sections": [
+          "Реализация левой границы"
+        ],
+        "facts": [
+          "позици"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Цена сортировки, которая сначала упорядочивает половины, а затем их сливает?",
+    "domain": "cs",
+    "type": "complexity",
+    "split": "development",
+    "group": "CS-CONCEPT-019",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-019",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "O(n log n)"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как не вычислять многократно одинаковые подзадачи при поиске оптимума?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "development",
+    "group": "CS-CONCEPT-020",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-020",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "состояни"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Зачем рекурсивной функции базовый случай?",
+    "domain": "cs",
+    "type": "pitfall",
+    "split": "test",
+    "group": "CS-CONCEPT-021",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-021",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "базов"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что отражает O(n), если константы времени выполнения отличаются?",
+    "domain": "cs",
+    "type": "complexity",
+    "split": "development",
+    "group": "CS-CONCEPT-022",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-022",
+        "grade": 2,
+        "sections": [
+          "Определение"
+        ],
+        "facts": [
+          "рост"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как включить и проверить отдельный бит в наборе флагов?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-CONCEPT-023",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-023",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "маск"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как проверить возможное членство, если ложное попадание допустимо?",
+    "domain": "cs",
+    "type": "tradeoff",
+    "split": "development",
+    "group": "CS-CONCEPT-024",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-024",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "ложн"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему дисковые индексы используют дерево с большим числом потомков?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "development",
+    "group": "CS-CONCEPT-025",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-025",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "узел"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что разделяют потоки одного приложения и как они отличаются от процессов?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "development",
+    "group": "CS-CONCEPT-026",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-026",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "памят"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что выбрать для одного владельца ресурса и что для N одновременных владельцев?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "development",
+    "group": "CS-CONCEPT-027",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-027",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "семафор"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Какой транспорт гарантирует последовательность байтов, а какой передаёт дейтаграммы?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "development",
+    "group": "CS-CONCEPT-028",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-028",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "TCP"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как имя веб-хоста превращается в IP и откуда берётся кеш?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "development",
+    "group": "CS-CONCEPT-029",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-029",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "резолвер"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что есть в HTTP-запросе помимо тела?",
+    "domain": "cs",
+    "type": "definition",
+    "split": "development",
+    "group": "CS-CONCEPT-030",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-030",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "заголов"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как TLS проверяет подлинность сервера по сертификату?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "test",
+    "group": "CS-CONCEPT-031",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-031",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "сертификат"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему ускорение чтения индексом обходится дороже при записи?",
+    "domain": "cs",
+    "type": "tradeoff",
+    "split": "development",
+    "group": "CS-CONCEPT-032",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-032",
+        "grade": 2,
+        "sections": [
+          "Границы и ошибки"
+        ],
+        "facts": [
+          "индекс"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как уменьшить аномалии изменений из-за повторения одних и тех же данных?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "development",
+    "group": "CS-CONCEPT-033",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-033",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "зависим"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как запрос читает снимок, пока другая транзакция обновляет строку?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "test",
+    "group": "CS-CONCEPT-034",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-034",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "верси"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Какое свойство транзакции гарантирует «всё или ничего»?",
+    "domain": "cs",
+    "type": "definition",
+    "split": "test",
+    "group": "CS-CONCEPT-035",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-035",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "атомар"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда изменения в БД фиксируются и что делает откат?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "test",
+    "group": "CS-CONCEPT-036",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-036",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "commit"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Где живут кадры вызовов и где выделяют динамические объекты?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "development",
+    "group": "CS-CONCEPT-037",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-037",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "стек"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда рантайм может освободить память, до которой программа уже не доберётся?",
+    "domain": "cs",
+    "type": "principle",
+    "split": "development",
+    "group": "CS-CONCEPT-038",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-038",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "достижим"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что происходит при росте load factor и как разрешать коллизии?",
+    "domain": "cs",
+    "type": "tradeoff",
+    "split": "test",
+    "group": "CS-CONCEPT-039",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-039",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "chaining"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как порядок колонок в составном PostgreSQL B-tree влияет на range scan?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-CONCEPT-040",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-040",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "ведущ"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Может ли повтор DELETE вернуть другой код и остаться идемпотентным?",
+    "domain": "cs",
+    "type": "pitfall",
+    "split": "development",
+    "group": "CS-CONCEPT-041",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-041",
+        "grade": 2,
+        "sections": [
+          "Пример повтора"
+        ],
+        "facts": [
+          "повтор"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как двумя указателями разной скорости обнаружить зацикленный список?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "test",
+    "group": "CS-PATTERN-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-001",
+        "grade": 2,
+        "sections": [
+          "Суть паттерна"
+        ],
+        "facts": [
+          "цикл"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как исследовать дерево вариантов, откатывая частичное решение?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PATTERN-002",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-002",
+        "grade": 2,
+        "sections": [
+          "Суть паттерна"
+        ],
+        "facts": [
+          "откат"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как обосновать локально лучший выбор в жадном алгоритме?",
+    "domain": "cs",
+    "type": "tradeoff",
+    "split": "development",
+    "group": "CS-PATTERN-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-003",
+        "grade": 2,
+        "sections": [
+          "Доказуемый greedy и эвристика"
+        ],
+        "facts": [
+          "обмен"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как отвечать на много запросов суммы отрезка без повторного прохода?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PATTERN-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-004",
+        "grade": 2,
+        "sections": [
+          "Вариант A: одномерный префикс и запрос суммы на отрезке"
+        ],
+        "facts": [
+          "префикс"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как искать минимально допустимый ответ по монотонному предикату?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PATTERN-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-005",
+        "grade": 2,
+        "sections": [
+          "Суть паттерна"
+        ],
+        "facts": [
+          "монотон"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как двигать границы окна для поиска подстроки без повторов?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PATTERN-007",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-007",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "окн"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как быстро найти следующий больший элемент массива?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PATTERN-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-008",
+        "grade": 2,
+        "sections": [
+          "Пример"
+        ],
+        "facts": [
+          "стек"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как держать K самых больших элементов в памяти при просмотре потока?",
+    "domain": "cs",
+    "type": "complexity",
+    "split": "development",
+    "group": "CS-PATTERN-009",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-009",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "куч"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как найти расстояния до ближайшего из нескольких источников в графе?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PATTERN-013",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-013",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "очеред"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему ребро в активную вершину DFS означает цикл ориентированного графа?",
+    "domain": "cs",
+    "type": "pitfall",
+    "split": "development",
+    "group": "CS-PATTERN-014",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PATTERN-014",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "активн"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Зачем при переборе вариантов откатывать состояние после рекурсивного вызова?",
+    "domain": "cs",
+    "type": "pitfall",
+    "split": "development",
+    "group": "CS-PITFALL-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PITFALL-001",
+        "grade": 2,
+        "sections": [
+          "Почему это проблема"
+        ],
+        "facts": [
+          "откат"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Можно ли брать первый найденный DFS путь за самый короткий?",
+    "domain": "cs",
+    "type": "pitfall",
+    "split": "development",
+    "group": "CS-PITFALL-002",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PITFALL-002",
+        "grade": 2,
+        "sections": [
+          "Почему это проблема"
+        ],
+        "facts": [
+          "BFS"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как смешение закрытых и открытых границ приводит к зацикливанию binary search?",
+    "domain": "cs",
+    "type": "pitfall",
+    "split": "development",
+    "group": "CS-PITFALL-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PITFALL-003",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "границ"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как проверить что закрывающие скобки идут в допустимом порядке?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "test",
+    "group": "CS-PROBLEM-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-001",
+        "grade": 2,
+        "sections": [
+          "Подход к решению"
+        ],
+        "facts": [
+          "стек"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как посчитать группы суши в прямоугольной сетке?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PROBLEM-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-003",
+        "grade": 2,
+        "sections": [
+          "Подход к решению"
+        ],
+        "facts": [
+          "обход"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как после сортировки склеить пересекающиеся отрезки?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PROBLEM-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-004",
+        "grade": 2,
+        "sections": [
+          "Подход к решению"
+        ],
+        "facts": [
+          "сортиров"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как найти два индекса с заданной суммой без перебора пар?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PROBLEM-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-005",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "хеш"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как развернуть односвязную цепочку не потеряв остаток списка?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PROBLEM-006",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-006",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "указател"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как вернуть вершины дерева списками отдельно для каждой глубины?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PROBLEM-007",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-007",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "очеред"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как вытеснять самый давно использованный ключ и поддерживать быстрые get и put?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "test",
+    "group": "CS-PROBLEM-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-008",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "список"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как посчитать минимальное число монет для целевой суммы?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PROBLEM-009",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-009",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "dp"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как найти длину максимального окна разных символов?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PROBLEM-010",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-010",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "окн"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как взять k-й по величине элемент без сортировки всего массива?",
+    "domain": "cs",
+    "type": "practice",
+    "split": "development",
+    "group": "CS-PROBLEM-011",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-011",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "куч"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему доступ к позиции в массиве быстрее случайного доступа по списку?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "development",
+    "group": "CS-QUESTION-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-QUESTION-001",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "O(1)"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что делает операции hash map линейными в худшем случае?",
+    "domain": "cs",
+    "type": "complexity",
+    "split": "test",
+    "group": "CS-QUESTION-002",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-QUESTION-002",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "коллизи"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что взять для минимального числа шагов, а что для прохода ветви до конца?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "test",
+    "group": "CS-QUESTION-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-QUESTION-003",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "BFS"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Когда единичных цен перехода достаточно для BFS вместо Дейкстры?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "development",
+    "group": "CS-QUESTION-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-QUESTION-004",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "вес"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Чем транзакционные гарантии отличаются от eventual consistency в BASE?",
+    "domain": "cs",
+    "type": "comparison",
+    "split": "test",
+    "group": "CS-QUESTION-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-QUESTION-005",
+        "grade": 2,
+        "sections": [
+          "Короткий ответ"
+        ],
+        "facts": [
+          "BASE"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему планировщик SQL может проигнорировать существующий индекс?",
+    "domain": "cs",
+    "type": "pitfall",
+    "split": "development",
+    "group": "CS-QUESTION-006",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-QUESTION-006",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "селектив"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как коротко представить свой опыт в начале разговора с рекрутером?",
+    "domain": "process",
+    "type": "practice",
+    "split": "test",
+    "group": "PROC-BEHAVIORAL-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-001",
+        "grade": 2,
+        "sections": [
+          "Структура ответа (Present → Past → Future)"
+        ],
+        "facts": [
+          "опыт"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как рассказать интервьюеру о споре между коллегами и его результате?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-BEHAVIORAL-002",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-002",
+        "grade": 2,
+        "sections": [
+          "Структура ответа (STAR)"
+        ],
+        "facts": [
+          "конфликт"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как показать чему научила профессиональная неудача?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-BEHAVIORAL-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-003",
+        "grade": 2,
+        "sections": [
+          "Структура ответа (STAR)"
+        ],
+        "facts": [
+          "урок"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как рассказать о принятии решения без достаточных данных?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-BEHAVIORAL-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-004",
+        "grade": 2,
+        "sections": [
+          "Структура ответа (STAR)"
+        ],
+        "facts": [
+          "неопредел"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как показать личный вклад в лидерство без формальной должности?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-BEHAVIORAL-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-005",
+        "grade": 2,
+        "sections": [
+          "Структура ответа (STAR)"
+        ],
+        "facts": [
+          "лидер"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как описать выбор приоритетов, когда срок не сдвигается?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-BEHAVIORAL-007",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-007",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "срок"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как описать разговор, в котором я дал коллеге неприятный feedback?",
+    "domain": "process",
+    "type": "practice",
+    "split": "test",
+    "group": "PROC-BEHAVIORAL-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-008",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "обратн"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как привести пример обучения нового коллеги и оценить результат?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-BEHAVIORAL-010",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-010",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "коллег"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как показать на интервью что я самостоятельно освоил незнакомый инструмент?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-BEHAVIORAL-013",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-013",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "технолог"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как объяснить личный вклад при совместной работе из разных часовых поясов?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-BEHAVIORAL-017",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-BEHAVIORAL-017",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "часов"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что повторить и проверить перед задачей на написание кода на интервью?",
+    "domain": "process",
+    "type": "checklist",
+    "split": "test",
+    "group": "PROC-CHECKLIST-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-003",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "сложност"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что приготовить для оценки нагрузки на интервью по проектированию систем?",
+    "domain": "process",
+    "type": "checklist",
+    "split": "development",
+    "group": "PROC-CHECKLIST-004",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-004",
+        "grade": 2,
+        "sections": [
+          "Что проверить"
+        ],
+        "facts": [
+          "нагрузк"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Какие истории приготовить заранее для вопросов о поведении на работе?",
+    "domain": "process",
+    "type": "checklist",
+    "split": "test",
+    "group": "PROC-CHECKLIST-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-005",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "истори"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что уточнить прежде чем начать домашний этап отбора?",
+    "domain": "process",
+    "type": "checklist",
+    "split": "development",
+    "group": "PROC-CHECKLIST-006",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-006",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "критери"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как проверить, что проекты в портфолио можно открыть и запустить?",
+    "domain": "process",
+    "type": "checklist",
+    "split": "test",
+    "group": "PROC-CHECKLIST-007",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-007",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "проект"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как сопоставить достижения в CV с требованиями вакансии?",
+    "domain": "process",
+    "type": "checklist",
+    "split": "development",
+    "group": "PROC-CHECKLIST-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-008",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "ваканси"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что настроить перед репетицией собеседования с партнёром?",
+    "domain": "process",
+    "type": "checklist",
+    "split": "development",
+    "group": "PROC-CHECKLIST-010",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-010",
+        "grade": 2,
+        "sections": [
+          "Что проверить"
+        ],
+        "facts": [
+          "интервью"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что сверить в письменном предложении о работе перед решением?",
+    "domain": "process",
+    "type": "checklist",
+    "split": "test",
+    "group": "PROC-CHECKLIST-013",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-013",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "компенсац"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что подготовить для видеозвонка с интервьюером?",
+    "domain": "process",
+    "type": "checklist",
+    "split": "development",
+    "group": "PROC-CHECKLIST-014",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-014",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "связ"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как разложить пример из опыта на ситуацию, задачу, действия и результат?",
+    "domain": "process",
+    "type": "definition",
+    "split": "development",
+    "group": "PROC-FRAMEWORK-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-001",
+        "grade": 2,
+        "sections": [
+          "Что такое STAR"
+        ],
+        "facts": [
+          "Situation"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как структурировать решение coding-задачи от уточнения до тестирования?",
+    "domain": "process",
+    "type": "practice",
+    "split": "test",
+    "group": "PROC-FRAMEWORK-002",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-002",
+        "grade": 2,
+        "sections": [
+          "5 шагов фреймворка"
+        ],
+        "facts": [
+          "OPTIMIZE"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "В каком порядке обсуждать требования и архитектуру на system design интервью?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-FRAMEWORK-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-003",
+        "grade": 2,
+        "sections": [
+          "6 шагов фреймворка"
+        ],
+        "facts": [
+          "требован"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как объяснить инженерный выбор через альтернативы и критерии?",
+    "domain": "process",
+    "type": "practice",
+    "split": "test",
+    "group": "PROC-FRAMEWORK-006",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-006",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "критер"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что записывать при разборе сбоя, чтобы улучшить процесс без поиска виноватых?",
+    "domain": "process",
+    "type": "practice",
+    "split": "test",
+    "group": "PROC-FRAMEWORK-010",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-010",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "postmortem"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что приложить к домашнему заданию, кроме исходного кода?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-FRAMEWORK-011",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-011",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "запуск"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как подтвердить что я правильно услышал ограничение интервьюера?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-SOFTSKILL-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-SOFTSKILL-001",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "перефраз"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как давать обратную связь через наблюдаемое действие и эффект?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-SOFTSKILL-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-SOFTSKILL-005",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "действи"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что делать если сложный вопрос вызвал ступор на собеседовании?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-SOFTSKILL-011",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-SOFTSKILL-011",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "пауз"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Зачем рекрутеру предварительный созвон о мотивации и ожиданиях?",
+    "domain": "process",
+    "type": "definition",
+    "split": "test",
+    "group": "PROC-STAGE-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STAGE-001",
+        "grade": 2,
+        "sections": [
+          "Определение"
+        ],
+        "facts": [
+          "HR"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что оценивают во время живого написания кода перед интервьюером?",
+    "domain": "process",
+    "type": "definition",
+    "split": "development",
+    "group": "PROC-STAGE-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STAGE-003",
+        "grade": 2,
+        "sections": [
+          "Критерии прохождения"
+        ],
+        "facts": [
+          "сложност"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как готовиться к behavioral interview кроме повторения алгоритмов?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-STAGE-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STAGE-005",
+        "grade": 2,
+        "sections": [
+          "Как готовиться"
+        ],
+        "facts": [
+          "STAR"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "На каком этапе проверяют соответствие кандидата конкретной команде?",
+    "domain": "process",
+    "type": "definition",
+    "split": "development",
+    "group": "PROC-STAGE-006",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STAGE-006",
+        "grade": 2,
+        "sections": [
+          "Определение"
+        ],
+        "facts": [
+          "команд"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как обсуждать компенсацию, когда предложение уже получено?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-STRATEGY-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STRATEGY-001",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "оффер"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как распределить подготовку по неделям, если остался месяц?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-STRATEGY-003",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STRATEGY-003",
+        "grade": 2,
+        "sections": [
+          "Неделя 1: Фундамент"
+        ],
+        "facts": [
+          "недел"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как провести реалистичную репетицию интервью и получить feedback?",
+    "domain": "process",
+    "type": "practice",
+    "split": "test",
+    "group": "PROC-STRATEGY-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STRATEGY-005",
+        "grade": 2,
+        "sections": [
+          "Как проводить мок-интервью"
+        ],
+        "facts": [
+          "интервью"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как выбрать темы подготовки, если пробелов много, а времени мало?",
+    "domain": "process",
+    "type": "practice",
+    "split": "test",
+    "group": "PROC-STRATEGY-010",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STRATEGY-010",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "тем"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как возвращаться к темам с интервалами, чтобы лучше запомнить решение?",
+    "domain": "process",
+    "type": "practice",
+    "split": "development",
+    "group": "PROC-STRATEGY-012",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STRATEGY-012",
+        "grade": 2,
+        "sections": [
+          "Как применять"
+        ],
+        "facts": [
+          "повтор"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Что такое квантовая запутанность?",
+    "domain": "cs",
+    "type": "unanswerable",
+    "split": "test",
+    "group": "Что такое квантовая запутанность?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как вычислить преобразование Фурье методом Кули — Тьюки?",
+    "domain": "cs",
+    "type": "unanswerable",
+    "split": "test",
+    "group": "Как вычислить преобразование Фурье методом Кули — Тьюки?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как устроена виртуальная машина Lua?",
+    "domain": "cs",
+    "type": "unanswerable",
+    "split": "test",
+    "group": "Как устроена виртуальная машина Lua?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Что такое red-black tree?",
+    "domain": "cs",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Что такое red-black tree?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как реализована арифметика decimal в .NET?",
+    "domain": "cs",
+    "type": "unanswerable",
+    "split": "test",
+    "group": "Как реализована арифметика decimal в .NET?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Что означает теорема Райса?",
+    "domain": "cs",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Что означает теорема Райса?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как настроить Apache Hadoop для обработки FASTQ?",
+    "domain": "arch",
+    "type": "unanswerable",
+    "split": "test",
+    "group": "Как настроить Apache Hadoop для обработки FASTQ?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как работает протокол Raft при конфликте журналов?",
+    "domain": "arch",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Как работает протокол Raft при конфликте журналов?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как спроектировать распределённый файловый сервер для телескопа?",
+    "domain": "arch",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Как спроектировать распределённый файловый сервер для телескопа?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Где в документации описана настройка SAP HANA?",
+    "domain": "arch",
+    "type": "unanswerable",
+    "split": "test",
+    "group": "Где в документации описана настройка SAP HANA?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как устроена криптографическая подпись блоков Ethereum?",
+    "domain": "arch",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Как устроена криптографическая подпись блоков Ethereum?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как настроить MQTT на контроллере умного дома?",
+    "domain": "arch",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Как настроить MQTT на контроллере умного дома?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Что спрашивают про историю музыки на экзамене?",
+    "domain": "process",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Что спрашивают про историю музыки на экзамене?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как пройти собеседование на роль хирурга?",
+    "domain": "process",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Как пройти собеседование на роль хирурга?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как поступить в театральную студию?",
+    "domain": "process",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Как поступить в театральную студию?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как оформляют загранпаспорт?",
+    "domain": "process",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Как оформляют загранпаспорт?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Как подготовиться к сдаче на права категории D?",
+    "domain": "process",
+    "type": "unanswerable",
+    "split": "development",
+    "group": "Как подготовиться к сдаче на права категории D?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "Что спросит преподаватель китайского языка на экзамене?",
+    "domain": "process",
+    "type": "unanswerable",
+    "split": "test",
+    "group": "Что спросит преподаватель китайского языка на экзамене?",
+    "sufficient": false,
+    "relevant": []
+  },
+  {
+    "query": "How can BFS give me the shortest number of edges and what is its memory cost?",
+    "domain": "cs",
+    "type": "paraphrase",
+    "split": "test",
+    "group": "CS-CONCEPT-016",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-016",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "O(V + E)"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему обход волной требует хранить весь фронт?",
+    "domain": "cs",
+    "type": "paraphrase",
+    "split": "test",
+    "group": "CS-CONCEPT-016",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-016",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "O(V + E)"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему нельзя повторно проводить один платёж после сбоя HTTP?",
+    "domain": "arch",
+    "type": "paraphrase",
+    "split": "development",
+    "group": "ARCH-DESIGNPAT-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-001",
+        "grade": 2,
+        "sections": [
+          "Практический пример"
+        ],
+        "facts": [
+          "idempotency key"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как подготовить STAR stories для встречи о soft skills?",
+    "domain": "process",
+    "type": "paraphrase",
+    "split": "development",
+    "group": "PROC-STAGE-005",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-STAGE-005",
+        "grade": 2,
+        "sections": [
+          "Как готовиться"
+        ],
+        "facts": [
+          "STAR"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Почему appending в массив не всегда занимает одинаковое время?",
+    "domain": "cs",
+    "type": "paraphrase",
+    "split": "development",
+    "group": "CS-CONCEPT-008",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-008",
+        "grade": 2,
+        "sections": [
+          "Суть концепции"
+        ],
+        "facts": [
+          "амортиз"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Чем ещё опасен слишком глубокий рекурсивный обход?",
+    "domain": "cs",
+    "type": "paraphrase",
+    "split": "test",
+    "group": "CS-CONCEPT-017",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-017",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "глубин"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как записать событие вместе с изменением в БД; как избежать повторного списания денег после таймаута?",
+    "domain": "arch",
+    "type": "compound",
+    "split": "development",
+    "group": "ARCH-DESIGNPAT-006+ARCH-DESIGNPAT-001",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-006",
+        "grade": 2,
+        "sections": [
+          "Как устроено"
+        ],
+        "facts": [
+          "транзакц"
+        ]
+      },
+      {
+        "id": "ARCH-DESIGNPAT-001",
+        "grade": 2,
+        "sections": [
+          "Практический пример"
+        ],
+        "facts": [
+          "idempotency key"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как потоки разделяют память; как ограничить число одновременных владельцев ресурса?",
+    "domain": "cs",
+    "type": "compound",
+    "split": "development",
+    "group": "CS-CONCEPT-026+CS-CONCEPT-027",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-026",
+        "grade": 2,
+        "sections": [
+          "Как это работает"
+        ],
+        "facts": [
+          "памят"
+        ]
+      },
+      {
+        "id": "CS-CONCEPT-027",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "семафор"
+        ]
+      }
+    ]
+  },
+  {
+    "query": "Как построить ответ по STAR; что подготовить перед видеозвонком с интервьюером?",
+    "domain": "process",
+    "type": "compound",
+    "split": "development",
+    "group": "PROC-FRAMEWORK-001+PROC-CHECKLIST-014",
+    "sufficient": true,
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-001",
+        "grade": 2,
+        "sections": [
+          "Что такое STAR"
+        ],
+        "facts": [
+          "Situation"
+        ]
+      },
+      {
+        "id": "PROC-CHECKLIST-014",
+        "grade": 2,
+        "sections": [
+          "Главное"
+        ],
+        "facts": [
+          "связ"
+        ]
+      }
+    ]
+  }
+]

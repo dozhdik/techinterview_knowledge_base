@@ -4,6 +4,7 @@ import re
 import sqlite3
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 from .rag import RagConfig, RagError, _retrieve_sync
 from .parser import ParseError
@@ -86,7 +87,19 @@ def form_answer(question, units, hits):
 
 
 def search_and_extract(root, question, units):
+    from .passage_index import INDEX
+    from .retrieval import configured_reranker, get_engine
+
     start = time.perf_counter()
+    if (Path(root) / INDEX).is_file():
+        try:
+            engine = get_engine(root)
+            result, debug = engine.ask(question, units, reranker=configured_reranker())
+            logging.getLogger("uvicorn.error").info("search_seconds=%s total=%.3f",
+                                                   debug["seconds"], time.perf_counter() - start)
+            return result
+        except (VectorIndexError, sqlite3.DatabaseError, OSError, ValueError) as exc:
+            logging.getLogger("uvicorn.error").warning("Структурный индекс недоступен: %s", exc)
     config = RagConfig(base_url='http://127.0.0.1/v1', model='unused')
     try:
         hits = _retrieve_sync(root, question, config)

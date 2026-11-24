@@ -45,7 +45,9 @@ class Query:
 def facets(question):
     # Keep comparative phrases intact. Split only clauses with their own clear question.
     parts = re.split(
-        r"[;?]\s*|\s+(?:и|а также|and)\s+(?=(?:как|почему|зачем|что|когда|какие|сколько|how|why|what|when)\s)",
+        r"[;?]\s*|\s+(?:и|а также|and)\s+"
+        r"(?=(?:как|почему|зачем|что|когда|какие|сколько|how|why|what|when)\s)"
+        r"(?!(?:как|почему|зачем|что|когда|how|why|what|when)\s+(?:это|он[аи]?|it|this|they)\b)",
         question, flags=re.I,
     )
     return [part.strip() for part in parts if part.strip()][:4] or [question]

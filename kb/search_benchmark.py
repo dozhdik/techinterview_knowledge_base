@@ -10,6 +10,7 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from time import perf_counter
 
+from .evidence import DEFAULT_DEPTH
 from .extractive import form_answer
 from .vector_store import _index_snapshot, search_index
 
@@ -29,13 +30,15 @@ def _metrics(case, ranked, answer, used):
             result[f"ndcg@{k}"] = dcg([expected.get(i, 0) for i in ids[:k]]) / dcg(sorted(expected.values(), reverse=True)[:k])
         result["mrr"] = next((1 / (i + 1) for i, key in enumerate(ids) if key in targets), 0)
         labels = case["relevant"]
-        checks = [(label, fact) for label in labels for fact in label["facts"]]
-        result["fact_proxy"] = sum(label["id"] in used and fact.casefold() in answer.casefold()
-                                   for label, fact in checks) / len(checks)
+        checks = [(label, fact) for label in labels for fact in label.get("facts", ())]
+        if checks:
+            result["fact_proxy"] = sum(label["id"] in used and fact.casefold() in answer.casefold()
+                                       for label, fact in checks) / len(checks)
         result["section_proxy"] = sum(label["id"] in used and any(
             ("## " + section).casefold() in answer.casefold() for section in label["sections"]
         ) for label in labels) / len(labels)
-        result["full_coverage_proxy"] = float(result["fact_proxy"] == 1 and result["section_proxy"] == 1)
+        if checks:
+            result["full_coverage_proxy"] = float(result["fact_proxy"] == 1 and result["section_proxy"] == 1)
         result["relevant_sources"] = len(targets & set(used)) / max(1, len(used))
         result["extra_sources"] = float(bool(set(used) - targets))
         result["answered"] = float(bool(used))
@@ -59,7 +62,8 @@ def summarize(rows):
                         for k, v in timings.items()}}
 
 
-def evaluate(root, units, cases_path, split, method, output=None, reranker_path=None):
+def evaluate(root, units, cases_path, split, method, output=None, reranker_path=None, *,
+             index_path=None, depth=DEFAULT_DEPTH):
     load_start = perf_counter()
     cases = json.loads(Path(cases_path).read_text())
     cases = [case for case in cases if split == "all" or case["split"] == split]
@@ -71,7 +75,7 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
         status, tags = _index_snapshot(root, None)
     else:
         from .retrieval import get_engine, load_reranker
-        engine = get_engine(root)
+        engine = get_engine(root, index_path)
         status = engine.metadata
         if method == "cross_encoder":
             if not reranker_path:
@@ -104,12 +108,12 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
             times = {"retrieval_including_embedding": ranking_seconds, "extract": perf_counter() - started}
         else:
             result, info = engine.ask(q, units, method="hybrid" if method in ("links", "cross_encoder") else method,
-                                      links=method == "links", reranker=reranker)
+                                      links=method == "links", reranker=reranker, depth=depth)
             ranking = info["ranked_cards"]
             times = info["seconds"]
         answer = result.answer if result else ""
         used = [u.id for u in result.units] if result else []
-        rows.append({"query": q, "domain": case["domain"], "type": case["type"],
+        rows.append({"query": q, "domain": case["domain"], "type": case.get("type", case.get("status", "unknown")),
                      "ranking": list(dict.fromkeys(ranking))[:10], "sources": used, "answer": answer,
                      "seconds": {**times, "total": perf_counter() - start},
                      "metrics": _metrics(case, ranking, answer, used)})
@@ -124,11 +128,10 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
               "peak_rss_mib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024,
               "overall": summarize(rows), "warm": summarize(rows[1:]), "queries": rows}
     if engine is not None:
-        from .retrieval import FIELD_WEIGHTS, RRF_K, POOL, DENSE_WEIGHTS, MIN_DENSE, MIN_UNANCHORED, MIN_UNANCHORED_GAP
+        from .retrieval import FIELD_WEIGHTS, RRF_K, POOL, DENSE_WEIGHTS
         report["retrieval_index"] = engine.metadata
         report["config"] = dict(field_weights=FIELD_WEIGHTS, rrf_k=RRF_K, candidate_pool=POOL,
-                                dense_weight=DENSE_WEIGHTS, min_dense=MIN_DENSE, min_unanchored=MIN_UNANCHORED,
-                                min_unanchored_gap=MIN_UNANCHORED_GAP)
+                                dense_weight=DENSE_WEIGHTS, evidence_depth=depth)
     if reranker_path:
         weights = Path(reranker_path) / "model.safetensors"
         report["reranker"] = {"directory": str(reranker_path)}

@@ -88,3 +88,96 @@ def test_benchmark_judgments_reference_real_sections_and_disjoint_cards():
                 assert heading in sections
                 assert all(f.casefold() in sections[heading].casefold() for f in label["facts"])
     assert not by_split["development"].intersection(by_split["test"])
+
+
+def test_answer_checks_a_lower_ranked_card_without_accepting_a_distractor(monkeypatch):
+    engine = _engine()
+    units = [SimpleNamespace(id=p.card_id, title=p.title) for p in engine.passages]
+    zero = np.zeros(2)
+    def rank(query, *args):
+        return ["A", "B"], {"A": (.54, 0), "B": (.51, 1)}, zero, np.array([.54, .51]), {"seconds": {}}
+    monkeypatch.setattr(engine, "rank", rank)
+
+    answer, debug = engine.ask("Что такое очередь?", units)
+    assert [unit.id for unit in answer.units] == ["B"]
+    assert debug["parts"][0]["checked_candidates"][0]["reason"] == "sufficient_section"
+
+
+def test_selected_passage_covers_second_facet_without_a_false_warning(monkeypatch):
+    engine = _engine()
+    units = [SimpleNamespace(id=p.card_id, title=p.title) for p in engine.passages]
+    monkeypatch.setattr(engine, "dense", lambda q: (
+        np.array([.9, .1]) if q.normalized == "кэш" else np.zeros(2), 0))
+
+    answer, debug = engine.ask("Кэш; что хранит результат?", units)
+    assert answer.units == [units[0]]
+    assert debug["unanswered"] == []
+    assert debug["parts"][1]["reason"] == "covered_in_selected_sections"
+    assert answer.answer.count("Кэш хранит результат.") == 1
+
+
+def test_dependent_clause_keeps_context_and_missing_referent_asks_to_clarify(monkeypatch):
+    assert len(facets("Почему этот подход сложен и как это влияет на вставку?")) == 1
+    engine = _engine()
+    monkeypatch.setattr(engine, "dense", lambda q: (np.array([.2, .8]), 0))
+    units = [SimpleNamespace(id=p.card_id, title=p.title) for p in engine.passages]
+
+    answer, debug = engine.ask("Как подготовиться к этому этапу?", units)
+    assert not answer.units
+    assert "Уточните" in answer.answer
+    assert debug["parts"][0]["reason"] == "unspecified_referent"
+
+
+def test_specific_missing_detail_does_not_use_a_similar_card(monkeypatch):
+    engine = _engine()
+    monkeypatch.setattr(engine, "dense", lambda q: (np.array([.93, .2]), 0))
+    units = [SimpleNamespace(id=p.card_id, title=p.title) for p in engine.passages]
+
+    answer, debug = engine.ask("Какой точный параметр CacheFlag надо задать для кеша?", units)
+    assert answer is None
+    assert {c["reason"] for c in debug["parts"][0]["checked_candidates"]} == {
+        "unsupported_specific_detail"
+    }
+
+
+def test_one_facet_can_select_a_complementary_block_from_another_card():
+    from dataclasses import replace
+
+    from kb.evidence import Candidate, SectionEvidence, choose_sections
+
+    engine = _engine()
+    engine.passages[1] = replace(engine.passages[1], domain=engine.passages[0].domain)
+    first = SectionEvidence(0, "Кэш ускоряет чтение.", frozenset({"кэш", "чтени"}), frozenset({"чтени"}), .9)
+    second = SectionEvidence(1, "Очередь разносит запись.", frozenset({"очередь", "запис"}), frozenset({"запис"}), .8)
+    repeated = SectionEvidence(1, first.text, first.terms, first.matched, .86)
+    scorer = SimpleNamespace(engine=engine, cover=lambda hits: len(hits) / 2)
+    options = (Candidate("A", .96, True, "", (first,)),
+               Candidate("B", .91, True, "", (repeated, second)))
+
+    assert choose_sections(options, scorer) == [first, second]
+
+
+
+def test_definition_prefers_exact_title_to_a_related_card_with_same_tag(monkeypatch):
+    from dataclasses import replace
+
+    engine = _engine()
+    passages = [engine.passages[0], replace(engine.passages[1], tags=["кэш"])]
+    engine = Retrieval(engine.metadata, passages,
+                       [np.array([[1, 0]], dtype=np.float32), np.array([[0, 1]], dtype=np.float32)])
+    monkeypatch.setattr(engine, "dense", lambda q: (np.array([.64, .84]), 0))
+    units = [SimpleNamespace(id=p.card_id, title=p.title) for p in passages]
+
+    answer, _ = engine.ask("Что такое кэш?", units)
+    assert answer.units == [units[0]]
+
+
+def test_benchmark_accepts_section_labels_without_literal_fact_proxies():
+    from kb.search_benchmark import _metrics
+
+    case = {"relevant": [{"id": "A", "grade": 2, "sections": ["Определение"]}]}
+    result = _metrics(case, ["A"], "## Определение\n\nФрагмент", ["A"])
+
+    assert result["precision@1"] == 1
+    assert result["section_proxy"] == 1
+    assert "fact_proxy" not in result

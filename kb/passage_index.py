@@ -123,8 +123,8 @@ def _records(root):
                               pos, section, text, unit.related, unit.prerequisites)
 
 
-def embedding_windows(passage, tokenizer, limit):
-    prefix = f"{passage.title}. {' / '.join(passage.heading)}. "
+def embedding_windows(passage, tokenizer, limit, passage_prefix=''):
+    prefix = passage_prefix + f"{passage.title}. {' / '.join(passage.heading)}. "
     prefix_ids = tokenizer(prefix, add_special_tokens=False)["input_ids"][:limit // 3]
     ids = tokenizer(passage.text, add_special_tokens=False, verbose=False)["input_ids"]
     prefix = tokenizer.decode(prefix_ids)
@@ -141,7 +141,7 @@ def embedding_windows(passage, tokenizer, limit):
     return windows
 
 
-def build(root, path=None, model=DEFAULT_MODEL):
+def build(root, path=None, model=DEFAULT_MODEL, *, e5=False):
     import numpy as np
 
     root = Path(root).resolve()
@@ -151,11 +151,13 @@ def build(root, path=None, model=DEFAULT_MODEL):
     embedder = _embedder("sentence-transformers", model)
     encoder = embedder.encoder
     max_tokens = int(encoder.max_seq_length)
+    query_prefix, passage_prefix = ("query: ", "passage: ") if e5 else ("", "")
     previous = {}
     if path.is_file():
         with sqlite3.connect(path) as conn:
             meta = json.loads(conn.execute("SELECT value FROM metadata").fetchone()[0])
-            if (meta["version"], meta["model"], meta["max_tokens"]) == (VERSION, model, max_tokens):
+            if (meta["version"], meta["model"], meta["max_tokens"], meta.get("query_prefix", "")) == (
+                    VERSION, model, max_tokens, query_prefix):
                 if meta["corpus_sha256"] == digest:
                     return {**meta, "updated": 0}
                 previous = dict(conn.execute("SELECT fingerprint, vector FROM passages"))
@@ -165,7 +167,7 @@ def build(root, path=None, model=DEFAULT_MODEL):
     changed = [(p, key) for p, key in entries if key not in previous]
     for offset in range(0, len(changed), 64):
         batch = changed[offset:offset + 64]
-        windows = [embedding_windows(p, encoder.tokenizer, max_tokens) for p, _ in batch]
+        windows = [embedding_windows(p, encoder.tokenizer, max_tokens, passage_prefix) for p, _ in batch]
         vectors = encoder.encode([w for group in windows for w in group], normalize_embeddings=True)
         start = 0
         for (_, key), group in zip(batch, windows):
@@ -177,6 +179,8 @@ def build(root, path=None, model=DEFAULT_MODEL):
     meta = dict(version=VERSION, model=model, max_tokens=max_tokens, corpus_sha256=digest,
                 dimensions=int(encoder.get_sentence_embedding_dimension()), cards=len({p.card_id for p in records}),
                 passages=len(records))
+    if e5:
+        meta.update(query_prefix=query_prefix, passage_prefix=passage_prefix)
     fd, name = tempfile.mkstemp(dir=path.parent, suffix=".sqlite3")
     os.close(fd)
     try:

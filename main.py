@@ -188,8 +188,14 @@ def cmd_vector_search(args) -> None:
 def cmd_passage_build(args) -> None:
     import json
 
-    from kb.passage_index import build
-    print(json.dumps(build(KB_ROOT), ensure_ascii=False, indent=2))
+    from kb.passage_index import INDEX, build
+    from kb.vector_store import DEFAULT_INDEX, DEFAULT_MODEL
+
+    if (args.model or args.e5) and (args.index is None or args.index.resolve() in {
+            (KB_ROOT / INDEX).resolve(), (KB_ROOT / DEFAULT_INDEX).resolve()}):
+        raise SystemExit("Для экспериментальной модели укажите отдельный файл через --index.")
+    print(json.dumps(build(KB_ROOT, args.index, model=args.model or DEFAULT_MODEL, e5=args.e5),
+                     ensure_ascii=False, indent=2))
 
 
 def cmd_search_diagnose(args) -> None:
@@ -198,10 +204,10 @@ def cmd_search_diagnose(args) -> None:
 
     from kb.retrieval import configured_reranker, get_engine
     started = perf_counter()
-    engine = get_engine(KB_ROOT)
+    engine = get_engine(KB_ROOT, args.index)
     ready = perf_counter()
     answer, debug = engine.ask(args.question, _load_units(), domain=args.domain,
-                               links=args.links, reranker=configured_reranker())
+                               links=args.links, reranker=configured_reranker(), depth=args.depth)
     debug["answer"] = answer.answer if answer else None
     debug["seconds"]["startup"] = ready - started
     debug["seconds"]["total"] = perf_counter() - started
@@ -213,12 +219,14 @@ def cmd_search_benchmark(args) -> None:
 
     from kb.search_benchmark import evaluate
     report = evaluate(KB_ROOT, _load_units(), args.cases, args.split, args.method,
-                      args.output, args.reranker)
+                      args.output, args.reranker, index_path=args.index, depth=args.depth)
     print(json.dumps({k: report[k] for k in ("overall", "warm", "by_domain", "by_type")},
                      ensure_ascii=False, indent=2))
 
 
 def build_parser() -> argparse.ArgumentParser:
+    from kb.evidence import DEFAULT_DEPTH
+
     parser = argparse.ArgumentParser(
         prog="main.py",
         description="CLI для работы с базой знаний TechInterview",
@@ -337,12 +345,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_vector_status.set_defaults(func=cmd_vector_status)
 
     build_passages = subparsers.add_parser("passage-build", help="Обновить структурный индекс Markdown")
+    build_passages.add_argument("--index", type=Path, help="Путь к отдельному SQLite-индексу")
+    build_passages.add_argument("--model", help="Модель эмбеддингов или локальный каталог")
+    build_passages.add_argument("--e5", action="store_true", help="Использовать префиксы query и passage для E5")
     build_passages.set_defaults(func=cmd_passage_build)
 
     diagnose = subparsers.add_parser("search-diagnose", help="Показать этапы гибридного поиска")
     diagnose.add_argument("question")
     diagnose.add_argument("--domain", choices=("cs", "arch", "process", "global"))
     diagnose.add_argument("--links", action="store_true")
+    diagnose.add_argument("--index", type=Path, help="Альтернативный структурный индекс")
+    diagnose.add_argument("--depth", type=int, choices=(3, 5, 10), default=DEFAULT_DEPTH)
     diagnose.set_defaults(func=cmd_search_diagnose)
 
     benchmark = subparsers.add_parser("search-benchmark", help="Оценить поиск по размеченным запросам")
@@ -352,6 +365,8 @@ def build_parser() -> argparse.ArgumentParser:
                                               "cross_encoder"), default="hybrid")
     benchmark.add_argument("--reranker", help="Локальный каталог модели Cross-Encoder")
     benchmark.add_argument("--output", type=Path, required=True)
+    benchmark.add_argument("--index", type=Path, help="Альтернативный структурный индекс")
+    benchmark.add_argument("--depth", type=int, choices=(3, 5, 10), default=DEFAULT_DEPTH)
     benchmark.set_defaults(func=cmd_search_benchmark)
 
     return parser

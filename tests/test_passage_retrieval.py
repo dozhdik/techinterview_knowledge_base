@@ -181,3 +181,88 @@ def test_benchmark_accepts_section_labels_without_literal_fact_proxies():
     assert result["precision@1"] == 1
     assert result["section_proxy"] == 1
     assert "fact_proxy" not in result
+
+
+def test_distinct_blocks_from_one_long_section_survive_composition(monkeypatch):
+    text_a = "Альфа задаёт правило группировки. " + " ".join(f"элемент{i}" for i in range(190))
+    text_b = "Бета задаёт способ сортировки. " + " ".join(f"операция{i}" for i in range(190))
+    passages = [
+        Passage("A", "Справочник", "cs", "concept", [], ("Подробности",), 0, 1, text_a, [], []),
+        Passage("A", "Справочник", "cs", "concept", [], ("Подробности",), 2500, 1, text_b, [], []),
+    ]
+    diagonal = np.eye(2, dtype=np.float32)
+    engine = Retrieval({"model": "test"}, passages, [diagonal[:1], diagonal[1:]])
+    monkeypatch.setattr(engine, "dense", lambda q: (
+        np.array([.91, .05]) if q.normalized == "альфа" else np.array([.05, .91]), 0))
+    units = [SimpleNamespace(id="A", title="Справочник")]
+
+    answer, debug = engine.ask("Альфа; Бета", units)
+    assert text_a in answer.answer and text_b in answer.answer
+    assert answer.answer.count("## Подробности") == 1
+    assert [b["position"] for b in debug["selected"]] == [0, 2500]
+    assert debug["unanswered"] == []
+
+
+def test_facets_are_not_silently_dropped(monkeypatch):
+    engine = _engine()
+    monkeypatch.setattr(engine, "dense", lambda q: (np.array([.91, .05]), 0))
+    units = [SimpleNamespace(id="A", title="Кэш"), SimpleNamespace(id="B", title="Очередь")]
+    words = ["Кэш", "Очередь", "Кэш", "Кэш", "Кэш", "Кэш", "Кэш", "Кэш", "Девятая", "Десятая"]
+
+    answer, debug = engine.ask("; ".join(words), units)
+    assert len(facets("; ".join(words))) == 10
+    assert len(debug["parts"]) == 8
+    assert debug["deferred"] == ["Девятая", "Десятая"]
+    assert all(word in answer.answer for word in words[-2:])
+
+
+def test_dependent_complexity_facet_keeps_the_subject():
+    from kb.query import with_facet_context
+
+    subject = Query.parse("Что такое очередь?")
+    complexity = with_facet_context(Query.parse("Какая сложность?"), subject)
+    assert "очеред" in complexity.normalized
+    assert "quantity" in complexity.intents
+    explicit = Query.parse("Какая сложность BFS?")
+    assert with_facet_context(explicit, subject) is explicit
+
+
+def test_an_indexed_abbreviation_uses_context_and_keeps_ambiguity():
+    from kb.evidence import resolve_acronyms
+
+    passages = [
+        Passage("L", "Load Balancer", "arch", "concept", [], ("Описание",), 0, 0,
+                "Входящий трафик и серверы", [], []),
+        Passage("B", "Local Buffer", "cs", "concept", [], ("Описание",), 0, 0,
+                "LB хранит байты в памяти", [], []),
+    ]
+    diagonal = np.eye(2, dtype=np.float32)
+    engine = Retrieval({"model": "test"}, passages, [diagonal[:1], diagonal[1:]])
+    expanded = resolve_acronyms(Query.parse("LB для входящего трафика и серверов"), engine.acronyms, engine)
+
+    assert {"load", "balancer"} <= set(expanded.tokens)
+    bare = Query.parse("LB")
+    assert resolve_acronyms(bare, engine.acronyms, engine) is bare
+
+
+def test_reader_checks_source_offsets_and_cannot_override_missing_specific_detail():
+    from kb.evidence import Candidate, SectionEvidence
+    from kb.qa_reader import Span, apply_reader
+
+    a = SectionEvidence(0, "Фрагмент объясняет тему.", frozenset(), frozenset({"тем"}), .7)
+    b = SectionEvidence(1, "Конкретный исходный ответ.", frozenset(), frozenset({"тем"}), .7)
+    candidates = [Candidate("A", 1.1, False, "unsupported_specific_detail", (a,)),
+                  Candidate("B", .8, False, "insufficient_section_evidence", (b,))]
+    calls = []
+    def score(question, contexts):
+        calls.append(contexts)
+        return [Span(0, 9, 5.0)]
+    reader = SimpleNamespace(score=score)
+    scorer = SimpleNamespace(query=Query.parse("Тема"), cover=lambda words: .5,
+                             priority=lambda c: (c.admitted, c.score))
+
+    result, debug = apply_reader(reader, "all", scorer, candidates)
+    assert calls == [[b.text]]
+    assert result[0].card == "B" and result[0].admitted
+    assert not result[1].admitted
+    assert debug[1]["span"] == [0, 9]

@@ -202,12 +202,18 @@ def cmd_search_diagnose(args) -> None:
     import json
     from time import perf_counter
 
+    from kb.qa_reader import load_reader
     from kb.retrieval import configured_reranker, get_engine
+
+    if args.qa_mode != "off" and not args.qa_path:
+        raise SystemExit("Для режима QA укажите локальный каталог через --qa-path.")
+    reader = load_reader(args.qa_path) if args.qa_mode != "off" else None
     started = perf_counter()
     engine = get_engine(KB_ROOT, args.index)
     ready = perf_counter()
     answer, debug = engine.ask(args.question, _load_units(), domain=args.domain,
-                               links=args.links, reranker=configured_reranker(), depth=args.depth)
+                               links=args.links, reranker=configured_reranker(), depth=args.depth,
+                               reader=reader, qa_mode=args.qa_mode)
     debug["answer"] = answer.answer if answer else None
     debug["seconds"]["startup"] = ready - started
     debug["seconds"]["total"] = perf_counter() - started
@@ -218,8 +224,12 @@ def cmd_search_benchmark(args) -> None:
     import json
 
     from kb.search_benchmark import evaluate
+
+    if args.qa_mode != "off" and (not args.qa_path or args.method == "legacy"):
+        raise SystemExit("QA требует --qa-path и структурного поиска.")
     report = evaluate(KB_ROOT, _load_units(), args.cases, args.split, args.method,
-                      args.output, args.reranker, index_path=args.index, depth=args.depth)
+                      args.output, args.reranker, index_path=args.index, depth=args.depth,
+                      qa_path=args.qa_path, qa_mode=args.qa_mode)
     print(json.dumps({k: report[k] for k in ("overall", "warm", "by_domain", "by_type")},
                      ensure_ascii=False, indent=2))
 
@@ -368,6 +378,9 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--index", type=Path, help="Альтернативный структурный индекс")
     benchmark.add_argument("--depth", type=int, choices=(3, 5, 10), default=DEFAULT_DEPTH)
     benchmark.set_defaults(func=cmd_search_benchmark)
+    for search_parser in (diagnose, benchmark):
+        search_parser.add_argument("--qa-mode", choices=("off", "all", "selective"), default="off")
+        search_parser.add_argument("--qa-path", type=Path, help="Локальный каталог экспериментального QA")
 
     return parser
 

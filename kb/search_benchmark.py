@@ -63,7 +63,7 @@ def summarize(rows):
 
 
 def evaluate(root, units, cases_path, split, method, output=None, reranker_path=None, *,
-             index_path=None, depth=DEFAULT_DEPTH):
+             index_path=None, depth=DEFAULT_DEPTH, qa_path=None, qa_mode="off"):
     load_start = perf_counter()
     cases = json.loads(Path(cases_path).read_text())
     cases = [case for case in cases if split == "all" or case["split"] == split]
@@ -71,12 +71,19 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
         raise ValueError("Нет запросов для выбранной выборки")
     engine = None
     reranker = None
+    reader = None
     if method == "legacy":
         status, tags = _index_snapshot(root, None)
     else:
         from .retrieval import get_engine, load_reranker
         engine = get_engine(root, index_path)
         status = engine.metadata
+        if qa_mode != "off":
+            from .qa_reader import load_reader
+
+            if not qa_path:
+                raise ValueError("QA требует локального каталога модели.")
+            reader = load_reader(qa_path)
         if method == "cross_encoder":
             if not reranker_path:
                 raise ValueError("Для cross_encoder нужен --reranker с локальной моделью")
@@ -108,7 +115,8 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
             times = {"retrieval_including_embedding": ranking_seconds, "extract": perf_counter() - started}
         else:
             result, info = engine.ask(q, units, method="hybrid" if method in ("links", "cross_encoder") else method,
-                                      links=method == "links", reranker=reranker, depth=depth)
+                                      links=method == "links", reranker=reranker, depth=depth,
+                                      reader=reader, qa_mode=qa_mode)
             ranking = info["ranked_cards"]
             times = info["seconds"]
         answer = result.answer if result else ""
@@ -131,7 +139,7 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
         from .retrieval import FIELD_WEIGHTS, RRF_K, POOL, DENSE_WEIGHTS
         report["retrieval_index"] = engine.metadata
         report["config"] = dict(field_weights=FIELD_WEIGHTS, rrf_k=RRF_K, candidate_pool=POOL,
-                                dense_weight=DENSE_WEIGHTS, evidence_depth=depth)
+                                dense_weight=DENSE_WEIGHTS, evidence_depth=depth, qa_mode=qa_mode)
     if reranker_path:
         weights = Path(reranker_path) / "model.safetensors"
         report["reranker"] = {"directory": str(reranker_path)}

@@ -1,5 +1,5 @@
 """Passage evidence, abstention and diversity for extractive retrieval."""
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 import re
 
@@ -15,6 +15,14 @@ _PRECISE = re.compile(
 _OVERVIEW = re.compile(r"^(?:задача|постановка задачи|условие|на собеседовании|что оценивают|для кого этот план|цель проверки)$")
 _DEICTIC = re.compile(r"\b(?:этот|этом|этого|этому|этой|это|этим|this|that)\s+(?:этап\w*|шаг\w*|случа\w*|способ\w*|stage|step)\b", re.I)
 
+_PROCEDURE_HEADING = re.compile(r"^(?:шаг|подход к|как (?:это|устро|работ|примен|провод)|алгоритм|реализац|архитектур)")
+_EXAMPLE_HEADING = re.compile(r"^(?:практический )?пример|^типов\w+ задач")
+_NUMERIC = re.compile(r"O\s*\([^)]{1,28}\)|\d+(?:[.,]\d+)?\s*(?:[×%]|мс\b|сек\w*|мин\w*|байт\w*|ГиБ\b)", re.I)
+_EXACT_VALUE = re.compile(r"\b(?:како[йе] (?:числов\w+|точн\w+) (?:предел|значение|лимит)"
+                          r"|точн\w+ (?:квот\w*|лимит\w*|формул\w*|цен\w*)"
+                          r"|каков[аы]? (?:квот\w*|цен\w*)|какой (?:[a-z]+[- ])?флаг"
+                          r"|сколько (?:секунд|байтов|очков|баллов)|how many (?:seconds|bytes))\b", re.I)
+
 
 @dataclass(frozen=True)
 class SectionEvidence:
@@ -23,6 +31,7 @@ class SectionEvidence:
     terms: frozenset
     matched: frozenset
     score: float
+    whole: bool = False
 
 
 @dataclass(frozen=True)
@@ -58,7 +67,18 @@ class EvidenceScorer:
         self.peak = top
         leading = sorted((evidence[c][0] for c in ranked), reverse=True)[:2]
         self.next_peak = leading[1] if len(leading) == 2 else median
-        self.precise = bool(_PRECISE.search(query.normalized) or re.search(r"\b\d+\.\d+\b", query.raw))
+        self.exact_value = bool(_EXACT_VALUE.search(query.raw))
+        self.precise = bool(self.exact_value or _PRECISE.search(query.normalized)
+                            or re.search(r"\b\d+\.\d+\b", query.raw))
+        intents = set(query.intents)
+        if intents & {"design", "procedure"}:
+            self.budget = (5, 6100, 2250)
+        elif "comparison" in intents or "complexity" in intents:
+            self.budget = (4, 4700, 1900)
+        elif "definition" in intents or "quantity" in intents or self.exact_value:
+            self.budget = (2, 2200, 1150)
+        else:
+            self.budget = (3, 3500, 1550)
         self.lex_peak = max(float(lexical.max()), 1.0)
         self.titles = engine.name_terms
         self.anchors = {token for word in re.findall(r"\b[A-Z]{2,6}\b", query.raw)
@@ -76,38 +96,49 @@ class EvidenceScorer:
     def _blocks(self, card):
         engine = self.engine
         sections = {}
+        block_limit, char_limit, parent_limit = self.budget
+        intents = set(self.query.intents)
+        procedural = bool(intents & {"procedure", "design"})
+        definition = "definition" in intents
+        example_requested = bool(re.search(r"\b(?:пример|example)\b", self.query.raw, re.I))
         for ix in engine.cards[card]:
             passage = engine.passages[ix]
             body = engine.body_terms[ix]
-            names = self.titles[card]
+            heading = normalize(passage.heading[-1]) if passage.heading else ""
+            headings = " ".join(passage.heading)
             match = frozenset(body & self.weights.keys())
-            local = self.cover(match)
             lexical = math.log1p(float(self.lexical[ix])) / math.log1p(self.lex_peak)
             sem = (float(self.dense[ix]) - self.median) / self.scale
-            score = .53 * sem + .23 * local + .16 * lexical
-            score += .11 * self.query.heading_signal(" ".join(passage.heading))
-            heading = normalize(passage.heading[-1]) if passage.heading else ""
-            definition = "definition" in self.query.intents
+            score = .53 * sem + .23 * self.cover(match) + .16 * lexical
+            score += .11 * self.query.heading_signal(headings)
             if _OVERVIEW.match(heading) and not definition:
-                score -= .14
-            if not definition and ("mechanism" in self.query.intents or "practice" in self.query.intents):
-                if heading.startswith(("как это", "как устроен", "как работает", "как примен", "реализац",
-                                       "подход к", "архитектур", "алгоритм", "модель данных")):
-                    score += .08
-            if definition and self.weights and self.weights.keys() <= names:
-                score += .13 * any(normalize(h).startswith(("определ", "что такое", "суть", "назнач")) for h in passage.heading)
-            previous = sections.get(passage.section)
-            if previous is None or score > previous[0]:
-                sections[passage.section] = (score, ix)
+                score -= .19
+            if not definition and (procedural or intents & {"mechanism", "practice"}):
+                if _PROCEDURE_HEADING.match(heading) or "шаг " in normalize(headings):
+                    score += .13 if procedural else .08
+                if procedural and not example_requested and any(_EXAMPLE_HEADING.match(normalize(h))
+                                                                  for h in passage.heading):
+                    score -= .16
+            if definition and self.weights and self.weights.keys() <= self.titles[card]:
+                score += .13 * any(normalize(h).startswith(("определ", "что такое", "суть", "назнач"))
+                                   for h in passage.heading)
+            if intents & {"quantity", "complexity"} and _NUMERIC.search(passage.text):
+                score += .10
+            if "comparison" in intents and len(self.anchors) > 1:
+                score += .10 * len(self.anchors & body) / len(self.anchors)
+            sections.setdefault(passage.section, []).append((score, ix))
         output = []
-        for section, (score, ix) in sections.items():
-            passage = engine.passages[ix]
+        for section, scored in sections.items():
+            scored.sort(reverse=True)
             parent = engine.section_text[card, section]
-            text = parent if len(parent) <= 1550 else passage.text
-            body = engine.section_terms[card, section] if text == parent else engine.body_terms[ix]
-            match = frozenset((body | set(terms(" ".join(passage.heading)))) & self.weights.keys())
-            if len(text) <= 3500:
-                output.append(SectionEvidence(ix, text, body, match, score))
+            whole = len(parent) <= parent_limit
+            for score, ix in scored[:1 if whole else min(block_limit, 3)]:
+                passage = engine.passages[ix]
+                text = parent if whole else passage.text
+                body = engine.section_terms[card, section] if whole else engine.body_terms[ix]
+                match = frozenset((body | set(terms(" ".join(passage.heading)))) & self.weights.keys())
+                if len(text) <= char_limit:
+                    output.append(SectionEvidence(ix, text, body, match, score, whole))
         return tuple(sorted(output, key=lambda b: (-b.score, b.index)))
 
     def assess(self, card, position):
@@ -132,7 +163,8 @@ class EvidenceScorer:
         reason = "sufficient_section"
         if not blocks or not self.weights:
             reason = "no_section"
-        elif self.strong_unknown or (self.precise and (coverage < .79 or best_coverage < .56)):
+        elif (self.strong_unknown or (self.precise and (coverage < .79 or best_coverage < .56))
+              or (self.exact_value and not any(_NUMERIC.search(b.text) for b in blocks[:4]))):
             reason = "unsupported_specific_detail"
         elif exact and cosine >= lexical_floor:
             pass
@@ -150,14 +182,13 @@ class EvidenceScorer:
             reason = "insufficient_section_evidence"
         return Candidate(card, strength, reason == "sufficient_section", reason, blocks)
 
+    def priority(self, candidate):
+        exact_title = self.weights.keys() == self.engine.title_terms[candidate.card]
+        return (candidate.admitted and "definition" in self.query.intents and exact_title, candidate.score)
+
     def candidates(self):
-        definition = "definition" in self.query.intents
-
-        def priority(candidate):
-            exact_title = self.weights.keys() == self.engine.title_terms[candidate.card]
-            return (candidate.admitted and definition and exact_title, candidate.score)
-
-        return sorted((self.assess(card, i) for i, card in enumerate(self.ranked)), key=priority, reverse=True)
+        return sorted((self.assess(card, i) for i, card in enumerate(self.ranked)),
+                      key=self.priority, reverse=True)
 
     def covers(self, block):
         """A directly matched section can answer a facet selected elsewhere."""
@@ -173,27 +204,31 @@ def choose_sections(candidates, scorer):
     if not options:
         return []
     first = options[0]
-    pool = [(c, b) for c in options[:3] for b in c.blocks[:5]]
+    block_limit, char_limit, _ = getattr(scorer, "budget", (3, 3500, 1550))
+    pool = [(c, b) for c in options for b in c.blocks[:block_limit + 2]]
     lead = first.blocks[0]
     chosen = [lead]
     covered = set(lead.matched)
-    budget = 3500 - len(lead.text)
+    budget = char_limit - len(lead.text)
     engine = scorer.engine
     main = engine.passages[lead.index]
-    while len(chosen) < 3 and budget > 0:
+    while len(chosen) < block_limit and budget > 0:
         choices = []
         for c, b in pool:
             if b in chosen or len(b.text) > budget:
                 continue
             novelty = scorer.cover(b.matched - covered)
+            p = engine.passages[b.index]
+            if c != first and len({engine.passages[item.index].card_id for item in chosen}) >= 3:
+                if all(engine.passages[item.index].card_id != p.card_id for item in chosen):
+                    continue
             overlap = max((len(b.terms & s.terms) / max(1, min(len(b.terms), len(s.terms))) for s in chosen), default=0)
             if c != first:
-                p = engine.passages[b.index]
                 connected = (p.card_id in main.related or p.card_id in main.prerequisites
                              or main.card_id in p.related or main.card_id in p.prerequisites)
                 if p.domain != main.domain and not connected:
                     continue
-                if novelty < .18 or c.score < first.score - .13 or b.score < .56 * lead.score:
+                if novelty < .22 or c.score < first.score - .13 or b.score < .68 * lead.score:
                     continue
             if overlap >= .69 or b.score < .65 * lead.score:
                 continue
@@ -219,29 +254,39 @@ def acronyms(titles):
             initials = "".join(word[0].casefold() for word in re.split(r"[- ]", name))
             name_terms = tuple(terms(name))
             if name_terms:
-                associations.setdefault(initials, {})[name_terms] = card
+                associations.setdefault(initials, {}).setdefault(name_terms, set()).add(card)
     return associations
 
 
 def resolve_acronyms(query, associations, engine):
-    from dataclasses import replace
-
-    words = re.findall(r"\b[A-Z]{2,5}\b", query.raw)
-    tokens = set(query.tokens)
     expansions = {}
-    for word in words:
+    for word in re.findall(r"\b[A-Z]{2,5}\b", query.raw):
         short = word.casefold()
-        options = associations.get(short)
-        if not options or short in engine.idf:
+        options = associations.get(short, {})
+        if short not in query.tokens or not options:
             continue
-        matching = [name for name, card in options.items()
-                    if len((tokens - {short}) & engine.card_terms[card]) >= 2]
-        if len(matching) == 1:
-            expansions[short] = matching[0]
+        context = set(query.tokens) - {short}
+        # Also consider explicitly named senses that already contain the short form.
+        covered = set().union(*options.values())
+        senses = {phrase: set(cards) for phrase, cards in options.items()}
+        direct = engine.title_cards.get(short, set()) - covered
+        if direct:
+            senses[(short,)] = direct
+        def support(cards):
+            overlaps = (context & engine.card_terms[card] for card in cards)
+            return max((sum(engine.idf.get(t, 0) for t in hits), len(hits)) for hits in overlaps)
+
+        ranked = sorted(((support(cards), phrase) for phrase, cards in senses.items()), reverse=True)
+        if not ranked:
+            continue
+        (weight, count), phrase = ranked[0]
+        if count >= 2 and (len(ranked) == 1 or weight - ranked[1][0][0] >= 1):
+            if phrase != (short,):
+                expansions[short] = phrase
     if not expansions:
         return query
     expanded = tuple(dict.fromkeys(v for w in query.tokens for v in expansions.get(w, (w,))))
-    return replace(query, tokens=expanded, normalized=query.normalized+" "+" ".join(
+    return replace(query, tokens=expanded, normalized=query.normalized + " " + " ".join(
         " ".join(v) for v in expansions.values()
     ))
 

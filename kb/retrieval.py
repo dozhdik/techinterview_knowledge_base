@@ -14,10 +14,12 @@ from time import perf_counter
 from .evidence import DEFAULT_DEPTH, EvidenceScorer, acronyms, choose_sections, lacks_referent, resolve_acronyms
 from .extractive import ExtractiveResult
 from .passage_index import INDEX, VERSION, Passage, close_code_fence, corpus_key
-from .query import Query, facets, terms
+from .qa_reader import apply_reader
+from .query import Query, facets, terms, with_facet_context
 from .vector_store import VectorIndexError, _embedder, source_fingerprint
 
 POOL = 30
+MAX_FACETS = 8
 FIELD_WEIGHTS = (2.6, 1.4, 1.5, 1.0)
 RRF_K = 12
 DENSE_WEIGHTS = 0.45
@@ -56,7 +58,11 @@ class Retrieval:
                     self.card_terms[p.card_id].add(term)
         self.idf = {term: math.log(1 + (len(self.cards) - len(cards) + .5) / (len(cards) + .5))
                     for term, cards in card_frequency.items()}
-        self.named_terms = frozenset().union(*self.title_terms.values())
+        self.title_cards = defaultdict(set)
+        for card, name in self.title_terms.items():
+            for word in name:
+                self.title_cards[word].add(card)
+        self.named_terms = frozenset(self.title_cards)
         self.section_text = {key: "\n\n".join(passages[i].text for i in indices)
                              for key, indices in self.parent.items()}
         self.section_terms = {key: frozenset().union(*(self.body_terms[i] for i in indices))
@@ -150,19 +156,39 @@ class Retrieval:
                         "rerank": perf_counter() - rerank_started},
         }
 
+    def _compose(self, blocks):
+        """Deduplicate exact blocks while retaining distinct excerpts of long sections."""
+        groups = defaultdict(dict)
+        for block in blocks:
+            p = self.passages[block.index]
+            group = groups[p.card_id, p.section]
+            if block.whole:
+                group.clear()
+                group[block.index] = block
+            elif not any(chosen.whole for chosen in group.values()):
+                group.setdefault(block.index, block)
+        return [sorted(group.values(), key=lambda block: self.passages[block.index].position)
+                for group in groups.values()]
+
     def ask(self, question, units, method="hybrid", domain=None, links=False, reranker=None, *,
-            depth=DEFAULT_DEPTH):
+            depth=DEFAULT_DEPTH, reader=None, qa_mode="off"):
         grouped = defaultdict(list)
-        selected = {}
         diagnostics = []
-        misses = []
-        timings = Counter(embedding=0.0, retrieval=0.0, rerank=0.0, extract=0.0)
+        selections = []
+        timings = Counter(embedding=0.0, retrieval=0.0, rerank=0.0, extract=0.0, qa=0.0)
         rankings = []
         by_id = {unit.id: unit for unit in units}
-        for part in facets(question):
-            query = resolve_acronyms(Query.parse(part), self.acronyms, self)
+        parts = facets(question)
+        overflow = parts[MAX_FACETS:]
+        previous = None
+        for part in parts[:MAX_FACETS]:
+            bare = resolve_acronyms(Query.parse(part), self.acronyms, self)
+            query = with_facet_context(bare, previous)
             if not query.normalized:
                 continue
+            if query is bare:
+                previous = bare
+            needs_clarification = lacks_referent(bare) and query is bare
             ranked, evidence, lexical, dense, details = self.rank(query, method, domain, links, reranker)
             rankings.append(ranked)
             timings.update(details["seconds"])
@@ -170,55 +196,78 @@ class Retrieval:
             scorer = EvidenceScorer(self, query, [card for card in ranked if card in by_id],
                                     evidence, lexical, dense, depth, method)
             candidates = scorer.candidates()
-            chosen = [] if lacks_referent(query) else choose_sections(candidates, scorer)
+            qa_start = perf_counter()
+            qa = {}
+            if not needs_clarification:
+                candidates, qa = apply_reader(reader, qa_mode, scorer, candidates)
+            qa_elapsed = perf_counter() - qa_start
+            timings["qa"] += qa_elapsed
+            chosen = [] if needs_clarification else choose_sections(candidates, scorer)
             if not chosen:
-                details["reason"] = "unspecified_referent" if lacks_referent(query) else "insufficient_evidence"
-                misses.append((part, scorer, details))
-            for block in chosen:
-                selected.setdefault(block.index, block)
+                details["reason"] = "unspecified_referent" if needs_clarification else "insufficient_evidence"
+            selections.append((part, scorer, details, chosen))
             details["checked_candidates"] = [
                 {"card": c.card, "score": round(c.score, 4), "reason": c.reason,
                  "section": list(self.passages[c.blocks[0].index].heading) if c.blocks else []}
                 for c in candidates
             ]
-            timings["extract"] += perf_counter() - started
-            details.update(query=part, normalized=query.normalized, terms=query.tokens,
+            timings["extract"] += perf_counter() - started - qa_elapsed
+            details.update(query=part, normalized=query.normalized, terms=query.tokens, qa=qa,
                            intents=query.intents, evidence=[(c, evidence[c]) for c in ranked[:10]])
             diagnostics.append(details)
         before = perf_counter()
+        composed = self._compose(b for _, _, _, chosen in selections for b in chosen)
+        retained = [b for group in composed for b in group]
         missing = []
-        for part, scorer, details in misses:
-            if any(scorer.covers(block) for block in selected.values()):
+        for part, scorer, details, chosen in selections:
+            # The same original excerpt may survive in a complete parent section.
+            visible = any(self.passages[a.index].card_id == self.passages[b.index].card_id
+                          and self.passages[a.index].section == self.passages[b.index].section
+                          and a.text in b.text for a in chosen for b in retained)
+            if visible:
+                continue
+            if any(scorer.covers(block) for block in retained):
                 details["reason"] = "covered_in_selected_sections"
             else:
                 missing.append(part)
-        used_sections = set()
-        for block in selected.values():
-            p = self.passages[block.index]
-            key = (p.card_id, p.section)
-            if key not in used_sections:
-                grouped[p.card_id].append((p, block.text))
-                used_sections.add(key)
+
+        selected = []
+        for group in composed:
+            p = self.passages[group[0].index]
+            texts = [close_code_fence(re.sub(r"\[\[([A-Z]+-[A-Z]+-\d+)\]\]", "", b.text)) for b in group]
+            grouped[p.card_id].append((p.heading, "\n\n".join(texts)))
+            selected.extend({"id": p.card_id, "heading": p.heading,
+                             "position": self.passages[b.index].position, "text": b.text} for b in group)
         rendered = []
         for card, picked in grouped.items():
             rendered.append("# " + by_id[card].title)
-            for p, text in picked:
-                subtitle = " / ".join(p.heading)
-                clean = close_code_fence(re.sub(r"\[\[([A-Z]+-[A-Z]+-\d+)\]\]", "", text))
-                rendered.append((f"## {subtitle}\n\n" if subtitle else "") + clean)
+            for heading, text in picked:
+                subtitle = " / ".join(heading)
+                rendered.append((f"## {subtitle}\n\n" if subtitle else "") + text)
         if missing and grouped:
             rendered.append("Найден частичный ответ. Для следующих частей вопроса подходящего фрагмента не найдено:\n\n"
                             + "\n".join(f"- {part}" for part in missing))
-        answer = ExtractiveResult("\n\n".join(rendered), [by_id[c] for c in grouped]) if grouped else None
-        if answer is None and any(d.get("reason") == "unspecified_referent" for d in diagnostics):
-            answer = ExtractiveResult("Уточните, о каком этапе, шаге или ситуации идёт речь.", [])
+        if overflow:
+            rendered.append("Отправьте оставшиеся части отдельным сообщением:\n\n"
+                            + "\n".join(f"- {part}" for part in overflow))
+        clarification = any(d.get("reason") == "unspecified_referent" for d in diagnostics)
+        if not grouped and clarification:
+            rendered.insert(0, "Уточните, о каком этапе, шаге или ситуации идёт речь.")
+        answer = ExtractiveResult("\n\n".join(rendered), [by_id[c] for c in grouped]) if rendered else None
+        if grouped:
+            state = "partial" if missing or overflow else "complete"
+        elif clarification or overflow:
+            state = "clarification"
+        elif any(cos >= .49 and coverage >= .30 for part in diagnostics for _, (cos, coverage) in part["evidence"]):
+            state = "related_only"
+        else:
+            state = "absent"
         timings["extract"] += perf_counter() - before
         rank = list(dict.fromkeys(r[i] for i in range(max(map(len, rankings), default=0))
                                   for r in rankings if len(r) > i))
-        return answer, {"query": question, "parts": diagnostics, "ranked_cards": rank,
-                        "selected": [{"id": c, "heading": p.heading, "position": p.position, "text": t}
-                                     for c, blocks in grouped.items() for p, t in blocks],
-                        "sources": list(grouped), "unanswered": missing, "seconds": dict(timings)}
+        return answer, {"query": question, "parts": diagnostics, "ranked_cards": rank, "state": state,
+                        "selected": selected, "sources": list(grouped), "unanswered": missing + overflow,
+                        "deferred": overflow, "seconds": dict(timings)}
 
 
 @functools.lru_cache(maxsize=2)

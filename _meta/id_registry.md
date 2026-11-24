@@ -4,14 +4,14 @@
 
 ## Статистика
 
-- **Всего единиц знаний:** 225
+- **Всего единиц знаний:** 228
 - **По доменам:**
-  - `arch`: 75
-  - `cs`: 75
+  - `arch`: 76
+  - `cs`: 77
   - `process`: 75
 - **По статусам:**
   - `approved`: 9
-  - `review`: 216
+  - `review`: 219
 
 ## Таблица идентификаторов
 
@@ -92,6 +92,7 @@
 | ARCH-TRADEOFF-017 | Последовательные vs случайные ID | arch | tradeoff | middle | review | `arch/tradeoffs/arch_tradeoff_posledovatelnye_vs_sluchaynye_id.md` |
 | ARCH-TRADEOFF-018 | Active-Passive vs Active-Active по регионам | arch | tradeoff | middle | review | `arch/tradeoffs/arch_tradeoff_activepassive_vs_activeactive_po_regionam.md` |
 | ARCH-TRADEOFF-019 | Object Storage vs Block Storage | arch | tradeoff | middle | review | `arch/tradeoffs/arch_tradeoff_object_storage_vs_block_storage.md` |
+| ARCH-TRADEOFF-020 | Горизонтальное и вертикальное масштабирование | arch | tradeoff | middle | review | `arch/tradeoffs/arch_tradeoff_horizontal_vs_vertical_scaling.md` |
 | CS-CONCEPT-001 | Бинарное дерево поиска | cs | concept | junior | review | `cs/concepts/cs_concept_binarnoe_derevo_poiska.md` |
 | CS-CONCEPT-002 | Массив и динамический массив | cs | concept | middle | review | `cs/concepts/cs_concept_massiv_i_dinamicheskiy_massiv.md` |
 | CS-CONCEPT-003 | Trie: префиксное дерево и сценарии применения | cs | concept | middle | review | `cs/concepts/cs_concept_trie_prefiksnoe_derevo_i_stsenarii_primeneniya.md` |
@@ -131,6 +132,8 @@
 | CS-CONCEPT-037 | Стек и куча в памяти программы | cs | concept | middle | review | `cs/concepts/cs_concept_stek_i_kucha_v_pamyati_programmy.md` |
 | CS-CONCEPT-038 | Сборка мусора | cs | concept | middle | review | `cs/concepts/cs_concept_sborka_musora.md` |
 | CS-CONCEPT-039 | Коллизии и коэффициент заполнения hash table | cs | concept | middle | review | `cs/concepts/cs_concept_kollizii_i_koeffitsient_zapolneniya_hash_table.md` |
+| CS-CONCEPT-040 | Составной B-tree индекс и порядок столбцов | cs | concept | middle | review | `cs/concepts/cs_concept_composite_btree_index.md` |
+| CS-CONCEPT-041 | Идемпотентность HTTP-методов и повтор запросов | cs | concept | middle | review | `cs/concepts/cs_concept_http_idempotency.md` |
 | CS-PATTERN-001 | Fast and Slow Pointers | cs | pattern | junior | review | `cs/patterns/cs_pattern_fast_and_slow_pointers.md` |
 | CS-PATTERN-002 | Backtracking: распознавание и шаблон решения | cs | pattern | middle | review | `cs/patterns/cs_pattern_backtracking_raspoznavanie_i_shablon_resheniya.md` |
 | CS-PATTERN-003 | Greedy Algorithms: признаки применимости и ограничения | cs | pattern | middle | review | `cs/patterns/cs_pattern_greedy_algorithms_priznaki_primenimosti_i_ogranicheniya.md` |

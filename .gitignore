@@ -1,3 +1,10 @@
 _data/*.sqlite3
 _data/*.sqlite3-shm
 _data/*.sqlite3-wal
+
+# Local environments and user settings
+.venv-rag/
+.vscode/
+.env
+.env.*
+!.env.example

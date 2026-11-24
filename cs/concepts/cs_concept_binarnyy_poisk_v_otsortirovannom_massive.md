@@ -20,10 +20,11 @@ prerequisites:
 - CS-CONCEPT-002
 sources:
 - Cormen et al. Introduction to Algorithms, 4th ed. (CLRS).
+- "Python documentation: bisect — https://docs.python.org/3/library/bisect.html"
 author: Команда TechInterview
 version: '1.1'
 date_created: '2026-11-23'
-date_updated: '2026-11-23'
+date_updated: '2026-11-24'
 status: review
 ---
 
@@ -42,6 +43,24 @@ status: review
 ## Как это работает
 
 На каждом шаге поддерживается диапазон, в котором ещё может находиться ответ. Сравнение со средним элементом исключает половину диапазона; вариант «первый подходящий» сохраняет инвариант границы.
+
+## Реализация левой границы
+
+Для отсортированного по возрастанию массива ищем первый индекс, где значение не меньше `target`. Поддерживаем полуоткрытый диапазон `[left, right)`: всё левее `left` уже меньше цели, а ответ может находиться в диапазоне до `right` включительно как позиция вставки.
+
+```python
+def lower_bound(values, target):
+    left, right = 0, len(values)
+    while left < right:
+        middle = left + (right - left) // 2
+        if values[middle] < target:
+            left = middle + 1
+        else:
+            right = middle
+    return left
+```
+
+Функция возвращает `len(values)`, если подходящего элемента нет. Пустой массив возвращает 0. В итеративной реализации при доступе к элементу массива за O(1) нужно O(log n) сравнений и O(1) дополнительной памяти. Для проверки точного совпадения после поиска нужно дополнительно убедиться, что индекс меньше длины массива и элемент равен цели.
 
 ## Пример
 
@@ -64,3 +83,4 @@ status: review
 ## Источник
 
 - Cormen et al. Introduction to Algorithms, 4th ed. (CLRS).
+- Python documentation: [bisect — Array bisection algorithm](https://docs.python.org/3/library/bisect.html).

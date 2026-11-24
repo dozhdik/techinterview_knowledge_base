@@ -287,13 +287,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_vector_build.set_defaults(func=cmd_vector_build)
 
     p_vector_search = subparsers.add_parser(
-        "vector-search", help="Найти фрагменты во векторном индексе"
+        "vector-search", help="Найти фрагменты гибридным поиском"
     )
     p_vector_search.add_argument("question", help="Поисковый вопрос")
     p_vector_search.add_argument("--index", help="Путь к SQLite-индексу")
     p_vector_search.add_argument("--limit", type=int, default=5)
     p_vector_search.add_argument("--domain", choices=("cs", "arch", "process", "global"))
-    p_vector_search.add_argument("--min-score", type=float, default=0.0)
+    p_vector_search.add_argument("--min-score", type=float, default=0.0,
+                                 help="Минимальное косинусное сходство фрагмента")
     p_vector_search.set_defaults(func=cmd_vector_search)
 
     p_vector_status = subparsers.add_parser(

@@ -54,10 +54,13 @@ _QUESTION_STOP_WORDS = set("""
     к как какая какие какой когда кто ли мне на над не но о об он она они от по
     под при про с со так там то такое у что это этой этот я
     расскажи расскажите объясни объясните устроен устроена устроены работает
-    спроектируй подготовиться отвечать выбирать каждый чем отличается
+    спроектируй подготовиться отвечать выбирать каждый чем отличается принцип работы следует
     выбрать проекта дай дайте определение определению определении
     определите покажи покажите карточку термин понятие означает значит
+    отличие отличия отличий отличаются сравни сравните разница них
+    лучше стоит использовать пример примеры
     the a an and or to of in on is are how what when why does do can i define
+    difference between versus vs compare differ from
 """.split())
 _RUSSIAN_ENDINGS = (
     "иями", "ами", "ями", "ого", "ему", "ому", "ыми", "ими", "ией",
@@ -66,10 +69,29 @@ _RUSSIAN_ENDINGS = (
 )
 
 
-def _question_words(text: str) -> list[str]:
+_TECHNICAL_ALIASES = {
+    "bfs": ("поиск в ширину", "обход в ширину", "обход графа в ширину",
+            "breadth first search", "breadth first traversal"),
+    "dfs": ("поиск в глубину", "обход в глубину", "обход графа в глубину",
+            "depth first search", "depth first traversal"),
+    "bst": ("бинарное дерево поиска", "двоичное дерево поиска", "binary search tree"),
+    "binarysearch": ("бинарный поиск", "binary search"),
+    "scaling": ("масштабирование", "scaling"),
+    "hashmap": ("хеш таблица", "хэш таблица", "hash table", "hash tables", "hash map"),
+    "bloomfilter": ("фильтр блума", "bloom filter"),
+    "dsu": ("disjoint set union", "union find", "система непересекающихся множеств"),
+    "cdn": ("content delivery network", "сеть доставки контента"),
+    "ttl": ("time to live", "время жизни записи"),
+    "mvcc": ("multiversion concurrency control", "многоверсионное управление конкурентным доступом"),
+    "cap": ("теорема cap", "cap theorem"),
+}
+
+
+def _stem_words(text: str) -> list[str]:
     terms = []
     for word in re.findall(r"[a-zа-я0-9]+", text.lower().replace("ё", "е")):
-        if len(word) < 2 or word.isdigit() or word in _QUESTION_STOP_WORDS:
+        if word in _QUESTION_STOP_WORDS or word.isdigit():
+            terms.append(word)
             continue
         word = {"hash": "хеш", "хэш": "хеш", "table": "таблиц", "tables": "таблиц"}.get(word, word)
         if re.fullmatch(r"[а-я]+", word):
@@ -78,6 +100,33 @@ def _question_words(text: str) -> list[str]:
                     word = word[:-len(ending)]
                     break
         terms.append(word)
+    return terms
+
+
+_ALIAS_TO_TERM = {
+    tuple(_stem_words(alias)): term
+    for term, aliases in _TECHNICAL_ALIASES.items()
+    for alias in aliases
+}
+_ALIAS_LENGTHS = sorted({len(alias) for alias in _ALIAS_TO_TERM}, reverse=True)
+
+
+def _question_words(text: str) -> list[str]:
+    words = _stem_words(text)
+    terms = []
+    offset = 0
+    while offset < len(words):
+        for length in _ALIAS_LENGTHS:
+            term = _ALIAS_TO_TERM.get(tuple(words[offset:offset + length]))
+            if term:
+                offset += length
+                break
+        else:
+            term = words[offset]
+            offset += 1
+        if len(term) >= 2 and not term.isdigit() and term not in _QUESTION_STOP_WORDS:
+            if not terms or term != terms[-1] or term not in _TECHNICAL_ALIASES:
+                terms.append(term)
     return terms
 
 
@@ -99,12 +148,78 @@ def _has_named_definition(unit: KnowledgeUnit, words: list[str], tags: set[str])
         return False
     title = _question_words(unit.title)
     filename = _question_words(Path(unit.file_path).stem)
+    return _matches_named_definition(words, title, filename, tags)
+
+
+def _matches_named_definition(words, title, filename, tags):
     if len(words) == 1:
         return words[0] in set(title) | set(filename) | tags
     width = len(words)
     return (any(title[i:i + width] == words for i in range(len(title) - width + 1))
             or any(filename[i:i + width] == words for i in range(len(filename) - width + 1))
             or set(words).issubset(tags))
+
+
+def lexical_chunk_scores(question, chunks, tags_by_card):
+    words = _question_words(question)
+    terms = set(words)
+    if not terms:
+        return [None] * len(chunks)
+
+    titles = {}
+    bodies = {}
+    passages = []
+    for card_id, title, text in chunks:
+        if card_id not in titles:
+            titles[card_id] = _question_words(title)
+            bodies[card_id] = set()
+        passage = terms & _question_terms(text)
+        bodies[card_id].update(passage)
+        passages.append(passage)
+    tags = {card_id: _question_terms(" ".join(tags_by_card.get(card_id, ()))) for card_id in titles}
+    names = {card_id: set(title) | tags[card_id] for card_id, title in titles.items()}
+    frequency = Counter(term for card_id in titles for term in terms & (names[card_id] | bodies[card_id]))
+    weights = {term: 1 + log((len(titles) + 1) / (frequency[term] + 1)) for term in terms}
+    total_weight = sum(weights.values())
+    topics = terms & _TECHNICAL_ALIASES.keys()
+    definition = _is_definition_question(question)
+    results = []
+    for (card_id, _, _), passage in zip(chunks, passages):
+        title = titles[card_id]
+        title_matches = terms & set(title)
+        named_matches = terms & names[card_id]
+        matched = named_matches | bodies[card_id]
+        coverage = sum(weights[term] for term in matched) / total_weight
+        partial_comparison = len(topics) > 1 and bool(topics & named_matches)
+        if (not matched
+                or topics and not topics & matched
+                or coverage < 0.55 and not partial_comparison
+                or definition and not _matches_named_definition(words, title, [], tags[card_id])):
+            results.append(None)
+            continue
+        if not named_matches and (coverage < 0.75 or topics - matched or not any(
+                frequency[term] <= max(1, len(titles) * 0.1) for term in passage
+        )):
+            results.append(None)
+            continue
+
+        if words == title:
+            priority = 4
+        elif terms <= title_matches:
+            priority = 3
+        elif partial_comparison and title and set(title) <= topics:
+            priority = 2
+        else:
+            priority = int(bool(named_matches))
+        score = sum(
+            weights[term] * (
+                (0.85 if term in title_matches else 0.6 if term in named_matches else 0.1)
+                + (0.15 if term in passage else 0)
+            )
+            for term in matched
+        ) / total_weight
+        results.append((priority, score))
+    return results
 
 
 def search_question(

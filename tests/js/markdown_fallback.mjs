@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+globalThis.window = {};
+const source = await readFile('web/static/js/utils.js', 'utf8');
+const module = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
+const html = module.renderMarkdown('# Тема\n\n- **Важно**\n- `код`\n\n```\n<img src=x onerror=alert(1)>\n```');
+assert.match(html, /<h1>Тема<\/h1>/);
+assert.match(html, /<ul><li><strong>Важно<\/strong><\/li>/);
+assert.match(html, /<code>код<\/code>/);
+assert.ok(!html.includes('<img'));
+assert.ok(html.includes('&lt;img'));
+const table = module.renderMarkdown('| Название | Сложность |\n| --- | --- |\n| Поиск | `O(log n)` |');
+assert.match(table, /<table>/);
+assert.match(table, /<td>Поиск<\/td>/);
+assert.match(table, /<code>O\(log n\)<\/code>/);
+console.log('Safe offline Markdown: OK');

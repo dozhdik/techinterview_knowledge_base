@@ -7,6 +7,7 @@ const themeToggle  = document.getElementById("theme-toggle");
 const clearBtn     = document.getElementById("clear-btn");
 const textarea     = document.getElementById("chat-input");
 const sendBtn      = document.getElementById("send-btn");
+let isSubmitting = false;
 const sendIcon     = document.getElementById("send-icon");
 const sendSpinner  = document.getElementById("send-spinner");
 const messagesArea = document.getElementById("messages-area");
@@ -54,19 +55,20 @@ const resizeTextarea = debounce(() => {
 
 
 function setSubmitState(loading) {
+  isSubmitting = loading;
   sendBtn.disabled = loading || !textarea.value.trim();
   sendIcon.style.display    = loading ? "none"  : "block";
   sendSpinner.style.display = loading ? "block" : "none";
 }
 
 function updateSendBtn() {
-  sendBtn.disabled = !textarea.value.trim();
+  sendBtn.disabled = isSubmitting || !textarea.value.trim();
 }
 
 
 async function handleSubmit() {
   const question = textarea.value.trim();
-  if (!question) return;
+  if (!question || isSubmitting) return;
 
   textarea.value = "";
   resizeTextarea();

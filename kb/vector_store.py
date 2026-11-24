@@ -1,4 +1,8 @@
 import hashlib
+import functools
+import threading
+import time
+import logging
 import json
 import math
 import re
@@ -10,6 +14,7 @@ from pathlib import Path
 
 from .content import has_material
 from .parser import parse_directory
+from .search import lexical_chunk_scores
 
 
 DEFAULT_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
@@ -101,7 +106,11 @@ def _normalize(values):
     return [value / magnitude for value in values] if magnitude else values
 
 
-def _embedder(backend, model=None):
+_EMBEDDER_LOCK = threading.Lock()
+
+
+@functools.lru_cache(maxsize=4)
+def _cached_embedder(backend, model=None):
     if backend == "hash":
         embedder = HashEmbedder()
         if model and model != embedder.model:
@@ -110,6 +119,27 @@ def _embedder(backend, model=None):
     if backend == "sentence-transformers":
         return SentenceTransformerEmbedder(model or DEFAULT_MODEL)
     raise VectorIndexError(f"Неизвестный backend: {backend}")
+
+
+
+def _embedder(backend, model=None):
+    with _EMBEDDER_LOCK:
+        return _cached_embedder(backend, model)
+
+
+def source_fingerprint(root):
+    root = Path(root)
+    items = []
+    for domain in ("cs", "arch", "process", "global"):
+        folder = root / domain
+        if folder.is_dir():
+            for path in sorted(folder.rglob("*.md")):
+                try:
+                    stat = path.stat()
+                except FileNotFoundError:
+                    continue
+                items.append((str(path.relative_to(root)), stat.st_mtime_ns, stat.st_ctime_ns, stat.st_size))
+    return tuple(items)
 
 
 def _split_text(content, max_chars):
@@ -152,7 +182,14 @@ def _split_text(content, max_chars):
 
 
 def _collect(root, max_chars):
+    root = Path(root).resolve()
+    return _collect_cached(root, max_chars, source_fingerprint(root))
+
+
+@functools.lru_cache(maxsize=8)
+def _collect_cached(root, max_chars, fingerprint):
     records = []
+    tags_by_card = {}
     for domain in ("cs", "arch", "process", "global"):
         folder = root / domain
         if not folder.is_dir():
@@ -160,6 +197,7 @@ def _collect(root, max_chars):
         for unit in parse_directory(folder, skip_errors=False):
             if unit.status == "draft" or not has_material(unit):
                 continue
+            tags_by_card[unit.id] = unit.tags
             source_path = str(Path(unit.file_path).relative_to(root))
             content = re.sub(
                 r"(?ms)^## (?:Связанные темы|Связанные задачи и концепции|"
@@ -186,7 +224,7 @@ def _collect(root, max_chars):
                 records.append(record)
     if len({record["chunk_id"] for record in records}) != len(records):
         raise VectorIndexError("Повторяющиеся ID карточек или фрагментов")
-    return records
+    return records, tags_by_card
 
 
 def _digest(records):
@@ -228,7 +266,7 @@ def build_index(root, index_path=None, backend="hash", model=None, max_chars=140
     index_path = Path(index_path) if index_path else root / DEFAULT_INDEX
     if max_chars < 200:
         raise ValueError("max_chars должен быть не меньше 200")
-    records = _collect(root, max_chars)
+    records, _ = _collect(root, max_chars)
     if not records:
         raise VectorIndexError("Нет заполненных карточек для индексации")
     embedder = _embedder(backend, model)
@@ -284,7 +322,7 @@ def build_index(root, index_path=None, backend="hash", model=None, max_chars=140
             "path": str(index_path)}
 
 
-def index_status(root, index_path=None):
+def _index_snapshot(root, index_path):
     root = Path(root).resolve()
     index_path = Path(index_path) if index_path else root / DEFAULT_INDEX
     if not index_path.exists():
@@ -295,46 +333,84 @@ def index_status(root, index_path=None):
             raise VectorIndexError("Версия векторного индекса устарела. Перестройте индекс.")
         count = connection.execute("SELECT COUNT(*) FROM chunks").fetchone()[0]
         cards = connection.execute("SELECT COUNT(DISTINCT card_id) FROM chunks").fetchone()[0]
-    records = _collect(root, int(info["max_chars"]))
-    return {"path": str(index_path), "backend": info["backend"],
-            "model": info["model"], "dimensions": int(info["dimensions"]),
-            "max_chars": int(info["max_chars"]),
-            "cards": cards, "chunks": count,
-            "fresh": info["source_digest"] == _digest(records)}
+    records, tags_by_card = _collect(root, int(info["max_chars"]))
+    status = {"path": str(index_path), "backend": info["backend"],
+              "model": info["model"], "dimensions": int(info["dimensions"]),
+              "max_chars": int(info["max_chars"]),
+              "cards": cards, "chunks": count,
+              "fresh": info["source_digest"] == _digest(records)}
+    return status, tags_by_card
 
 
-def search_index(root, question, index_path=None, limit=5, domain=None, min_score=0.0):
-    if not question.strip() or limit < 1:
-        return []
-    status = index_status(root, index_path)
-    if not status["fresh"]:
-        raise VectorIndexError("Карточки изменились после индексации. Выполните vector-build.")
-    embedder = _embedder(status["backend"], status["model"])
-    query_vector = embedder.embed_query(question)
-    if not any(query_vector):
-        return []
-    with closing(sqlite3.connect(status["path"])) as connection:
+def index_status(root, index_path=None):
+    status, _ = _index_snapshot(root, index_path)
+    return status
+
+
+
+@functools.lru_cache(maxsize=8)
+def _cached_rows(path, domain, mtime_ns, ctime_ns, size):
+    with closing(sqlite3.connect(path)) as connection:
         connection.row_factory = sqlite3.Row
         if domain:
-            rows = connection.execute("SELECT * FROM chunks WHERE domain = ?", (domain,))
+            return connection.execute("SELECT * FROM chunks WHERE domain = ?", (domain,)).fetchall()
+        return connection.execute("SELECT * FROM chunks").fetchall()
+
+def search_index(root, question, index_path=None, limit=5, domain=None, min_score=0.0, _snapshot=None):
+    if not question.strip() or limit < 1:
+        return []
+    started = time.perf_counter()
+    status, tags_by_card = _snapshot if _snapshot is not None else _index_snapshot(root, index_path)
+    if not status["fresh"]:
+        raise VectorIndexError("Карточки изменились после индексации. Выполните vector-build.")
+    index_stat = Path(status["path"]).stat()
+    rows = _cached_rows(status["path"], domain, index_stat.st_mtime_ns, index_stat.st_ctime_ns, index_stat.st_size)
+    chunks = [(row["card_id"], row["title"], row["text"]) for row in rows]
+    lexical_scores = lexical_chunk_scores(question, chunks, tags_by_card)
+    if not any(match is not None for match in lexical_scores):
+        return []
+
+    load_started = time.perf_counter()
+    embedder = _embedder(status["backend"], status["model"])
+    logging.getLogger("uvicorn.error").info("rag_embedder_load_seconds=%.3f", time.perf_counter() - load_started)
+    embed_started = time.perf_counter()
+    query_vector = embedder.embed_query(question)
+    logging.getLogger("uvicorn.error").info("rag_embedding_seconds=%.3f", time.perf_counter() - embed_started)
+    if not any(query_vector):
+        return []
+    body_only_minimum = 0.25 if status["backend"] == "hash" else 0.35
+    ranked = []
+    for row, match in zip(rows, lexical_scores):
+        if match is None:
+            continue
+        priority, lexical_score = match
+        vector = array("f")
+        vector.frombytes(row["embedding"])
+        if len(vector) != len(query_vector):
+            raise VectorIndexError("Размерность векторов не совпадает. Перестройте индекс.")
+        cosine = sum(left * right for left, right in zip(vector, query_vector))
+        if cosine < min_score or (priority == 0 and cosine < body_only_minimum):
+            continue
+        score = 0.75 * lexical_score + 0.25 * cosine
+        ranked.append((priority, score, row["chunk_id"], cosine, row))
+
+    ranked.sort(key=lambda item: (-item[0], -item[1], item[2]))
+    first_hits = []
+    extra_hits = []
+    seen_cards = set()
+    for _, _, _, cosine, row in ranked:
+        hit = VectorHit(
+            chunk_id=row["chunk_id"], card_id=row["card_id"],
+            title=row["title"], domain=row["domain"],
+            category=row["category"], status=row["status"],
+            source_path=row["source_path"], text=row["text"],
+            score=cosine, related=json.loads(row["related"]),
+            sources=json.loads(row["sources"]),
+        )
+        if hit.card_id in seen_cards:
+            extra_hits.append(hit)
         else:
-            rows = connection.execute("SELECT * FROM chunks")
-        hits = []
-        for row in rows:
-            vector = array("f")
-            vector.frombytes(row["embedding"])
-            if len(vector) != len(query_vector):
-                raise VectorIndexError("Размерность векторов не совпадает. Перестройте индекс.")
-            score = sum(left * right for left, right in zip(vector, query_vector))
-            if score < min_score:
-                continue
-            hits.append(VectorHit(
-                chunk_id=row["chunk_id"], card_id=row["card_id"],
-                title=row["title"], domain=row["domain"],
-                category=row["category"], status=row["status"],
-                source_path=row["source_path"], text=row["text"],
-                score=score, related=json.loads(row["related"]),
-                sources=json.loads(row["sources"]),
-            ))
-    hits.sort(key=lambda hit: (-hit.score, hit.chunk_id))
-    return hits[:limit]
+            first_hits.append(hit)
+            seen_cards.add(hit.card_id)
+    logging.getLogger("uvicorn.error").info("rag_search_seconds=%.3f", time.perf_counter() - started)
+    return (first_hits + extra_hits)[:limit]

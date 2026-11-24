@@ -642,3 +642,16 @@ body.card-page { height: auto; min-height: 100vh; overflow: auto; }
 @media (min-width: 1024px) {
   .app-layout { max-width: 860px; }
 }
+
+.stream-status { color: var(--text-secondary); font-size: .85rem; margin: .5rem 0; }
+.stop-btn { border: 1px solid var(--text-muted); border-radius: .5rem; padding: .5rem; background: transparent; color: var(--text-primary); cursor: pointer; }
+.stop-btn[hidden] { display: none; }
+.app-layout { grid-template-columns: minmax(0, 1fr); }
+.chat-textarea { min-width: 0; }
+.stop-btn { max-width: 45%; overflow-wrap: anywhere; }
+
+.message-bubble .table-scroll { max-width: 100%; overflow-x: auto; }
+.message-bubble table { border-collapse: collapse; }
+.message-bubble th, .message-bubble td { border: 1px solid var(--border); padding: .4rem .6rem; }
+
+.search-status { color: var(--text-secondary); font-size: .9rem; }

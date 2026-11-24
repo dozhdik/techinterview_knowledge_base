@@ -170,6 +170,7 @@ def test_static_assets_are_available(path):
 def test_rag_answer_uses_index_and_cited_card(knowledge_base, monkeypatch, inline_rag_thread):
     path = knowledge_base("CS-CONCEPT-009", "Хеш-таблица",
                           "# Хеш-таблица\n\nХеш-таблица хранит пары ключ и значение.")
+    monkeypatch.setenv("RAG_ENABLED", "true")
     monkeypatch.setenv("RAG_BASE_URL", "http://model.test/v1")
     monkeypatch.setenv("RAG_MODEL", "test-model")
     contexts = []
@@ -179,6 +180,7 @@ def test_rag_answer_uses_index_and_cited_card(knowledge_base, monkeypatch, inlin
         return "Хеш-таблица хранит пары ключ и значение. [[CS-CONCEPT-009]]"
 
     monkeypatch.setattr(rag, "_request_completion", complete)
+    rag.build_index(server.KB_ROOT, backend="hash")
     result = json.loads(request("/api/ask", {"question": "Что такое хеш-таблица?"})[1])
     assert result["status"] == "success"
     assert result["is_rag_enabled"] is True
@@ -194,6 +196,7 @@ def test_rag_answer_uses_index_and_cited_card(knowledge_base, monkeypatch, inlin
 
 def test_rag_abstains_and_skips_unknown_topics(knowledge_base, monkeypatch, inline_rag_thread):
     knowledge_base("CS-CONCEPT-009", "Хеш-таблица", "Хеш-таблица хранит ключи.")
+    monkeypatch.setenv("RAG_ENABLED", "true")
     monkeypatch.setenv("RAG_BASE_URL", "http://model.test/v1")
     monkeypatch.setenv("RAG_MODEL", "test-model")
     calls = []
@@ -203,6 +206,7 @@ def test_rag_abstains_and_skips_unknown_topics(knowledge_base, monkeypatch, inli
         return rag.INSUFFICIENT_CONTEXT
 
     monkeypatch.setattr(rag, "_request_completion", complete)
+    rag.build_index(server.KB_ROOT, backend="hash")
     result = json.loads(request("/api/ask", {"question": "Что такое хеш-таблица?"})[1])
     assert result["status"] == "not_found"
     assert result["sources"] == []
@@ -214,6 +218,7 @@ def test_rag_abstains_and_skips_unknown_topics(knowledge_base, monkeypatch, inli
 
 def test_rag_provider_failure_preserves_card_answer(knowledge_base, monkeypatch, inline_rag_thread):
     knowledge_base("CS-CONCEPT-009", "Хеш-таблица", "Материал про хеш-таблицу.")
+    monkeypatch.setenv("RAG_ENABLED", "true")
     monkeypatch.setenv("RAG_BASE_URL", "http://model.test/v1")
     monkeypatch.setenv("RAG_MODEL", "test-model")
 
@@ -221,6 +226,7 @@ def test_rag_provider_failure_preserves_card_answer(knowledge_base, monkeypatch,
         raise rag.RagError("Сервис генерации недоступен")
 
     monkeypatch.setattr(rag, "_request_completion", fail)
+    rag.build_index(server.KB_ROOT, backend="hash")
     result = json.loads(request("/api/ask", {"question": "Что такое хеш-таблица?"})[1])
     assert result["status"] == "success"
     assert result["is_rag_enabled"] is False
@@ -230,6 +236,7 @@ def test_rag_provider_failure_preserves_card_answer(knowledge_base, monkeypatch,
 
 def test_explicit_id_keeps_exact_card_response_with_rag_configured(knowledge_base, monkeypatch):
     knowledge_base("CS-CONCEPT-009", "Хеш-таблица", "Точное содержимое карточки.")
+    monkeypatch.setenv("RAG_ENABLED", "true")
     monkeypatch.setenv("RAG_BASE_URL", "http://model.test/v1")
     monkeypatch.setenv("RAG_MODEL", "test-model")
 

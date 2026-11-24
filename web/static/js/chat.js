@@ -13,7 +13,7 @@ import {
 
 const STORAGE_KEY = "techinterview_chat_history";
 const MAX_HISTORY = 50;
-const FETCH_TIMEOUT_MS = 60000;
+const FETCH_TIMEOUT_MS = 210000;
 
 const WELCOME_EXAMPLES = [
   { domain: "cs",   text: "Как устроена хеш-таблица и когда она перестаёт быть O(1)?" },
@@ -27,6 +27,7 @@ const WELCOME_EXAMPLES = [
 
 let history = [];
 let isLoading = false;
+let activeController = null;
 
 
 let messagesArea = null;
@@ -195,86 +196,47 @@ function renderMessage(msg) {
 }
 
 
+export function stopGeneration() {
+  activeController?.abort();
+}
+
 export async function sendMessage(question) {
   if (isLoading || !question.trim()) return;
   isLoading = true;
-
+  activeController = new AbortController();
+  const controller = activeController;
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   hideWelcome();
-
-  const userMsg = {
-    id: generateId(),
-    role: "user",
-    content: question.trim(),
-    timestamp: Date.now(),
-  };
+  const userMsg = {id: generateId(), role: "user", content: question.trim(), timestamp: Date.now()};
   history.push(userMsg);
   messagesArea.appendChild(renderMessage(userMsg));
-  scrollToBottom(messagesArea);
-
   const skeleton = renderSkeleton();
-
+  skeleton.setAttribute("aria-label", "Поиск информации");
+  const indicator = document.createElement("span");
+  indicator.textContent = "Поиск по базе знаний…";
+  indicator.className = "search-status";
+  skeleton.querySelector(".skeleton-body").prepend(indicator);
   try {
-    const data = await fetchWithRetry("/api/ask", { question: question.trim() }, 0);
-
-    removeSkeleton();
-
-    if (data.status === "error") {
-      showToast(data.answer || "Ошибка сервера", "error");
-    } else {
-      const aiMsg = {
-        id: generateId(),
-        role: "assistant",
-        content: data.answer,
-        sources: data.sources || [],
-        confidence: data.confidence,
-        ragEnabled: data.is_rag_enabled === true,
-        timestamp: Date.now(),
-      };
-      history.push(aiMsg);
-      saveHistory();
-
-      const el = renderMessage(aiMsg);
-      messagesArea.appendChild(el);
-      scrollToBottom(messagesArea);
-    }
+    const response = await fetch("/api/ask", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({question: question.trim()}), signal: controller.signal});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const msg = {id: generateId(), role: "assistant", content: data.answer, sources: data.sources || [],
+                 ragEnabled: data.is_rag_enabled === true, timestamp: Date.now()};
+    history.push(msg); saveHistory(); messagesArea.appendChild(renderMessage(msg));
+    scrollToBottom(messagesArea);
   } catch (err) {
-    removeSkeleton();
-    showToast(`Ошибка: ${err.message}`, "error");
+    showToast(err.name === "AbortError" ? "Поиск прерван" : `Ошибка поиска: ${err.message}`, "error");
   } finally {
+    skeleton.remove(); clearTimeout(timer);
+    if (activeController === controller) activeController = null;
     isLoading = false;
   }
 }
 
 
-async function fetchWithRetry(url, body, retries = 1) {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-      clearTimeout(timer);
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (err) {
-      clearTimeout(timer);
-      if (attempt === retries) {
-        if (err.name === "AbortError") throw new Error("Превышено время ожидания (60 сек)");
-        throw err;
-      }
-      await new Promise((r) => setTimeout(r, 800));
-    }
-  }
-}
-
-
 export function clearChat() {
+  stopGeneration();
   history = [];
   saveHistory();
   messagesArea.replaceChildren(welcomeScreen);

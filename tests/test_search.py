@@ -358,3 +358,32 @@ class TestPrintResults:
         print_results(results, verbose=True)
         captured = capsys.readouterr().out
         assert "score=" in captured
+
+
+def test_card_identifier_accepts_project_prefixes_and_rejects_technical_tokens():
+    from kb.search import requested_card_ids
+
+    question = "eu-south-2 RFC-HTTP-3 CS-INVALID-9 arch-component-001 [[glb-glossary-1000]] cs-concept-1-beta ARCH-COMPONENT-012.2"
+    assert requested_card_ids(question) == ["ARCH-COMPONENT-001", "GLB-GLOSSARY-1000"]
+
+
+def test_cli_search_keeps_technical_text_and_resolves_only_exact_ids(monkeypatch, capsys):
+    from main import build_parser
+    from kb.parser import KnowledgeUnit
+
+    def unit(id, title, content):
+        return KnowledgeUnit(id=id, title=title, domain="cs", category="concept",
+                             difficulty="junior", content=content)
+
+    original = unit("CS-CONCEPT-009", "Точная карточка", "Регион eu-south-2 доступен.")
+    mention = unit("CS-CONCEPT-010", "Карточка со ссылками", "См. CS-CONCEPT-009 и CS-CONCEPT-999.")
+    monkeypatch.setattr("main._load_units", lambda: [original, mention])
+    cli = build_parser()
+    for query in ("eu-south-2", "Открой cs-concept-009"):
+        args = cli.parse_args(["search", "--text", query])
+        args.func(args)
+        result = capsys.readouterr().out
+        assert "Точная карточка" in result and "Карточка со ссылками" not in result
+    args = cli.parse_args(["search", "--text", "CS-CONCEPT-999"])
+    args.func(args)
+    assert "Карточка со ссылками" not in capsys.readouterr().out

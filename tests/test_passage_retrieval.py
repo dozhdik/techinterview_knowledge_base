@@ -266,3 +266,18 @@ def test_reader_checks_source_offsets_and_cannot_override_missing_specific_detai
     assert result[0].card == "B" and result[0].admitted
     assert not result[1].admitted
     assert debug[1]["span"] == [0, 9]
+
+
+def test_related_cards_use_original_evidence_and_exclude_answer_sources():
+    engine = _engine()
+    engine.idf.update({"очередь": 2., "планы": 2.})
+    debug = {"sources": ["A"], "unanswered": ["про очередь"], "parts": [{
+        "query": "про очередь", "terms": ("очередь", "планы"), "reason": "insufficient_evidence",
+        "evidence": [("A", (.9, .9)), ("B", (.54, .38))],
+    }]}
+    assert list(engine.related_cards(debug)) == ["B"]
+    debug["parts"][0]["terms"] = ("планы",)
+    assert list(engine.related_cards(debug)) == []
+    debug["parts"][0]["reason"] = "unspecified_referent"
+    debug["parts"][0]["terms"] = ("очередь",)
+    assert list(engine.related_cards(debug)) == []

@@ -1,13 +1,12 @@
 import {
   escapeHtml,
   renderMarkdown,
+  renderInline,
   copyToClipboard,
   showToast,
-  formatConfidence,
   getDomainFromId,
   scrollToBottom,
   generateId,
-  formatTime,
 } from "./utils.js";
 
 
@@ -79,7 +78,7 @@ function hideWelcome() {
 }
 
 function domainLabel(domain) {
-  return { cs: "CS", arch: "Architecture", proc: "Process", glb: "Global" }[domain] ?? domain.toUpperCase();
+  return { cs: "CS", arch: "Architecture", proc: "Process", process: "Процесс собеседования", glb: "Global", global: "Общее" }[domain] ?? domain.toUpperCase();
 }
 
 
@@ -134,6 +133,30 @@ function renderMessage(msg) {
       </div>`
     : "";
 
+  const stateLabels = {
+    complete: "Ответ из базы знаний",
+    partial: "Частичный ответ",
+    clarification: "Нужно уточнение",
+  };
+  const label = stateLabels[msg.searchState];
+  const labelHtml = !isUser && label ? `<p class="answer-state">${label}</p>` : "";
+  const noticeHtml = !isUser && msg.searchNotice
+    ? `<p class="search-notice">${escapeHtml(msg.searchNotice)}</p>` : "";
+  const materialsHtml = !isUser && msg.relatedMaterials?.length
+    ? `<section class="related-materials" aria-labelledby="${escapeHtml(msg.id)}-related">
+        <h3 id="${escapeHtml(msg.id)}-related">Материалы по теме</h3>
+        <ul>${msg.relatedMaterials.map((item) => `
+          <li>
+            <a href="/cards/${encodeURIComponent(item.id)}" target="_blank" rel="noopener noreferrer">
+              ${escapeHtml(item.title)}
+            </a>
+            <span class="related-domain">${escapeHtml(domainLabel(item.domain))}</span>
+            ${item.description ? `<p>${renderInline(item.description)}</p>` : ""}
+          </li>`).join("")}
+        </ul>
+      </section>`
+    : "";
+
   const actionsHtml = !isUser
     ? `<div class="message-actions" role="group" aria-label="Действия с ответом">
         <button class="action-btn js-copy" type="button" aria-label="Скопировать ответ">
@@ -152,21 +175,16 @@ function renderMessage(msg) {
             <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
           </svg>
         </button>
-        ${msg.confidence != null
-          ? `<span class="confidence-badge">
-              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-              ${formatConfidence(msg.confidence)}
-            </span>`
-          : ""}
-        ${msg.ragEnabled ? '<span class="confidence-badge">RAG</span>' : ""}
       </div>`
     : "";
 
   el.innerHTML = `
     <div class="message-avatar" aria-hidden="true">${avatarEmoji}</div>
     <div class="message-body">
-      <div class="message-bubble">${contentHtml}</div>
+      ${noticeHtml}
+      <div class="message-bubble">${labelHtml}${contentHtml}</div>
       ${sourcesHtml}
+      ${materialsHtml}
       ${actionsHtml}
     </div>
   `;
@@ -196,7 +214,7 @@ function renderMessage(msg) {
 }
 
 
-export function stopGeneration() {
+function cancelSearch() {
   activeController?.abort();
 }
 
@@ -222,7 +240,8 @@ export async function sendMessage(question) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     const msg = {id: generateId(), role: "assistant", content: data.answer, sources: data.sources || [],
-                 ragEnabled: data.is_rag_enabled === true, timestamp: Date.now()};
+                 searchState: data.search_state, searchNotice: data.search_notice,
+                 relatedMaterials: data.related_materials || [], timestamp: Date.now()};
     history.push(msg); saveHistory(); messagesArea.appendChild(renderMessage(msg));
     scrollToBottom(messagesArea);
   } catch (err) {
@@ -236,7 +255,7 @@ export async function sendMessage(question) {
 
 
 export function clearChat() {
-  stopGeneration();
+  cancelSearch();
   history = [];
   saveHistory();
   messagesArea.replaceChildren(welcomeScreen);

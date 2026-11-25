@@ -5,6 +5,9 @@ from pathlib import Path
 from .parser import KnowledgeUnit
 
 
+DOMAIN_CODES = {"cs": "CS", "arch": "ARCH", "process": "PROC", "global": "GLB"}
+
+
 @dataclass
 class RegistryEntry:
     id:         str
@@ -75,13 +78,7 @@ class Registry:
 
 
     def next_id(self, domain: str, category: str) -> str:
-        domain_codes = {
-            "cs":      "CS",
-            "arch":    "ARCH",
-            "process": "PROC",
-            "global":  "GLB",
-        }
-        domain_code   = domain_codes.get(domain.lower(), domain.upper())
+        domain_code = DOMAIN_CODES.get(domain.lower(), domain.upper())
         category_code = category.upper()
         prefix = f"{domain_code}-{category_code}-"
 

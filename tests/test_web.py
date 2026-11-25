@@ -248,3 +248,99 @@ def test_explicit_id_keeps_exact_card_response_with_rag_configured(knowledge_bas
     assert result["status"] == "success"
     assert result["is_rag_enabled"] is False
     assert "Точное содержимое карточки" in result["answer"]
+
+
+def test_region_is_sent_to_search_and_exact_ids_still_route(knowledge_base, monkeypatch):
+    from kb.extractive import ExtractiveResult
+
+    knowledge_base("ARCH-COMPONENT-001", "Балансировщик", "# Балансировщик\n\n## Назначение\n\nРаздаёт трафик.", domain="arch")
+    queries = []
+
+    def lookup(root, question, units):
+        queries.append(question)
+        return ExtractiveResult("Раздаёт трафик.", units), "complete", []
+
+    monkeypatch.setattr(server, "structural_search", lookup)
+    question = "Как выбрать балансировщик для eu-south-2 и OpenSSL-3.5?"
+    data = json.loads(request("/api/ask", {"question": question})[1])
+    assert data["search_state"] == "complete" and queries == [question]
+
+    exact = json.loads(request("/api/ask", {"question": "Открой [[arch-component-001]]"})[1])
+    assert exact["sources"][0]["id"] == "ARCH-COMPONENT-001"
+    missing = json.loads(request("/api/ask", {"question": "ARCH-COMPONENT-1000"})[1])
+    assert missing["status"] == "not_found" and "ARCH-COMPONENT-1000" in missing["answer"]
+    assert queries == [question]
+
+
+def test_related_materials_keep_empty_answer_sources(knowledge_base, monkeypatch):
+    knowledge_base("ARCH-COMPONENT-001", "Балансировщик", "# Балансировщик\n\n## Назначение\n\nРаздаёт трафик.", domain="arch")
+    monkeypatch.setattr(server, "structural_search", lambda root, q, units: (None, "related_only", units))
+    data = json.loads(request("/api/ask", {"question": "Вопрос о балансировщике"})[1])
+    assert data["status"] == "not_found" and data["sources"] == []
+    assert data["search_state"] == "related_only"
+    assert data["related_materials"] == [{
+        "id": "ARCH-COMPONENT-001", "title": "Балансировщик", "description": "Раздаёт трафик.",
+        "domain": "arch", "url": "/cards/ARCH-COMPONENT-001",
+    }]
+
+
+def test_lifespan_warms_once_and_requests_wait_for_readiness(knowledge_base, monkeypatch):
+    from kb.extractive import ExtractiveResult
+
+    knowledge_base("CS-CONCEPT-001", "Тест", "Текст.")
+
+    async def scenario():
+        proceed = asyncio.Event()
+        count = 0
+
+        async def prepare(state):
+            nonlocal count
+            count += 1
+            await proceed.wait()
+            state.status = "ready"
+
+        monkeypatch.setattr(server, "_prepare", prepare)
+        monkeypatch.setattr(server, "structural_search",
+                            lambda root, q, units: (ExtractiveResult("Текст.", units), "complete", []))
+        async with server.lifespan(server.app):
+            assert (await server.health()).status_code == 503
+            responses = [asyncio.create_task(server.ask(server.AskRequest(question="Вопрос"))) for _ in range(2)]
+            await asyncio.sleep(0)
+            assert all(not pending.done() for pending in responses)
+            proceed.set()
+            assert all(response.search_state == "complete" for response in await asyncio.gather(*responses))
+            assert (await server.health()).status_code == 200
+        assert count == 1
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("error,fragment", [
+    (FileNotFoundError("index"), "индекс отсутствует"),
+    (server.VectorIndexError("Индекс фрагментов устарел."), "индекс нужно обновить"),
+    (server.VectorIndexError("Model load failed"), "кеш MiniLM"),
+])
+def test_failed_preparation_reports_reason_without_retry(knowledge_base, monkeypatch, error, fragment):
+    knowledge_base("CS-CONCEPT-001", "Тест", "Текст.")
+    calls = []
+
+    def fail():
+        calls.append(error)
+        raise error
+
+    def unexpected(*args):
+        pytest.fail("Preparing a failed index again")
+
+    monkeypatch.setattr(server, "_warm_search", fail)
+    monkeypatch.setattr(server, "structural_search", unexpected)
+
+    async def scenario():
+        async with server.lifespan(server.app):
+            for _ in range(2):
+                response = await server.ask(server.AskRequest(question="Тест"))
+                assert response.status == "success" and fragment in response.search_notice
+            health = await server.health()
+            assert health.status_code == 503 and json.loads(health.body)["status"] == "degraded"
+
+    asyncio.run(scenario())
+    assert calls == [error]

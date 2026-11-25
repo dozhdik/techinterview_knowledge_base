@@ -88,15 +88,10 @@ def form_answer(question, units, hits):
 
 def search_and_extract(root, question, units):
     from .passage_index import INDEX
-    from .retrieval import configured_reranker, get_engine
-
     start = time.perf_counter()
     if (Path(root) / INDEX).is_file():
         try:
-            engine = get_engine(root)
-            result, debug = engine.ask(question, units, reranker=configured_reranker())
-            logging.getLogger("uvicorn.error").info("search_seconds=%s total=%.3f",
-                                                   debug["seconds"], time.perf_counter() - start)
+            result, _, _ = structural_search(root, question, units)
             return result
         except (VectorIndexError, sqlite3.DatabaseError, OSError, ValueError) as exc:
             logging.getLogger("uvicorn.error").warning("Структурный индекс недоступен: %s", exc)
@@ -108,3 +103,40 @@ def search_and_extract(root, question, units):
     result = form_answer(question, units, hits)
     logging.getLogger('uvicorn.error').info('extractive_total_seconds=%.3f hits=%d', time.perf_counter()-start, len(hits))
     return result
+
+
+def card_description(unit):
+    """Return the first short prose paragraph under a source description heading."""
+    headings = {
+        "определение", "назначение", "короткий ответ", "суть концепции", "суть навыка",
+        "суть паттерна", "идея паттерна", "подход", "идея", "что это такое",
+    }
+    for heading, text in _sections(unit.content):
+        name = heading.strip().casefold()
+        if name not in headings and not name.startswith("что такое "):
+            continue
+        paragraph = text.split("\n\n", 1)[0].strip()
+        if not paragraph or paragraph.startswith(("-", "*", "|", "`", "#", "<", ">")):
+            continue
+        description = re.sub(r"\s+", " ", paragraph)
+        if len(description) > 240:
+            description = description[:240].rsplit(" ", 1)[0] + "…"
+        return description
+    return None
+
+
+def structural_search(root, question, units):
+    """Return the extracted answer, evidence state and separate suggestions."""
+    from .retrieval import configured_reranker, get_engine
+
+    start = time.perf_counter()
+    engine = get_engine(root)
+    result, debug = engine.ask(question, units, reranker=configured_reranker())
+    by_id = {unit.id: unit for unit in units}
+    related = [by_id[card] for card in engine.related_cards(debug) if card in by_id]
+    state = debug["state"]
+    if state in ("related_only", "absent"):
+        state = "related_only" if related else "absent"
+    logging.getLogger("uvicorn.error").info("search_seconds=%s total=%.3f",
+                                           debug["seconds"], time.perf_counter() - start)
+    return result, state, related

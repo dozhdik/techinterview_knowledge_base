@@ -6,6 +6,14 @@ from pathlib import Path
 from typing import Optional
 
 from .parser import KnowledgeUnit
+from .registry import DOMAIN_CODES
+from .validator import VALID_CATEGORIES
+
+
+_CARD_ID = re.compile(
+    r"(?<![\w-])(?:%s)-(?:%s)-[0-9]+(?![\w-]|\.[0-9])"
+    % ("|".join(DOMAIN_CODES.values()), "|".join(sorted(VALID_CATEGORIES)).upper())
+)
 
 
 @dataclass
@@ -39,9 +47,12 @@ def search(
     query: SearchQuery,
 ) -> list[SearchResult]:
     results = []
+    requested_ids = set(requested_card_ids(query.text or ""))
 
     for unit in units:
-        score, matched = _score_unit(unit, query)
+        if requested_ids and unit.id.upper() not in requested_ids:
+            continue
+        score, matched = _score_unit(unit, query, exact_id=bool(requested_ids))
         if score > 0:
             results.append(SearchResult(unit=unit, score=score, matched=matched))
 
@@ -135,7 +146,7 @@ def _question_terms(text: str) -> set[str]:
 
 
 def requested_card_ids(question: str) -> list[str]:
-    return list(dict.fromkeys(re.findall(r"\b[A-Z]+-[A-Z]+-\d+\b", question.upper())))
+    return list(dict.fromkeys(_CARD_ID.findall(question.upper())))
 
 
 def _is_definition_question(question: str) -> bool:
@@ -260,6 +271,7 @@ def search_question(
 def _score_unit(
     unit: KnowledgeUnit,
     query: SearchQuery,
+    *, exact_id: bool = False,
 ) -> tuple[int, list[str]]:
     score = 0
     matched = []
@@ -314,7 +326,10 @@ def _score_unit(
             score += 5
             matched.append(f"tag={tag}")
 
-    if query.text:
+    if exact_id:
+        score += 15
+        matched.append("id")
+    elif query.text:
         text_lower = query.text.lower()
         title_lower = unit.title.lower()
         content_lower = unit.content.lower()

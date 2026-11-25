@@ -187,6 +187,33 @@ class Retrieval:
                         "rerank": perf_counter() - rerank_started},
         }
 
+    def warm_up(self):
+        """Load the query encoder and run one forward pass."""
+        self._query_vector(Query.parse("поиск по базе знаний"))
+
+    def related_cards(self, debug, limit=3):
+        """Suggest original cards for unanswered facets using two relevance signals."""
+        if limit <= 0:
+            return
+        used = set(debug["sources"])
+        missing = set(debug["unanswered"])
+        suggested = set()
+        for part in debug["parts"]:
+            if part["query"] not in missing or part.get("reason") == "unspecified_referent":
+                continue
+            anchors = {term for term in part["terms"] if len(term) >= 3 and self.idf.get(term, 0) >= 1.6}
+            for card, (cosine, coverage) in part["evidence"][:DEFAULT_DEPTH]:
+                if card in used or card in suggested or cosine < .49 or coverage < .30:
+                    continue
+                named = anchors & self.name_terms[card] & self.card_terms[card]
+                strong_body = cosine >= .60 and coverage >= .64 and len(anchors & self.card_terms[card]) >= 2
+                overview = card in part.get("overview_cards", ())
+                if named or strong_body or overview:
+                    suggested.add(card)
+                    yield card
+                    if len(suggested) >= limit:
+                        return
+
     def _compose(self, blocks):
         """Deduplicate exact blocks while retaining distinct excerpts of long sections."""
         groups = defaultdict(dict)
@@ -242,6 +269,7 @@ class Retrieval:
             chosen = [] if needs_clarification else choose_sections(candidates, scorer)
             if chosen and not scorer.has_answer_material(chosen):
                 details["reason"] = "overview_without_answer"
+                details["overview_cards"] = list(dict.fromkeys(self.passages[b.index].card_id for b in chosen))
                 chosen = []
             elif not chosen:
                 details["reason"] = "unspecified_referent" if needs_clarification else "insufficient_evidence"

@@ -49,6 +49,7 @@
       </button>
     </div>
   </header>
+  <p id="search-readiness" class="search-readiness" role="status" hidden></p>
 
   <main id="messages-area" class="messages-area" role="log" aria-live="polite" aria-label="История чата">
 
@@ -95,12 +96,6 @@
 </div>
 
 <div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
-
-<script>
-  if (window.marked) {
-    marked.setOptions({ breaks: true, gfm: true });
-  }
-</script>
 
 <script type="module" src="/js/app.js"></script>
 

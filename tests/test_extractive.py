@@ -41,7 +41,8 @@ def test_default_api_uses_extractive_even_with_model_environment(monkeypatch):
     monkeypatch.delenv('RAG_ENABLED', raising=False)
     unit = SimpleNamespace(id='CS-TEST-001', title='Тест')
     monkeypatch.setattr(server, 'load_units', lambda: [unit])
-    monkeypatch.setattr(server, 'search_and_extract', lambda *args: extractive.ExtractiveResult('## Определение\n\nТекст.', [unit]))
+    monkeypatch.setattr(server, 'structural_search', lambda *args: (
+        extractive.ExtractiveResult('## Определение\n\nТекст.', [unit]), 'complete', []))
     async def inline(function, *args): return function(*args)
     monkeypatch.setattr(server.asyncio, 'to_thread', inline)
     monkeypatch.setattr(server, 'generate', lambda *args: (_ for _ in ()).throw(AssertionError('LLM called')))

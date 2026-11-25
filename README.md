@@ -3,17 +3,15 @@
 CLI-инструмент для управления базой знаний по подготовке к техническим собеседованиям в сфере IT.
 
 
-## Запуск веб-чата без LLM
+## Запуск веб-чата
 
-При наличии `.venv-rag`, локально загруженной модели эмбеддингов и существующего индекса:
+После [установки зависимостей и подготовки локального индекса](#установка) запустите сервер из корня репозитория.
 
 ```bash
-cd ~/techinterview_knowledge_base
-.venv-rag/bin/python main.py passage-build
 ./scripts/run_rag.sh
 ```
 
-Откройте http://127.0.0.1:8000. Чат объединяет BM25 и семантический поиск, извлекает исходные блоки Markdown и показывает ссылки на использованные карточки. После изменения карточек выполните `passage-build` повторно. Ollama и интернет для этого сценария не требуются. Генерация остаётся необязательной: она включается только при `RAG_ENABLED=true` вместе с `RAG_BASE_URL` и `RAG_MODEL`. Подробности и ограничения — в [документации по поиску](docs/extractive_search.md) и [отчёте benchmark](docs/retrieval_benchmark.md).
+Откройте <http://127.0.0.1:8000>. Штатный режим объединяет BM25F и семантический поиск MiniLM, извлекает разделы Markdown и показывает ссылки на карточки. Ollama, генеративная модель и платные API для него не нужны. При запуске чат сообщает о подготовке семантического поиска.
 
 ---
 
@@ -36,92 +34,48 @@ cd ~/techinterview_knowledge_base
 
 ## Установка
 
-### Требования
-
-- Python 3.10+
-- Git
-
-### Шаг 1 — Клонирование репозитория
+Для итоговой конфигурации используйте Python 3.12 и Git. На Linux создайте виртуальное окружение и установите зависимости из `requirements.txt`.
 
 ```bash
 git clone https://github.com/dozhdik/techinterview_knowledge_base.git
 cd techinterview_knowledge_base
+python3.12 -m venv .venv-rag
+.venv-rag/bin/python -m pip install -r requirements.txt
+.venv-rag/bin/python main.py --help
 ```
 
-### Шаг 2 — Установка зависимостей
+Для первой загрузки MiniLM и установки зависимостей нужен доступ к пакетам и весам модели. `passage-build` загружает используемую модель `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` в локальный кеш и создаёт `_data/passage_index.sqlite3`. Если готовый индекс и модель уже есть, сразу запускайте чат. При имеющемся кеше индекс можно построить и автономно.
 
 ```bash
-pip3 install pyyaml pytest --break-system-packages
+# Первый запуск индексации, когда весов ещё нет в кеше
+HF_HUB_OFFLINE=0 TRANSFORMERS_OFFLINE=0 .venv-rag/bin/python main.py passage-build
+# Повторная индексация после изменения Markdown с локальными весами
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv-rag/bin/python main.py passage-build
 ```
 
-### Шаг 3 — Проверка установки
+Штатный запуск использует локальные веса и индекс. После обновления индекса или устранения ошибки загрузки перезапустите сервер. `GET /api/health` показывает `warming_up`, `ready` или `degraded`. Пока идёт прогрев, запрос к семантическому поиску ждёт готовности. При ошибке загрузки чат сообщает причину и продолжает текстовый поиск.
 
 ```bash
-python3 main.py --help
+.venv-rag/bin/python -m pytest tests/ -q
+node --test tests/js/*.mjs
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 .venv-rag/bin/python main.py search-diagnose 'Чем BFS отличается от DFS?'
 ```
 
-Ожидаемый вывод:
-
-```
-usage: main.py [-h] КОМАНДА ...
-
-CLI для работы с базой знаний TechInterview
-
-positional arguments:
-  КОМАНДА
-    search    Поиск по базе знаний
-    validate  Валидация БЗ
-    registry  Генерация реестра идентификаторов
-    new       Создание новой единицы знаний
-    stats     Статистика по БЗ
-```
-
-### Шаг 4 — Запуск тестов
-
-```bash
-python3 -m pytest tests/ -v
-```
-
-Ожидаемый результат: все тесты проходят.
+Тесты JavaScript требуют Node.js 20 или новее. Для сервера Node.js не требуется.
 
 ---
 
 ## Веб-чат
 
-Подробное описание изменений веб-MVP: [docs/web_mvp_changes.md](docs/web_mvp_changes.md).
+Чат ищет по Markdown в `cs/`, `arch/`, `process/` и `global/`. Например, можно спросить «Чем BFS отличается от DFS?» или открыть карточку по `CS-CONCEPT-016`. Частичный ответ показывает, какие части вопроса остались без ответа. Если прямой ответ не найден, достаточно релевантные карточки могут появиться в отдельном блоке «Материалы по теме». Названия, списки, таблицы, ограждённый код и используемые в корпусе обозначения сложности отображаются локально в браузере.
 
-Для чата доступен RAG по локальному векторному индексу карточек. Настройка генератора описана в [docs/rag_integration.md](docs/rag_integration.md), устройство индекса — в [docs/vector_index.md](docs/vector_index.md).
-
-Из корня проекта установите зависимости и запустите сервер:
+Сценарии итоговой проверки можно прогнать по живому серверу из другого терминала.
 
 ```bash
-python3 -m venv venv
-venv/bin/python -m pip install -r requirements.txt
-venv/bin/python -m uvicorn web.server:app --reload --port 8000
+.venv-rag/bin/python scripts/check_release.py --output /tmp/techinterview-release.json
 ```
 
-Откройте <http://localhost:8000>. Также поддерживается запуск `venv/bin/python web/server.py`.
-
-Чат ищет по Markdown-карточкам в `cs/`, `arch/`, `process/` и `global/`.
-Без настроенного генератора он учитывает слова вопроса, названия и теги, показывает
-полный текст наиболее подходящей карточки и ссылки на источники. Например:
-
-- «Как устроена хеш-таблица?»
-- «Чем BFS отличается от DFS?»
-- «Как отвечать на behavioral-вопросы методом STAR?»
-- «Спроектируй URL Shortener»
-
-Можно искать по ID: `CS-CONCEPT-009`. Изменения карточек доступны в следующем запросе
-без перезапуска сервера. Если совпадений нет, чат предлагает уточнить вопрос.
-
-Когда заданы `RAG_BASE_URL` и `RAG_MODEL`, чат получает подходящие фрагменты из
-векторного индекса и генерирует краткий ответ с ID использованных карточек.
-При недоступности генератора он показывает материал карточки. Проценты уверенности не показываются.
-Для оформления Markdown и подсветки кода интерфейс загружает библиотеки с CDN.
-
-API: `POST /api/ask` с JSON `{"question": "Как устроена хеш-таблица?"}`;
-`GET /api/units/{id}` возвращает карточку, `/cards/{id}` открывает страницу источника.
-Документация API доступна по адресу <http://localhost:8000/docs>.
+E5, Cross-Encoder, Extractive QA, Metadata Retrieval и Question-to-Question Retrieval доступны для отдельных экспериментов. Команды и параметры приведены в [документации по поиску](docs/extractive_search.md) и [отчёте испытаний](RAG_TEST.md). [Ранее реализованная интеграция Ollama](docs/rag_integration.md) требует явного включения через `RAG_ENABLED=true` и собственных параметров генератора.
 
 ---
 

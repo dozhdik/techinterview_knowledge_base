@@ -1,10 +1,24 @@
-_data/*.sqlite3
-_data/*.sqlite3-shm
-_data/*.sqlite3-wal
-
-# Local environments and user settings
-.venv-rag/
+# Python and local development
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.venv-*/
+venv/
 .vscode/
+.idea/
 .env
 .env.*
 !.env.example
+
+# Local SQLite indexes, model caches and experiment output
+/_data/*.sqlite3*
+/_data/*.db*
+/.cache/
+/models/
+/model_cache/
+/evaluation/local/
+/evaluation/*.local.json
+/tmp/
+*.tmp
+*.log

@@ -146,3 +146,19 @@ function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
+async function showSearchReadiness() {
+  const indicator = document.getElementById("search-readiness");
+  try {
+    const response = await fetch("/api/health");
+    const { status, message } = await response.json();
+    indicator.hidden = status === "ready";
+    indicator.textContent = status === "ready" ? "" : message;
+    if (status === "warming_up") setTimeout(showSearchReadiness, 500);
+  } catch {
+    indicator.textContent = "Сервер поиска недоступен.";
+    indicator.hidden = false;
+  }
+}
+
+showSearchReadiness();

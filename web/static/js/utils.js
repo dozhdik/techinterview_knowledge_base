@@ -7,7 +7,7 @@ export function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
-function safeInline(text) {
+export function renderInline(text) {
   return text.split(/(`[^`]*`)/g).map(part => {
     if (part.startsWith("`") && part.endsWith("`")) return `<code>${escapeHtml(part.slice(1, -1))}</code>`;
     return escapeHtml(part).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
@@ -31,7 +31,7 @@ function localMarkdown(content) {
     if (code) { codeLines.push(line); continue; }
     if (line.includes("|") && index + 1 < lines.length && /^\s*\|?\s*:?-{3,}/.test(lines[index + 1])) {
       closeList();
-      const cells = row => row.trim().replace(/^\||\|$/g, "").split("|").map(cell => safeInline(cell.trim()));
+      const cells = row => row.trim().replace(/^\||\|$/g, "").split("|").map(cell => renderInline(cell.trim()));
       const headers = cells(line);
       html.push('<div class="table-scroll"><table><thead><tr>' + headers.map(c => `<th>${c}</th>`).join("") + '</tr></thead><tbody>');
       index += 1;
@@ -43,17 +43,17 @@ function localMarkdown(content) {
       continue;
     }
     const heading = line.match(/^(#{1,4})\s+(.+)$/);
-    if (heading) { closeList(); const n = heading[1].length; html.push(`<h${n}>${safeInline(heading[2])}</h${n}>`); continue; }
+    if (heading) { closeList(); const n = heading[1].length; html.push(`<h${n}>${renderInline(heading[2])}</h${n}>`); continue; }
     const bullet = line.match(/^\s*[-*]\s+(.+)$/);
     const numbered = line.match(/^\s*\d+[.)]\s+(.+)$/);
     const item = bullet || numbered;
     if (item) {
       const kind = bullet ? "ul" : "ol";
       if (list !== kind) { closeList(); html.push(`<${kind}>`); list = kind; }
-      html.push(`<li>${safeInline(item[1])}</li>`); continue;
+      html.push(`<li>${renderInline(item[1])}</li>`); continue;
     }
     closeList();
-    if (line.trim()) html.push(`<p>${safeInline(line)}</p>`);
+    if (line.trim()) html.push(`<p>${renderInline(line)}</p>`);
   }
   closeList();
   if (code) html.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
@@ -108,10 +108,6 @@ export function showToast(message, type = "success") {
     toast.classList.add("toast--exit");
     setTimeout(() => toast.remove(), 200);
   }, 3000);
-}
-
-export function formatConfidence(value) {
-  return `${Math.round(value * 100)}%`;
 }
 
 export function getDomainFromId(id) {

@@ -4,15 +4,18 @@ import json
 import logging
 import os
 import re
+import sqlite3
 import time
-from contextlib import aclosing
+from contextlib import aclosing, asynccontextmanager
+from dataclasses import dataclass
 import sys
 from pathlib import Path
+from typing import Literal
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, Response, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 
@@ -23,7 +26,7 @@ KB_ROOT = BASE_DIR.parent
 if __package__ in (None, ""):
     sys.path.insert(0, str(KB_ROOT))
 
-from kb.extractive import search_and_extract
+from kb.extractive import card_description, structural_search
 from kb.parser import parse_directory
 from kb.content import has_material
 from kb.search import requested_card_ids, search_question
@@ -31,7 +34,7 @@ from kb.rag import (INSUFFICIENT_CONTEXT, RagConfig, RagError, generate, retriev
                     prepare_context, validate_answer)
 from kb.citation_stream import CitationFilter
 from kb.ollama_stream import stream_chat
-from kb.vector_store import source_fingerprint
+from kb.vector_store import VectorIndexError, source_fingerprint
 
 
 @functools.lru_cache(maxsize=4)
@@ -50,7 +53,71 @@ def load_units():
 
 logger = logging.getLogger("uvicorn.error")
 
-app = FastAPI(title="TechInterview Knowledge Base", version="0.1.0")
+SEARCH_ERRORS = (VectorIndexError, OSError, ValueError, ImportError, RuntimeError, sqlite3.DatabaseError)
+WARMING_UP = "Готовим семантический поиск. Первый запуск может занять несколько секунд."
+INDEX_COMMAND = ".venv-rag/bin/python main.py passage-build"
+
+
+@dataclass
+class SearchPreparation:
+    status: str = "warming_up"
+    message: str = WARMING_UP
+
+    def failed(self, exc):
+        logger.warning("Структурный поиск недоступен: %s", exc)
+        self.status = "degraded"
+        if isinstance(exc, FileNotFoundError):
+            detail = f"Структурный индекс отсутствует. Выполните {INDEX_COMMAND}."
+        elif isinstance(exc, sqlite3.DatabaseError) or "Индекс фрагментов устарел" in str(exc):
+            detail = f"Структурный индекс нужно обновить. Выполните {INDEX_COMMAND}."
+        else:
+            detail = "Семантический поиск недоступен. Проверьте зависимости и локальный кеш MiniLM."
+        self.message = detail + " Доступен текстовый поиск. После исправления перезапустите сервер."
+
+
+def _warm_search():
+    from kb.retrieval import get_engine
+
+    engine = get_engine(KB_ROOT)
+    engine.warm_up()
+    load_units()
+
+
+async def _prepare(preparation):
+    started = time.perf_counter()
+    try:
+        await asyncio.to_thread(_warm_search)
+    except SEARCH_ERRORS as exc:
+        preparation.failed(exc)
+    else:
+        preparation.status = "ready"
+        preparation.message = "Семантический поиск готов."
+    logger.info("search_startup_seconds=%.3f status=%s",
+                time.perf_counter() - started, preparation.status)
+
+
+def _rag_enabled():
+    return os.getenv("RAG_ENABLED", "").strip().lower() in ("1", "true", "yes")
+
+
+@asynccontextmanager
+async def lifespan(app):
+    if _rag_enabled():
+        yield
+        return
+    preparation = SearchPreparation()
+    task = asyncio.create_task(_prepare(preparation))
+    app.state.search_preparation = preparation
+    app.state.search_task = task
+    try:
+        yield
+    finally:
+        await task
+        app.state.search_task = None
+        app.state.search_preparation = None
+
+
+app = FastAPI(title="TechInterview Knowledge Base", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -70,17 +137,39 @@ class SourceItem(BaseModel):
     url: str
 
 
+class RelatedMaterial(SourceItem):
+    domain: str
+    description: str | None = None
+
+
 class AskResponse(BaseModel):
     status: str
     answer: str
     sources: list[SourceItem]
     confidence: float | None = None
     is_rag_enabled: bool = False
+    search_state: Literal["complete", "partial", "related_only", "absent", "clarification"] | None = None
+    related_materials: list[RelatedMaterial] = Field(default_factory=list)
+    search_notice: str | None = None
 
 
 @app.get("/", include_in_schema=False)
 async def serve_index():
     return HTMLResponse((STATIC_DIR / "index.html").read_text(encoding="utf-8"))
+
+
+@app.get("/api/health")
+async def health():
+    preparation = getattr(app.state, "search_preparation", None)
+    if preparation is None:
+        return {"status": "ready", "message": ""}
+    return JSONResponse({"status": preparation.status, "message": preparation.message},
+                        status_code=200 if preparation.status == "ready" else 503)
+
+
+def _material(unit):
+    return RelatedMaterial(title=unit.title, id=unit.id, url=f"/cards/{unit.id}",
+                           domain=unit.domain, description=card_description(unit))
 
 
 @app.post("/api/ask", response_model=AskResponse)
@@ -104,7 +193,7 @@ async def ask(request: AskRequest) -> AskResponse:
             notices.append("Материал ещё не заполнен: " + ", ".join(unfinished) + ".")
         if ready:
             return AskResponse(
-                status="success",
+                status="success", search_state="partial" if notices else "complete",
                 answer=("\n\n".join(notices) + "\n\n" if notices else "")
                 + "Материал из базы знаний:\n\n" + re.sub(r"\[\[[A-Z]+-[A-Z]+-\d+\]\]", "", ready[0].content),
                 sources=[SourceItem(title=unit.title, id=unit.id, url=f"/cards/{unit.id}")
@@ -112,24 +201,36 @@ async def ask(request: AskRequest) -> AskResponse:
             )
         return AskResponse(
             status="not_ready" if unfinished and not missing else "not_found",
+            search_state="absent" if missing else None,
             answer=" ".join(notices) + " Проверьте ID или спросите о другой теме.",
             sources=[],
         )
 
     rag_notice = ""
-    if os.getenv("RAG_ENABLED", "").strip().lower() not in ("1", "true", "yes"):
-        try:
-            extracted = await asyncio.to_thread(search_and_extract, KB_ROOT, request.question, units)
-        except (RagError, OSError, ValueError) as exc:
-            logger.warning("Hybrid search unavailable: %s", exc)
-            rag_notice = "Семантический индекс недоступен; показаны результаты текстового поиска.\n\n"
-        else:
-            if extracted is None:
-                return AskResponse(status="not_found", answer="Подходящих материалов в базе знаний не найдено.", sources=[])
-            return AskResponse(status="success", answer=extracted.answer,
-                sources=[SourceItem(title=unit.title, id=unit.id, url=f"/cards/{unit.id}") for unit in extracted.units])
+    search_notice = None
+    if not _rag_enabled():
+        task = getattr(app.state, "search_task", None)
+        if task is not None:
+            await asyncio.shield(task)
+        prep = getattr(app.state, "search_preparation", None) or SearchPreparation()
+        if prep.status != "degraded":
+            try:
+                extracted, state, related = await asyncio.to_thread(structural_search, KB_ROOT, request.question, units)
+            except SEARCH_ERRORS as exc:
+                prep.failed(exc)
+            else:
+                materials = [_material(unit) for unit in related]
+                if extracted is None:
+                    message = ("Непосредственного ответа в базе знаний не найдено." if materials else
+                               "Подходящих материалов в базе знаний не найдено.")
+                    return AskResponse(status="not_found", answer=message, sources=[],
+                                       search_state=state, related_materials=materials)
+                return AskResponse(status="success", answer=extracted.answer, search_state=state,
+                    sources=[SourceItem(title=unit.title, id=unit.id, url=f"/cards/{unit.id}")
+                             for unit in extracted.units], related_materials=materials)
+        search_notice = prep.message
     try:
-        rag_config = RagConfig.from_env() if os.getenv("RAG_ENABLED", "").strip().lower() in ("1", "true", "yes") else None
+        rag_config = RagConfig.from_env() if _rag_enabled() else None
         if rag_config:
             hits = await retrieve(KB_ROOT, request.question, units, rag_config)
             if not hits:
@@ -165,7 +266,7 @@ async def ask(request: AskRequest) -> AskResponse:
             status="not_found",
             answer=(rag_notice + "Подходящего определения или карточки пока нет в базе знаний. "
                     "Уточните название темы или укажите ID карточки."),
-            sources=[],
+            sources=[], search_state="absent" if search_notice else None, search_notice=search_notice,
         )
 
     if not has_material(results[0].unit):
@@ -173,12 +274,13 @@ async def ask(request: AskRequest) -> AskResponse:
             status="not_ready",
             answer=(f"Карточка «{results[0].unit.title}» ({results[0].unit.id}) есть в базе, "
                     "но её материал пока не заполнен. Попробуйте другую тему."),
-            sources=[],
+            sources=[], search_notice=search_notice,
         )
 
     return AskResponse(
         status="success",
         answer=rag_notice + "Материал из базы знаний:\n\n" + results[0].unit.content,
+        search_notice=search_notice,
         sources=[SourceItem(title=r.unit.title, id=r.unit.id,
                             url=f"/cards/{r.unit.id}") for r in results
                  if has_material(r.unit)],
@@ -208,12 +310,12 @@ async def ask_stream(request: AskRequest):
         provisional = False
         try:
             yield _event("stage", stage="search", message="Поиск информации…")
-            units = await asyncio.to_thread(load_units)
-            config = RagConfig.from_env() if os.getenv("RAG_ENABLED", "").strip().lower() in ("1", "true", "yes") else None
+            config = RagConfig.from_env() if _rag_enabled() else None
             if not request.question.strip() or requested_card_ids(request.question) or not config:
                 result = await ask(request)
                 yield _event("final", **result.model_dump())
                 return
+            units = await asyncio.to_thread(load_units)
             hits = await retrieve(KB_ROOT, request.question, units, config)
             if not hits:
                 yield _event("final", status="not_found", answer="В базе знаний недостаточно информации для ответа.", sources=[], is_rag_enabled=False)

@@ -84,6 +84,7 @@ class TitleMatch:
 
 class TitleIndex:
     def __init__(self, records):
+        self.records = records
         self.names = {kind: defaultdict(set) for kind in ("title", "alias", "abbreviation")}
         self.domains = {}
         for card, domain, title, content, aliases, abbreviations in records:

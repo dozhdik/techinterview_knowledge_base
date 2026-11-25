@@ -5,7 +5,7 @@ import math
 import platform
 import resource
 import statistics
-from collections import defaultdict
+from collections import Counter, defaultdict
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from time import perf_counter
@@ -34,17 +34,19 @@ def _metrics(case, ranked, answer, used):
         if checks:
             result["fact_proxy"] = sum(label["id"] in used and fact.casefold() in answer.casefold()
                                        for label, fact in checks) / len(checks)
-        result["section_proxy"] = sum(label["id"] in used and any(
-            ("## " + section).casefold() in answer.casefold() for section in label["sections"]
-        ) for label in labels) / len(labels)
-        if checks:
+        sections = [label for label in labels if label["sections"]]
+        if sections:
+            result["section_proxy"] = sum(label["id"] in used and any(
+                ("## " + section).casefold() in answer.casefold() for section in label["sections"]
+            ) for label in sections) / len(sections)
+        if checks and sections:
             result["full_coverage_proxy"] = float(result["fact_proxy"] == 1 and result["section_proxy"] == 1)
         result["relevant_sources"] = len(targets & set(used)) / max(1, len(used))
         result["extra_sources"] = float(bool(set(used) - targets))
         result["answered"] = float(bool(used))
         if case.get("status") in (None, "full", "partial"):
             result["false_refusal"] = float(not used)
-    else:
+    elif case.get("status") in (None, "absent"):
         result["correct_abstention"] = float(not used)
         result["false_positive"] = float(bool(used))
     return result
@@ -64,9 +66,32 @@ def summarize(rows):
                         for k, v in timings.items()}}
 
 
+
+def _mention_metrics(cases, rows):
+    totals = Counter()
+    for case, row in zip(cases, rows, strict=True):
+        gold = {(m["start"], m["end"]): m for m in case["mentions"]}
+        guessed = {(m["start"], m["end"]): m for m in row["entities"] if not m["inherited"]}
+        overlap = gold.keys() & guessed.keys()
+        totals.update(gold=len(gold), detected=len(guessed), matched=len(overlap))
+        for span in overlap:
+            expected = set(gold[span]["card_ids"])
+            actual = guessed[span]
+            totals["exact_candidate_sets"] += expected == set(actual["card_ids"])
+            if len(expected) == 1:
+                totals["unambiguous_matches"] += 1
+                totals["correct_links"] += actual["selected"] in expected
+            else:
+                totals["ambiguous_matches"] += 1
+                totals["kept_ambiguous"] += actual["ambiguous"]
+    precision = totals["matched"] / (totals["detected"] or 1)
+    recall = totals["matched"] / (totals["gold"] or 1)
+    return {**totals, "precision": precision, "recall": recall,
+            "f1": 2 * precision * recall / (precision + recall) if precision + recall else 0.}
+
 def evaluate(root, units, cases_path, split, method, output=None, reranker_path=None, *,
              index_path=None, depth=DEFAULT_DEPTH, qa_path=None, qa_mode="off",
-             representation_mode="off", representation_index=None):
+             representation_mode="off", representation_index=None, entity_mode="off"):
     load_start = perf_counter()
     cases = json.loads(Path(cases_path).read_text())
     cases = [case for case in cases if split == "all" or case["split"] == split]
@@ -127,7 +152,7 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
             result, info = engine.ask(q, units, method="hybrid" if method in ("links", "cross_encoder") else method,
                                       links=method == "links", reranker=reranker, depth=depth,
                                       reader=reader, qa_mode=qa_mode, representations=representations,
-                                      representation_mode=representation_mode)
+                                      representation_mode=representation_mode, entity_mode=entity_mode)
             ranking = info["ranked_cards"]
             times = info["seconds"]
         answer = result.answer if result else ""
@@ -138,6 +163,8 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
                      "state": info["state"] if engine is not None else None,
                      "selected": info["selected"] if engine is not None else [],
                      "unanswered": info["unanswered"] if engine is not None else [],
+                     "entities": [m for part in info["parts"] for m in part.get("entities", [])]
+                     if engine is not None and entity_mode != "off" else [],
                      "seconds": {**times, "total": perf_counter() - start},
                      "metrics": _metrics(case, ranking, answer, used)})
     try:
@@ -155,7 +182,7 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
         report["retrieval_index"] = engine.metadata
         report["config"] = dict(field_weights=FIELD_WEIGHTS, rrf_k=RRF_K, candidate_pool=POOL,
                                 dense_weight=DENSE_WEIGHTS, evidence_depth=depth, qa_mode=qa_mode,
-                                representation_mode=representation_mode)
+                                representation_mode=representation_mode, entity_mode=entity_mode)
         if representations is not None:
             from .representation import CHANNEL_WEIGHTS
 
@@ -172,6 +199,8 @@ def evaluate(root, units, cases_path, split, method, output=None, reranker_path=
         for row in rows:
             groups[row[field]].append(row)
         report[f"by_{field}"] = {key: summarize(group) for key, group in groups.items()}
+    if engine is not None and entity_mode != "off" and all("mentions" in case for case in cases):
+        report["entity_linking"] = _mention_metrics(cases, rows)
     if output:
         Path(output).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     return report

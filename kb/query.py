@@ -33,6 +33,33 @@ _INTENTS = {
 }
 
 
+_INFORMATION = {
+    "definition": r"\b(?:что (?:такое|означает)|определен\w*|what is|define)\b",
+    "mechanism": r"\b(?:как (?:работает|устроен\w*|действует)|механизм|принцип работы|почему|зачем|how does|why)\b",
+    "time_complexity": r"\b(?:временн(?:ая|ой|ую|ые|ым|ых|ом)|асимптотик\w* по времени|сложность по времени|time complexity|сколько времени (?:занимает|требуется))\b",
+    "space_complexity": r"\b(?:пространственн\w*|(?:расход\w*|потреблен\w*|дополнительн\w*|ограничить) памят\w*|сколько [^?;]{0,30}памят\w*|памят\w* (?:нужн\w*|занима\w*)|space complexity|memory usage|auxiliary space)\b",
+    "procedure": r"\b(?:порядок действий|пошагов\w*|по шагам|как (?:найти|посчитать|сохранить|восстановить|проверить|подготовиться|провести)|steps|how to)\b",
+    "implementation": r"\b(?:реализ\w*|псевдокод\w*|напиши\w* код|алгоритм действий|implement\w*|pseudocode)\b",
+    "comparison": r"\b(?:отлич\w*|разниц\w*|сравн\w*|соотносятся|вместо|по-разному|vs|versus|difference|compare)\b",
+    "advantages": r"\b(?:преимуществ\w*|плюсы|выгода|benefits?|advantages?)\b",
+    "disadvantages": r"\b(?:недостат\w*|минусы|потери|disadvantages?|drawbacks?)\b",
+    "limitations": r"\b(?:ограничен\w*|нельзя|не подходит|границ\w* применимости|limitations?)\b",
+    "use_cases": r"\b(?:когда (?:лучше|уместн\w*|стоит|использ\w*|примен\w*|выбира\w*)|сценари\w* примен\w*|use cases?|when to use)\b",
+    "pitfalls": r"\b(?:ошиб\w*|подводн\w* камн\w*|pitfalls?|gotchas?)\b",
+    "example": r"\b(?:пример\w*|покажи на|проиллюстрируй|examples?)\b",
+    "design": r"\b(?:спроектир\w*|проектировани\w*|архитектур\w+ решени\w*|design a)\b",
+    "interview": r"\b(?:собеседован\w*|интервью\w*|рекрутер\w*|interview\w*)\b",
+}
+
+
+def information_needs(value):
+    cleaned = normalize(value)
+    found = [name for name, pattern in _INFORMATION.items() if re.search(pattern, cleaned)]
+    if "сложность" in cleaned and not {"time_complexity", "space_complexity"}.intersection(found):
+        found.extend(("time_complexity", "space_complexity"))
+    return tuple(found or ("unknown",))
+
+
 @dataclass(frozen=True)
 class Query:
     raw: str

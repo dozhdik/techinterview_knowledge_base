@@ -231,7 +231,7 @@ def cmd_search_diagnose(args) -> None:
         answer, debug = engine.ask(args.question, units, domain=args.domain,
                                    links=args.links, reranker=configured_reranker(), depth=args.depth,
                                    reader=reader, qa_mode=args.qa_mode, representations=representations,
-                                   representation_mode=args.representation_mode)
+                                   representation_mode=args.representation_mode, entity_mode=args.entity_mode)
     debug["answer"] = answer.answer if answer else None
     debug["seconds"]["startup"] = ready - started
     debug["seconds"]["total"] = perf_counter() - started
@@ -248,12 +248,14 @@ def cmd_search_benchmark(args) -> None:
     report = evaluate(KB_ROOT, _load_units(), args.cases, args.split, args.method,
                       args.output, args.reranker, index_path=args.index, depth=args.depth,
                       qa_path=args.qa_path, qa_mode=args.qa_mode, representation_mode=args.representation_mode,
-                      representation_index=args.representation_index)
-    print(json.dumps({k: report[k] for k in ("overall", "warm", "by_domain", "by_type")},
+                      representation_index=args.representation_index, entity_mode=args.entity_mode)
+    print(json.dumps({k: report[k] for k in ("overall", "warm", "by_domain", "by_type", "entity_linking")
+                      if k in report},
                      ensure_ascii=False, indent=2))
 
 
 def build_parser() -> argparse.ArgumentParser:
+    from kb.entities import MODES as ENTITY_MODES
     from kb.evidence import DEFAULT_DEPTH
     from kb.representation import MODES
 
@@ -390,6 +392,7 @@ def build_parser() -> argparse.ArgumentParser:
     diagnose.add_argument("--links", action="store_true")
     diagnose.add_argument("--index", type=Path, help="Альтернативный структурный индекс")
     diagnose.add_argument("--depth", type=int, choices=(3, 5, 10), default=DEFAULT_DEPTH)
+    diagnose.add_argument("--entity-mode", choices=ENTITY_MODES, default="link")
     diagnose.set_defaults(func=cmd_search_diagnose)
 
     benchmark = subparsers.add_parser("search-benchmark", help="Оценить поиск по размеченным запросам")
@@ -401,6 +404,7 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--output", type=Path, required=True)
     benchmark.add_argument("--index", type=Path, help="Альтернативный структурный индекс")
     benchmark.add_argument("--depth", type=int, choices=(3, 5, 10), default=DEFAULT_DEPTH)
+    benchmark.add_argument("--entity-mode", choices=ENTITY_MODES, default="off")
     benchmark.set_defaults(func=cmd_search_benchmark)
     for search_parser in (diagnose, benchmark):
         search_parser.add_argument("--qa-mode", choices=("off", "all", "selective"), default="off")

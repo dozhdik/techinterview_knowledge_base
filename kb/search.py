@@ -154,6 +154,24 @@ def requested_card_ids(question: str) -> list[str]:
     return list(dict.fromkeys(_CARD_ID.findall(question.upper())))
 
 
+_OPEN_CARD = re.compile(
+    r"^\s*(?:пожалуйста[, ]+)?(?:(?:расскажи(?:те)?\s+(?:про|о)\s+)|(?:открой(?:те)?|покажи(?:те)?|выведи(?:те)?|open|show)"
+    r"\s+(?:(?:мне|the)\s+)?(?:(?:карточк(?:у|и)|материал|cards?)\s+)?(?:по\s+id\s+)?)",
+    re.I,
+)
+
+
+def card_open_ids(question):
+    """Return explicit card requests, separating IDs from their substantive context."""
+    ids = requested_card_ids(question)
+    if not ids:
+        return []
+    rest = _OPEN_CARD.sub("", question)
+    rest = _CARD_ID.sub("", rest.upper())
+    rest = re.sub(r"\b(?:И|AND)\b|[\s,;:.!?«»\[\]()\"'`&]+", "", rest)
+    return ids if not rest else []
+
+
 def _is_definition_question(question: str) -> bool:
     return bool(re.search(r"\b(?:что\s+такое|что\s+значит|дай(?:те)?\s+определение|"
                           r"определение\s+|what\s+is|define\s+)", question.lower()))
@@ -243,7 +261,7 @@ def search_question(
 ) -> list[SearchResult]:
     if limit <= 0:
         return []
-    requested_ids = set(requested_card_ids(question))
+    requested_ids = set(card_open_ids(question))
     if requested_ids:
         return [SearchResult(unit=u, score=100, matched=["id"])
                 for u in units if u.id.upper() in requested_ids][:limit]

@@ -3,6 +3,7 @@ from dataclasses import dataclass, replace
 import math
 import re
 
+from .properties import QUANTITATIVE, supported
 from .query import normalize, terms
 
 DEFAULT_DEPTH = 5
@@ -32,6 +33,7 @@ class SectionEvidence:
     matched: frozenset
     score: float
     whole: bool = False
+    properties: frozenset = frozenset()
 
 
 @dataclass(frozen=True)
@@ -44,16 +46,18 @@ class Candidate:
 
 
 class EvidenceScorer:
-    def __init__(self, engine, query, ranked, evidence, lexical, dense, depth, method):
+    def __init__(self, engine, query, ranked, evidence, lexical, dense, depth, method, *, needs=(), owners=(), required_cards=()):
         import numpy as np
 
         self.engine = engine
         self.query = query
-        self.ranked = ranked[:depth]
+        self.ranked = list(dict.fromkeys((*ranked[:depth], *required_cards)))
         self.evidence = evidence
         self.lexical = lexical
         self.dense = dense
         self.method = method
+        self.needs = frozenset(needs)
+        self.owners = frozenset(owners)
         self.weights = {word: min(engine.idf.get(word, 3.1), 3.1) for word in query.tokens}
         self.total = sum(self.weights.values()) or 1.0
         self.known = {word for word in self.weights if word in engine.idf}
@@ -93,6 +97,14 @@ class EvidenceScorer:
     def cover(self, observed):
         return sum(self.weights.get(w, 0.0) for w in observed) / self.total
 
+    def _properties(self, card, text, headings, vocabulary):
+        found = supported(text, headings) & self.needs
+        if found & QUANTITATIVE and self.owners and card not in self.owners:
+            if not any(self.engine.title_terms[owner] and self.engine.title_terms[owner] <= vocabulary
+                       for owner in self.owners):
+                found -= QUANTITATIVE
+        return found
+
     def _blocks(self, card):
         engine = self.engine
         sections = {}
@@ -124,6 +136,11 @@ class EvidenceScorer:
                                    for h in passage.heading)
             if intents & {"quantity", "complexity"} and _NUMERIC.search(passage.text):
                 score += .10
+            if self.needs:
+                support = self._properties(card, passage.text, headings, body)
+                score += .19 * len(support & QUANTITATIVE) + .07 * len(support - QUANTITATIVE)
+                if support and card in self.owners:
+                    score += .09
             if "comparison" in intents and len(self.anchors) > 1:
                 score += .10 * len(self.anchors & body) / len(self.anchors)
             sections.setdefault(passage.section, []).append((score, ix))
@@ -138,7 +155,8 @@ class EvidenceScorer:
                 body = engine.section_terms[card, section] if whole else engine.body_terms[ix]
                 match = frozenset((body | set(terms(" ".join(passage.heading)))) & self.weights.keys())
                 if len(text) <= char_limit:
-                    output.append(SectionEvidence(ix, text, body, match, score, whole))
+                    properties = self._properties(card, text, " ".join(passage.heading), body) if self.needs else frozenset()
+                    output.append(SectionEvidence(ix, text, body, match, score, whole, properties))
         return tuple(sorted(output, key=lambda b: (-b.score, b.index)))
 
     def assess(self, card, position):
@@ -160,12 +178,22 @@ class EvidenceScorer:
         semantic_floor = .86 if self.e5 else .49
         lexical_floor = .82 if self.e5 else .36
         strong_semantic = .90 if self.e5 else .62
+        required = self.needs & QUANTITATIVE
+        coverage_props = frozenset()
+        if self.needs:
+            coverage_props = frozenset().union(*(block.properties for block in blocks[:4]))
+            strength += .13 * len(coverage_props & self.needs)
+            if (card in self.owners and blocks and
+                    (self.needs & {"definition", "mechanism", "comparison"} or coverage_props)):
+                strength += .14
         reason = "sufficient_section"
         if not blocks or not self.weights:
             reason = "no_section"
         elif (self.strong_unknown or (self.precise and (coverage < .79 or best_coverage < .56))
               or (self.exact_value and not any(_NUMERIC.search(b.text) for b in blocks[:4]))):
             reason = "unsupported_specific_detail"
+        elif required and not coverage_props & required:
+            reason = "missing_requested_property"
         elif exact and cosine >= lexical_floor:
             pass
         elif self.method == "bm25":
@@ -226,6 +254,7 @@ def choose_sections(candidates, scorer):
     lead = first.blocks[0]
     chosen = [lead]
     covered = set(lead.matched)
+    properties = set(lead.properties)
     budget = char_limit - len(lead.text)
     engine = scorer.engine
     main = engine.passages[lead.index]
@@ -235,6 +264,7 @@ def choose_sections(candidates, scorer):
             if b in chosen or len(b.text) > budget:
                 continue
             novelty = scorer.cover(b.matched - covered)
+            new_property = bool((b.properties - properties) & QUANTITATIVE)
             p = engine.passages[b.index]
             if c != first and len({engine.passages[item.index].card_id for item in chosen}) >= 3:
                 if all(engine.passages[item.index].card_id != p.card_id for item in chosen):
@@ -245,20 +275,21 @@ def choose_sections(candidates, scorer):
                              or main.card_id in p.related or main.card_id in p.prerequisites)
                 if p.domain != main.domain and not connected:
                     continue
-                if novelty < .22 or c.score < first.score - .13 or b.score < .68 * lead.score:
+                if not new_property and (novelty < .22 or c.score < first.score - .13 or b.score < .68 * lead.score):
                     continue
-            if overlap >= .69 or b.score < .65 * lead.score:
+            if not new_property and (overlap >= .69 or b.score < .65 * lead.score):
                 continue
             # Do not return a generic title-only section when a useful block is already present.
-            if b.score < .78 * lead.score and novelty < .08:
+            if not new_property and b.score < .78 * lead.score and novelty < .08:
                 continue
-            choices.append((b.score + .33 * novelty - .22 * overlap, -b.index, b))
+            choices.append((b.score + .33 * novelty - .22 * overlap + .35 * new_property, -b.index, b))
         if not choices:
             break
         _, _, best = max(choices)
         chosen.append(best)
         budget -= len(best.text)
         covered.update(best.matched)
+        properties.update(best.properties)
     return sorted(chosen, key=lambda b: (engine.passages[b.index].card_id != first.card, b.index))
 
 

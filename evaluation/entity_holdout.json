@@ -1,0 +1,1613 @@
+[
+  {
+    "id": "E01",
+    "type": "single",
+    "domain": "cs",
+    "query": "Какая дополнительная память нужна обходу Breadth First Search, если в графе очень широкий слой?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-016",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Breadth First Search",
+        "start": 41,
+        "end": 61,
+        "card_ids": [
+          "CS-CONCEPT-016"
+        ]
+      }
+    ],
+    "facts": [
+      "Очередь хранит границу слоя",
+      "Дополнительная память O(V) в худшем случае"
+    ]
+  },
+  {
+    "id": "E02",
+    "type": "single",
+    "domain": "cs",
+    "query": "Как в Union-Find объединяются компоненты и что меняет сжатие пути?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-004",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Union-Find",
+        "start": 6,
+        "end": 16,
+        "card_ids": [
+          "CS-CONCEPT-004"
+        ]
+      }
+    ],
+    "facts": [
+      "Корни объединяют по рангу или размеру",
+      "Сжатие направляет узлы к корню"
+    ]
+  },
+  {
+    "id": "E03",
+    "type": "single",
+    "domain": "cs",
+    "query": "Что меняется в Quick Sort, если опорный элемент снова и снова оказывается крайним?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-010",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Quick Sort",
+        "start": 15,
+        "end": 25,
+        "card_ids": [
+          "CS-CONCEPT-010"
+        ]
+      }
+    ],
+    "facts": [
+      "Разбиения становятся несбалансированными",
+      "В худшем случае время становится O(n²)"
+    ]
+  },
+  {
+    "id": "E04",
+    "type": "single",
+    "domain": "cs",
+    "query": "Почему у связного списка медленный доступ к элементу по порядковому номеру?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-011",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "связного списка",
+        "start": 9,
+        "end": 24,
+        "card_ids": [
+          "CS-CONCEPT-011"
+        ]
+      }
+    ],
+    "facts": [
+      "Доступ идёт ссылками от головы",
+      "Нет прямого доступа по индексу"
+    ]
+  },
+  {
+    "id": "E05",
+    "type": "single",
+    "domain": "arch",
+    "query": "Где Transactional Outbox сохраняет сообщение, если брокер пока недоступен?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-006",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Transactional Outbox",
+        "start": 4,
+        "end": 24,
+        "card_ids": [
+          "ARCH-DESIGNPAT-006"
+        ]
+      }
+    ],
+    "facts": [
+      "Данные и событие записываются в одной транзакции",
+      "Отдельный процесс позже публикует событие"
+    ]
+  },
+  {
+    "id": "E06",
+    "type": "single",
+    "domain": "arch",
+    "query": "Почему CDN может продолжать отдавать старую картинку после обновления на origin?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-005",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "CDN",
+        "start": 7,
+        "end": 10,
+        "card_ids": [
+          "ARCH-COMPONENT-005"
+        ]
+      }
+    ],
+    "facts": [
+      "На краю хранится кешированная копия",
+      "Инвалидация или TTL ограничивает устаревание"
+    ]
+  },
+  {
+    "id": "E07",
+    "type": "single",
+    "domain": "arch",
+    "query": "Как Bulkhead ограничивает распространение перегрузки между группами запросов?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-004",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Bulkhead",
+        "start": 4,
+        "end": 12,
+        "card_ids": [
+          "ARCH-DESIGNPAT-004"
+        ]
+      }
+    ],
+    "facts": [
+      "Ресурсы разделяют на независимые пулы или очереди",
+      "Перегруженная группа не занимает все общие ресурсы"
+    ]
+  },
+  {
+    "id": "E08",
+    "type": "single",
+    "domain": "arch",
+    "query": "Почему пулу соединений с БД задают ограничение по размеру?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-028",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "пулу соединений с БД",
+        "start": 7,
+        "end": 27,
+        "card_ids": [
+          "ARCH-COMPONENT-028"
+        ]
+      }
+    ],
+    "facts": [
+      "Число открытых соединений ограничено",
+      "При насыщении растёт ожидание или исчерпываются ресурсы"
+    ]
+  },
+  {
+    "id": "E09",
+    "type": "single",
+    "domain": "process",
+    "query": "Что в STAR писать про личный вклад, если большую часть работы сделала команда?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-001",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "STAR",
+        "start": 6,
+        "end": 10,
+        "card_ids": [
+          "PROC-FRAMEWORK-001"
+        ]
+      }
+    ],
+    "facts": [
+      "Action описывает личные действия",
+      "Результат показывает измеримый эффект"
+    ]
+  },
+  {
+    "id": "E10",
+    "type": "single",
+    "domain": "process",
+    "query": "Какие признаки на встрече Team Match указывают на здоровую команду?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-STAGE-006",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Team Match",
+        "start": 26,
+        "end": 36,
+        "card_ids": [
+          "PROC-STAGE-006"
+        ]
+      }
+    ],
+    "facts": [
+      "Прозрачные ответы или ясные ожидания",
+      "Поддержка развития или понятная коммуникация"
+    ]
+  },
+  {
+    "id": "E11",
+    "type": "single",
+    "domain": "process",
+    "query": "На этапе переговоров об оффере какие составляющие компенсации имеет смысл обсудить?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-STAGE-007",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "переговоров об оффере",
+        "start": 9,
+        "end": 30,
+        "card_ids": [
+          "PROC-STAGE-007"
+        ]
+      }
+    ],
+    "facts": [
+      "Базовый оклад",
+      "Бонусы или доля и дополнительные условия"
+    ]
+  },
+  {
+    "id": "E12",
+    "type": "single",
+    "domain": "process",
+    "query": "В структуре отчёта по take-home где объяснить, как воспроизвести запуск проекта?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-011",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "структуре отчёта по take-home",
+        "start": 2,
+        "end": 31,
+        "card_ids": [
+          "PROC-FRAMEWORK-011"
+        ]
+      }
+    ],
+    "facts": [
+      "Команды запуска или README",
+      "Окружение и данные для воспроизведения"
+    ]
+  },
+  {
+    "id": "E13",
+    "type": "multiple",
+    "domain": "cs",
+    "query": "Как изменится порядок обхода графа, если вместо BFS взять DFS?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-QUESTION-003",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "CS-CONCEPT-016",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "CS-CONCEPT-017",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "BFS",
+        "start": 48,
+        "end": 51,
+        "card_ids": [
+          "CS-CONCEPT-016"
+        ]
+      },
+      {
+        "text": "DFS",
+        "start": 58,
+        "end": 61,
+        "card_ids": [
+          "CS-CONCEPT-017"
+        ]
+      }
+    ],
+    "facts": [
+      "BFS обходит по слоям",
+      "DFS углубляется по ветви и возвращается"
+    ]
+  },
+  {
+    "id": "E14",
+    "type": "multiple",
+    "domain": "cs",
+    "query": "Почему при повторном HTTP-запросе DELETE сохраняет результат операции?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-041",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "CS-CONCEPT-030",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "HTTP",
+        "start": 21,
+        "end": 25,
+        "card_ids": [
+          "CS-CONCEPT-030"
+        ]
+      }
+    ],
+    "facts": [
+      "Идемпотентность касается эффекта на ресурс",
+      "Код ответа повторного DELETE может отличаться"
+    ]
+  },
+  {
+    "id": "E15",
+    "type": "multiple",
+    "domain": "cs",
+    "query": "Как найти несколько максимальных значений с помощью кучи и ограничить память количеством ответов?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-014",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "CS-PATTERN-009",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "кучи",
+        "start": 52,
+        "end": 56,
+        "card_ids": [
+          "CS-CONCEPT-014"
+        ]
+      }
+    ],
+    "facts": [
+      "Хранить k элементов в минимальной куче",
+      "Удалять минимум при поступлении большего элемента"
+    ]
+  },
+  {
+    "id": "E16",
+    "type": "multiple",
+    "domain": "cs",
+    "query": "Откуда берётся переполнение стека при рекурсии без уменьшения входа?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-021",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "CS-CONCEPT-012",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "стека",
+        "start": 28,
+        "end": 33,
+        "card_ids": [
+          "CS-CONCEPT-012"
+        ]
+      }
+    ],
+    "facts": [
+      "Каждый вызов создаёт кадр",
+      "Без приближения к базовому случаю растёт глубина"
+    ]
+  },
+  {
+    "id": "E17",
+    "type": "multiple",
+    "domain": "arch",
+    "query": "Как Cache-aside использует кеширование между чтением из БД и записью изменения?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-008",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "ARCH-COMPONENT-002",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Cache-aside",
+        "start": 4,
+        "end": 15,
+        "card_ids": [
+          "ARCH-DESIGNPAT-008"
+        ]
+      },
+      {
+        "text": "кеширование",
+        "start": 27,
+        "end": 38,
+        "card_ids": [
+          "ARCH-COMPONENT-002"
+        ]
+      }
+    ],
+    "facts": [
+      "При промахе приложение читает БД и заполняет кеш",
+      "При записи ключ инвалидируется или обновляется"
+    ]
+  },
+  {
+    "id": "E18",
+    "type": "multiple",
+    "domain": "arch",
+    "query": "Как соотносятся маршрутизация API Gateway и распределение нагрузки через Load Balancer?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-004",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "ARCH-COMPONENT-001",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "API Gateway",
+        "start": 30,
+        "end": 41,
+        "card_ids": [
+          "ARCH-COMPONENT-004"
+        ]
+      },
+      {
+        "text": "Load Balancer",
+        "start": 73,
+        "end": 86,
+        "card_ids": [
+          "ARCH-COMPONENT-001"
+        ]
+      }
+    ],
+    "facts": [
+      "Gateway маршрутизирует к сервисам и решает задачи уровня API",
+      "Балансировщик распределяет трафик между экземплярами"
+    ]
+  },
+  {
+    "id": "E19",
+    "type": "multiple",
+    "domain": "arch",
+    "query": "Как Circuit Breaker и exponential backoff по-разному снижают давление на неисправный сервис?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-003",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "ARCH-DESIGNPAT-002",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Circuit Breaker",
+        "start": 4,
+        "end": 19,
+        "card_ids": [
+          "ARCH-DESIGNPAT-003"
+        ]
+      },
+      {
+        "text": "exponential backoff",
+        "start": 22,
+        "end": 41,
+        "card_ids": [
+          "ARCH-DESIGNPAT-002"
+        ]
+      }
+    ],
+    "facts": [
+      "Breaker временно прекращает вызовы",
+      "Backoff увеличивает интервал между повторами"
+    ]
+  },
+  {
+    "id": "E20",
+    "type": "multiple",
+    "domain": "arch",
+    "query": "Зачем идемпотентному обработчику распознавать повторы, если отправка сообщения уже идёт через Transactional Outbox?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-006",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "ARCH-DESIGNPAT-001",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "идемпотентному обработчику",
+        "start": 6,
+        "end": 32,
+        "card_ids": [
+          "ARCH-DESIGNPAT-001"
+        ]
+      },
+      {
+        "text": "Transactional Outbox",
+        "start": 94,
+        "end": 114,
+        "card_ids": [
+          "ARCH-DESIGNPAT-006"
+        ]
+      }
+    ],
+    "facts": [
+      "Событие может быть опубликовано или доставлено повторно",
+      "Ключ предотвращает повторный бизнес-эффект"
+    ]
+  },
+  {
+    "id": "E21",
+    "type": "multiple",
+    "domain": "process",
+    "query": "Как на Behavioral Interview структурировать рассказ по STAR так, чтобы интервьюер увидел результат?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-STAGE-005",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "PROC-FRAMEWORK-001",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Behavioral Interview",
+        "start": 7,
+        "end": 27,
+        "card_ids": [
+          "PROC-STAGE-005"
+        ]
+      },
+      {
+        "text": "STAR",
+        "start": 55,
+        "end": 59,
+        "card_ids": [
+          "PROC-FRAMEWORK-001"
+        ]
+      }
+    ],
+    "facts": [
+      "Ответ разделён на Situation, Task, Action, Result",
+      "Результат выражен проверяемым эффектом"
+    ]
+  },
+  {
+    "id": "E22",
+    "type": "multiple",
+    "domain": "process",
+    "query": "Чем Phone Screen отличается от HR-скрининга по тому, что оценивают?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-STAGE-001",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "PROC-STAGE-002",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Phone Screen",
+        "start": 4,
+        "end": 16,
+        "card_ids": [
+          "PROC-STAGE-002"
+        ]
+      },
+      {
+        "text": "HR-скрининга",
+        "start": 31,
+        "end": 43,
+        "card_ids": [
+          "PROC-STAGE-001"
+        ]
+      }
+    ],
+    "facts": [
+      "Phone Screen проверяет техническую базу",
+      "HR обсуждает мотивацию и ожидания"
+    ]
+  },
+  {
+    "id": "E23",
+    "type": "multiple",
+    "domain": "process",
+    "query": "Как сочетать активное слушание и уточняющие вопросы, когда требования можно понять по-разному?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-SOFTSKILL-001",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "PROC-SOFTSKILL-003",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "активное слушание",
+        "start": 13,
+        "end": 30,
+        "card_ids": [
+          "PROC-SOFTSKILL-001"
+        ]
+      },
+      {
+        "text": "уточняющие вопросы",
+        "start": 33,
+        "end": 51,
+        "card_ids": [
+          "PROC-SOFTSKILL-003"
+        ]
+      }
+    ],
+    "facts": [
+      "Перефразировать услышанное",
+      "Задать конкретный вопрос о неоднозначном требовании"
+    ]
+  },
+  {
+    "id": "E24",
+    "type": "multiple",
+    "domain": "process",
+    "query": "Как в Postmortem без поиска виноватых рассказать про ошибку в продакшене, чтобы было ясно, что улучшили?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-010",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "PROC-BEHAVIORAL-009",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Postmortem без поиска виноватых",
+        "start": 6,
+        "end": 37,
+        "card_ids": [
+          "PROC-FRAMEWORK-010"
+        ]
+      },
+      {
+        "text": "ошибку в продакшене",
+        "start": 53,
+        "end": 72,
+        "card_ids": [
+          "PROC-BEHAVIORAL-009"
+        ]
+      }
+    ],
+    "facts": [
+      "Описать последовательность событий и влияние",
+      "Привязать изменения или меры предотвращения к причинам"
+    ]
+  },
+  {
+    "id": "E25",
+    "type": "purpose",
+    "domain": "cs",
+    "query": "Как быстро отсеять заведомо отсутствующий ключ, если редкие ложные срабатывания допустимы?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-024",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Отрицательный результат гарантирует отсутствие",
+      "Положительный может быть ложным"
+    ]
+  },
+  {
+    "id": "E26",
+    "type": "purpose",
+    "domain": "cs",
+    "query": "Как быстро узнать для каждого числа следующее большее справа, не пересматривая весь остаток массива?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-PATTERN-008",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Хранить индексы кандидатов в монотонном стеке",
+      "Извлекать меньшие при появлении большего"
+    ]
+  },
+  {
+    "id": "E27",
+    "type": "purpose",
+    "domain": "cs",
+    "query": "В какой структуре разные слова могут переиспользовать один общий начальный фрагмент?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-003",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Узлы представляют префиксы",
+      "Терминальный признак отличает слово от простого префикса"
+    ]
+  },
+  {
+    "id": "E28",
+    "type": "purpose",
+    "domain": "arch",
+    "query": "Где отделить владение файлами и их атрибуты от хранения самих байтов?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-030",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Метаданные и права хранятся отдельно",
+      "Запись ссылается на объект"
+    ]
+  },
+  {
+    "id": "E29",
+    "type": "purpose",
+    "domain": "arch",
+    "query": "Как соединить сообщения разных сервисов в одну цепочку для отладки запроса?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-017",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Общий идентификатор трассировки связывает вызовы",
+      "Спаны или события показывают путь запроса"
+    ]
+  },
+  {
+    "id": "E30",
+    "type": "purpose",
+    "domain": "arch",
+    "query": "Как передать вниз по цепочке сервисов остаток времени до общего срока операции?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-009",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Передаётся дедлайн",
+      "Каждый следующий вызов ограничивается остатком времени"
+    ]
+  },
+  {
+    "id": "E31",
+    "type": "purpose",
+    "domain": "arch",
+    "query": "Что позволит включить новую возможность только для части пользователей без выпуска новой версии?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-018",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Включение отделено от развёртывания",
+      "Доступ ограничивается долей или сегментом"
+    ]
+  },
+  {
+    "id": "E32",
+    "type": "purpose",
+    "domain": "process",
+    "query": "Как заранее проверить, что собеседник увидит только нужную часть экрана и услышит меня?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-CHECKLIST-014",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Проверить демонстрацию, микрофон и камеру",
+      "Открыть нужное окно и скрыть уведомления"
+    ]
+  },
+  {
+    "id": "E33",
+    "type": "purpose",
+    "domain": "process",
+    "query": "Как запланировать несколько повторов темы так, чтобы вспоминать её позже без подсказки?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-STRATEGY-012",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Разнести повторы по интервалам",
+      "Извлекать ответ из памяти до просмотра подсказки"
+    ]
+  },
+  {
+    "id": "E34",
+    "type": "purpose",
+    "domain": "process",
+    "query": "Что сделать до написания кода, если от выбора трактовки входных данных зависит всё решение?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-005",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [],
+    "facts": [
+      "Уточнить вход и ограничения",
+      "Назвать и согласовать допущения"
+    ]
+  },
+  {
+    "id": "E35",
+    "type": "compound",
+    "domain": "cs",
+    "query": "Как BFS отмечает посещённые вершины? Сколько дополнительной памяти у него в худшем случае?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-016",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "BFS",
+        "start": 4,
+        "end": 7,
+        "card_ids": [
+          "CS-CONCEPT-016"
+        ]
+      }
+    ],
+    "facts": [
+      "Отметить при постановке в очередь",
+      "Дополнительная память O(V)"
+    ]
+  },
+  {
+    "id": "E36",
+    "type": "compound",
+    "domain": "cs",
+    "query": "Как поддерживать левую границу в бинарном поиске; какие проверки нужны для массива из двух одинаковых элементов?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-018",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "бинарном поиске",
+        "start": 33,
+        "end": 48,
+        "card_ids": [
+          "CS-CONCEPT-018"
+        ]
+      }
+    ],
+    "facts": [
+      "При подходящем среднем сдвигают правую границу",
+      "Нужны проверки дубликатов и инварианта границ"
+    ]
+  },
+  {
+    "id": "E37",
+    "type": "compound",
+    "domain": "cs",
+    "query": "Как развернуть Reverse Linked List? Почему при перепривязке нужно сохранить next?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-PROBLEM-006",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "CS-CONCEPT-011",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Reverse Linked List",
+        "start": 15,
+        "end": 34,
+        "card_ids": [
+          "CS-PROBLEM-006"
+        ]
+      }
+    ],
+    "facts": [
+      "Сохранить ссылку на следующий узел",
+      "Перенаправить текущую ссылку на предыдущий узел"
+    ]
+  },
+  {
+    "id": "E38",
+    "type": "compound",
+    "domain": "arch",
+    "query": "Как работает распределённая блокировка с арендой? Что происходит после окончания её срока?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-COMPONENT-020",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "распределённая блокировка",
+        "start": 13,
+        "end": 38,
+        "card_ids": [
+          "ARCH-COMPONENT-020"
+        ]
+      }
+    ],
+    "facts": [
+      "У блокировки есть TTL",
+      "Старый владелец может продолжить работу, устаревший токен отклоняется"
+    ]
+  },
+  {
+    "id": "E39",
+    "type": "compound",
+    "domain": "arch",
+    "query": "Когда Circuit Breaker разрешает пробные запросы? Как очередь сообщений сглаживает пики?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-003",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "ARCH-COMPONENT-003",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Circuit Breaker",
+        "start": 6,
+        "end": 21,
+        "card_ids": [
+          "ARCH-DESIGNPAT-003"
+        ]
+      },
+      {
+        "text": "очередь сообщений",
+        "start": 53,
+        "end": 70,
+        "card_ids": [
+          "ARCH-COMPONENT-003"
+        ]
+      }
+    ],
+    "facts": [
+      "Пробный вызов выполняют после паузы",
+      "Очередь буферизует задачи и позволяет обработать их позднее"
+    ]
+  },
+  {
+    "id": "E40",
+    "type": "compound",
+    "domain": "arch",
+    "query": "Где CQRS применяет отдельную модель чтения? Почему данные у неё иногда запаздывают?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "ARCH-DESIGNPAT-007",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "CQRS",
+        "start": 4,
+        "end": 8,
+        "card_ids": [
+          "ARCH-DESIGNPAT-007"
+        ]
+      }
+    ],
+    "facts": [
+      "Чтение отделено от модели команд",
+      "Проекция обновляется асинхронно или с задержкой"
+    ]
+  },
+  {
+    "id": "E41",
+    "type": "compound",
+    "domain": "process",
+    "query": "Что оценивают на Coding Interview? Какие истории стоит собрать для Поведенческого интервью?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-STAGE-003",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "PROC-STAGE-005",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Coding Interview",
+        "start": 17,
+        "end": 33,
+        "card_ids": [
+          "PROC-STAGE-003"
+        ]
+      },
+      {
+        "text": "Поведенческого интервью",
+        "start": 67,
+        "end": 90,
+        "card_ids": [
+          "PROC-STAGE-005"
+        ]
+      }
+    ],
+    "facts": [
+      "Проверяют решение, код и сложность",
+      "Готовят конкретные истории о личных действиях и результате"
+    ]
+  },
+  {
+    "id": "E42",
+    "type": "compound",
+    "domain": "process",
+    "query": "Как проводить Mock Interviews с ограничением по времени? Когда давать обратную связь?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-STRATEGY-005",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "Mock Interviews",
+        "start": 14,
+        "end": 29,
+        "card_ids": [
+          "PROC-STRATEGY-005"
+        ]
+      }
+    ],
+    "facts": [
+      "Сессия идёт по таймеру",
+      "Фидбек дают после завершения"
+    ]
+  },
+  {
+    "id": "E43",
+    "type": "compound",
+    "domain": "process",
+    "query": "Как построить ответ на несогласие в команде? Как при этом предложить проверку версии коллеги?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "PROC-FRAMEWORK-012",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "ответ на несогласие в команде",
+        "start": 14,
+        "end": 43,
+        "card_ids": [
+          "PROC-FRAMEWORK-012"
+        ]
+      }
+    ],
+    "facts": [
+      "Сначала выяснить основания и критерии",
+      "Предложить проверку или сравнить варианты по данным"
+    ]
+  },
+  {
+    "id": "E44",
+    "type": "compound",
+    "domain": "cs",
+    "query": "Как устроен B-tree и индекс базы данных? Что меняет порядок столбцов составного индекса?",
+    "status": "full",
+    "relevant": [
+      {
+        "id": "CS-CONCEPT-025",
+        "grade": 2,
+        "sections": []
+      },
+      {
+        "id": "CS-CONCEPT-040",
+        "grade": 2,
+        "sections": []
+      }
+    ],
+    "mentions": [
+      {
+        "text": "B-tree и индекс базы данных",
+        "start": 12,
+        "end": 39,
+        "card_ids": [
+          "CS-CONCEPT-025"
+        ]
+      }
+    ],
+    "facts": [
+      "Дерево хранит упорядоченные ключи",
+      "Составной индекс эффективен для левого префикса"
+    ]
+  },
+  {
+    "id": "E45",
+    "type": "ambiguous",
+    "domain": "arch",
+    "query": "Что считается минимальной конфигурацией SD в новом проекте?",
+    "status": "ambiguous",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "SD",
+        "start": 40,
+        "end": 42,
+        "card_ids": [
+          "ARCH-COMPONENT-012",
+          "PROC-CHECKLIST-004",
+          "PROC-FRAMEWORK-003"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E46",
+    "type": "ambiguous",
+    "domain": "process",
+    "query": "Как готовиться к PS?",
+    "status": "ambiguous",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "PS",
+        "start": 17,
+        "end": 19,
+        "card_ids": [
+          "CS-PATTERN-004",
+          "PROC-STAGE-002"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E47",
+    "type": "ambiguous",
+    "domain": "process",
+    "query": "Сколько времени обычно уходит на MI?",
+    "status": "ambiguous",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "MI",
+        "start": 33,
+        "end": 35,
+        "card_ids": [
+          "CS-PROBLEM-004",
+          "PROC-STRATEGY-005"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E48",
+    "type": "ambiguous",
+    "domain": "cs",
+    "query": "Какие ограничения есть у SP?",
+    "status": "ambiguous",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "SP",
+        "start": 25,
+        "end": 27,
+        "card_ids": [
+          "CS-PATTERN-001",
+          "CS-PROBLEM-012",
+          "ARCH-TRADEOFF-013"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E49",
+    "type": "ambiguous",
+    "domain": "arch",
+    "query": "Можно ли обойтись без BS в простой задаче?",
+    "status": "ambiguous",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "BS",
+        "start": 22,
+        "end": 24,
+        "card_ids": [
+          "CS-PATTERN-005",
+          "ARCH-COMPONENT-006",
+          "ARCH-TRADEOFF-019"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E50",
+    "type": "ambiguous",
+    "domain": "cs",
+    "query": "Нужно ли объяснять SP на собеседовании, если уже есть работающий пример?",
+    "status": "ambiguous",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "SP",
+        "start": 19,
+        "end": 21,
+        "card_ids": [
+          "CS-PATTERN-001",
+          "CS-PROBLEM-012",
+          "ARCH-TRADEOFF-013"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E51",
+    "type": "negative",
+    "domain": "cs",
+    "query": "Какой номер главы в закрытом внутреннем курсе описывает BFS и какой там проходной балл?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "BFS",
+        "start": 56,
+        "end": 59,
+        "card_ids": [
+          "CS-CONCEPT-016"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E52",
+    "type": "negative",
+    "domain": "cs",
+    "query": "Какой флаг в моей установленной версии JIT принудительно отключает сжатие путей в Union-Find?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "Union-Find",
+        "start": 82,
+        "end": 92,
+        "card_ids": [
+          "CS-CONCEPT-004"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E53",
+    "type": "negative",
+    "domain": "arch",
+    "query": "Какой лимит частоты в секунду указан для API Gateway в моём договоре с облаком?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "API Gateway",
+        "start": 41,
+        "end": 52,
+        "card_ids": [
+          "ARCH-COMPONENT-004"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E54",
+    "type": "negative",
+    "domain": "arch",
+    "query": "Какой внутренний код ответа возвращает новый проприетарный менеджер секретов при отключении клиента?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "менеджер секретов",
+        "start": 59,
+        "end": 76,
+        "card_ids": [
+          "ARCH-COMPONENT-027"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E55",
+    "type": "negative",
+    "domain": "arch",
+    "query": "Где в CDN посмотреть неизменяемый ID моей последней платной инвалидации?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "CDN",
+        "start": 6,
+        "end": 9,
+        "card_ids": [
+          "ARCH-COMPONENT-005"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E56",
+    "type": "negative",
+    "domain": "process",
+    "query": "Какой код отзыва запишет конкретный интервьюер после Team Match на этой неделе?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "Team Match",
+        "start": 53,
+        "end": 63,
+        "card_ids": [
+          "PROC-STAGE-006"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E57",
+    "type": "negative",
+    "domain": "process",
+    "query": "Какие рекрутеры в моей компании уполномочены согласовать сумму на HR Screening?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "HR Screening",
+        "start": 66,
+        "end": 78,
+        "card_ids": [
+          "PROC-STAGE-001"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E58",
+    "type": "negative",
+    "domain": "process",
+    "query": "Какая конкретно запись оценки качества предусмотрена для STAR в закрытом портале работодателя?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [
+      {
+        "text": "STAR",
+        "start": 57,
+        "end": 61,
+        "card_ids": [
+          "PROC-FRAMEWORK-001"
+        ]
+      }
+    ],
+    "facts": []
+  },
+  {
+    "id": "E59",
+    "type": "negative",
+    "domain": "cs",
+    "query": "Какой момент инерции у планеты при равномерной сферической плотности?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [],
+    "facts": []
+  },
+  {
+    "id": "E60",
+    "type": "negative",
+    "domain": "arch",
+    "query": "Что означает евклидова метрика в задаче о движении планет с учётом релятивистских поправок?",
+    "status": "absent",
+    "relevant": [],
+    "mentions": [],
+    "facts": []
+  }
+]

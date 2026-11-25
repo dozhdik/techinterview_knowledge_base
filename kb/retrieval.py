@@ -7,16 +7,21 @@ import re
 import sqlite3
 import threading
 from collections import Counter, defaultdict
+from dataclasses import asdict, replace
 from contextlib import closing
 from pathlib import Path
 from time import perf_counter
 
 from .evidence import DEFAULT_DEPTH, EvidenceScorer, acronyms, choose_sections, lacks_referent, resolve_acronyms
+from .entities import MODES, entity_index, inherit, roles
 from .extractive import ExtractiveResult, direct_search
 from .passage_index import INDEX, VERSION, Passage, close_code_fence, corpus_key
 from .qa_reader import apply_reader
-from .query import Query, facets, terms, with_facet_context
+from .properties import LABELS, QUANTITATIVE
+from .query import Query, facets, information_needs, terms, with_facet_context
 from .representation import CHANNEL_WEIGHTS
+from .search import requested_card_ids
+from .titles import title_index
 from .vector_store import VectorIndexError, _embedder, source_fingerprint
 
 POOL = 30
@@ -104,7 +109,7 @@ class Retrieval:
         return cards
 
     def rank(self, query, method, domain=None, links=False, reranker=None, *,
-             representations=None, representation_mode="off"):
+             representations=None, representation_mode="off", entity_weights=None):
         begin = perf_counter()
         allowed = [i for i, p in enumerate(self.passages) if not domain or p.domain == domain]
         lexical = self.lexical(query)
@@ -148,6 +153,10 @@ class Retrieval:
         weights = {term: self.idf.get(term, 3.0) for term in query.tokens}
         total_weight = sum(weights.values()) or 1
 
+        global_cards = set(rrf)
+        entity_weights = entity_weights or {}
+        for card in entity_weights:
+            rrf.setdefault(card, 0.)
         evidence = {}
         for card in rrf:
             pos = self.cards[card]
@@ -160,6 +169,9 @@ class Retrieval:
                 rrf[card] += .015 * match + .013 * coverage_title
                 if "definition" in query.intents and self.title_terms[card] == weights.keys():
                     rrf[card] += .06
+        global_ranking = sorted(global_cards, key=lambda card: (-rrf[card], card))
+        for card, boost in entity_weights.items():
+            rrf[card] += boost
         rank = sorted(rrf, key=lambda card: (-rrf[card], card))
         reranker_scores = {}
         if reranker is not None and rank:
@@ -178,6 +190,11 @@ class Retrieval:
             "bm25": [(c, round(float(lexical[i]), 4)) for c, i in bm25.items()],
             "dense": [(c, round(float(dense[i]), 4)) for c, i in semantic.items()],
             "fusion": base, "reranked": rank, "cross_encoder_scores": reranker_scores,
+            "global_ranking": global_ranking,
+            "entity_candidates": [{"id": card, "boost": value, "new": card not in global_cards,
+                                   "global_position": global_ranking.index(card) + 1 if card in global_cards else None,
+                                   "position": rank.index(card) + 1}
+                                  for card, value in entity_weights.items()],
             "representations": {
                 name: [{"card": key, "score": round(value, 4), "provenance": origin}
                        for key, value, origin in rows]
@@ -199,7 +216,7 @@ class Retrieval:
         missing = set(debug["unanswered"])
         suggested = set()
         for part in debug["parts"]:
-            if part["query"] not in missing or part.get("reason") == "unspecified_referent":
+            if part["query"] not in missing or part.get("reason") in {"unspecified_referent", "unknown_card_id"}:
                 continue
             anchors = {term for term in part["terms"] if len(term) >= 3 and self.idf.get(term, 0) >= 1.6}
             for card, (cosine, coverage) in part["evidence"][:DEFAULT_DEPTH]:
@@ -229,9 +246,12 @@ class Retrieval:
                 for group in groups.values()]
 
     def ask(self, question, units, method="hybrid", domain=None, links=False, reranker=None, *,
-            depth=DEFAULT_DEPTH, reader=None, qa_mode="off", representations=None, representation_mode="off"):
+            depth=DEFAULT_DEPTH, reader=None, qa_mode="off", representations=None, representation_mode="off",
+            entity_mode="off"):
         if direct := direct_search(question, units, domain):
             return direct
+        if entity_mode not in MODES:
+            raise ValueError(f"Неизвестный режим Entity Linking: {entity_mode}")
         grouped = defaultdict(list)
         diagnostics = []
         selections = []
@@ -241,26 +261,75 @@ class Retrieval:
         parts = facets(question)
         overflow = parts[MAX_FACETS:]
         previous = None
+        previous_mentions = ()
+        missing_ids = set()
+        observe = entity_mode != "off" or bool(requested_card_ids(question))
+        index = entity_index(title_index(units)) if observe else None
+        cursor = 0
         for part in parts[:MAX_FACETS]:
-            bare = resolve_acronyms(Query.parse(part), self.acronyms, self)
-            query = with_facet_context(bare, previous)
+            started = perf_counter()
+            offset = question.find(part, cursor) if observe else 0
+            if offset >= 0:
+                cursor = offset + len(part)
+            needs = information_needs(part) if observe else ()
+            explicit_ids = requested_card_ids(part) if observe else ()
+            mentions = roles(index.link(part, units, domain), part.casefold(), needs) if index else ()
+            if not mentions and index:
+                mentions = inherit(part, previous_mentions)
+            if mentions and not mentions[0].inherited:
+                previous_mentions = mentions
+            explicit_context = any(mention.match_type == "id" for mention in mentions)
+            use_entities = entity_mode in ("retrieve", "evidence") or explicit_context
+            weighted = {}
+            owners = set()
+            if use_entities:
+                for mention in mentions:
+                    key = mention.selected
+                    if key not in self.cards or key not in by_id:
+                        continue
+                    weights = {"primary": .021, "comparison": .015, "additional": .009, "context": .004}
+                    boost = .045 if mention.match_type == "id" else weights.get(mention.role, 0.)
+                    if mention.match_type == "inflected":
+                        boost *= .75
+                    weighted[key] = max(weighted.get(key, 0.), boost)
+                    if mention.role != "context":
+                        owners.add(key)
+            unresolved = set(explicit_ids) - weighted.keys()
+            missing_ids.update(unresolved)
+            search_part = part
+            replace_names = explicit_ids or (use_entities and mentions and mentions[0].inherited)
+            if replace_names:
+                for mention in mentions:
+                    if mention.selected and mention.match_type == "id" and mention.text:
+                        search_part = search_part.replace(mention.text, mention.canonical_name)
+                    elif mention.inherited:
+                        search_part += " " + mention.canonical_name
+            bare = resolve_acronyms(Query.parse(search_part), self.acronyms, self)
+            if replace_names:
+                bare = replace(bare, raw=part)
+            query = with_facet_context(bare, previous) if search_part == part else bare
             if not query.normalized:
                 continue
-            if query is bare:
+            if query is bare and search_part == part:
                 previous = bare
+            elif explicit_ids and weighted:
+                previous = bare
+            if observe:
+                timings["entity_linking"] += perf_counter() - started
             needs_clarification = lacks_referent(bare) and query is bare
-            if representations is None or representation_mode == "off":
-                ranked, evidence, lexical, dense, details = self.rank(query, method, domain, links, reranker)
-            else:
-                ranked, evidence, lexical, dense, details = self.rank(
-                    query, method, domain, links, reranker,
-                    representations=representations, representation_mode=representation_mode,
-                )
+            rank_options = {}
+            if representations is not None and representation_mode != "off":
+                rank_options.update(representations=representations, representation_mode=representation_mode)
+            if weighted:
+                rank_options["entity_weights"] = weighted
+            ranked, evidence, lexical, dense, details = self.rank(query, method, domain, links, reranker, **rank_options)
             rankings.append(ranked)
             timings.update(details["seconds"])
             started = perf_counter()
+            evidence_needs = needs if weighted and (entity_mode == "evidence" or explicit_context) else ()
             scorer = EvidenceScorer(self, query, [card for card in ranked if card in by_id],
-                                    evidence, lexical, dense, depth, method)
+                                    evidence, lexical, dense, depth, method,
+                                    needs=evidence_needs, owners=owners, required_cards=weighted)
             candidates = scorer.candidates()
             qa_start = perf_counter()
             qa = {}
@@ -268,22 +337,34 @@ class Retrieval:
                 candidates, qa = apply_reader(reader, qa_mode, scorer, candidates)
             qa_elapsed = perf_counter() - qa_start
             timings["qa"] += qa_elapsed
-            chosen = [] if needs_clarification else choose_sections(candidates, scorer)
+            failed_id = bool(unresolved) and not weighted
+            chosen = [] if needs_clarification or failed_id else choose_sections(candidates, scorer)
             if chosen and not scorer.has_answer_material(chosen):
                 details["reason"] = "overview_without_answer"
                 details["overview_cards"] = list(dict.fromkeys(self.passages[b.index].card_id for b in chosen))
                 chosen = []
             elif not chosen:
-                details["reason"] = "unspecified_referent" if needs_clarification else "insufficient_evidence"
+                details["reason"] = ("unknown_card_id" if failed_id else
+                                     "unspecified_referent" if needs_clarification else "insufficient_evidence")
             selections.append((part, scorer, details, chosen))
             details["checked_candidates"] = [
                 {"card": c.card, "score": round(c.score, 4), "reason": c.reason,
-                 "section": list(self.passages[c.blocks[0].index].heading) if c.blocks else []}
+                 "section": list(self.passages[c.blocks[0].index].heading) if c.blocks else [],
+                 **({"properties": sorted(set().union(*(b.properties for b in c.blocks[:4])))}
+                    if evidence_needs else {})}
                 for c in candidates
             ]
             timings["extract"] += perf_counter() - started - qa_elapsed
             details.update(query=part, normalized=query.normalized, terms=query.tokens, qa=qa,
                            intents=query.intents, evidence=[(c, evidence[c]) for c in ranked[:10]])
+            if observe:
+                details["entities"] = [asdict(replace(mention, start=mention.start + max(0, offset),
+                                                      end=mention.end + max(0, offset)))
+                                       if mention.start is not None else asdict(mention) for mention in mentions]
+                details["information_needs"] = needs
+                details["checked_entity_cards"] = list(weighted)
+                details["invalid_card_ids"] = sorted(unresolved)
+                details["properties"] = sorted(set().union(*(block.properties for block in chosen)))
             diagnostics.append(details)
         before = perf_counter()
         composed = self._compose(b for _, _, _, chosen in selections for b in chosen)
@@ -295,8 +376,26 @@ class Retrieval:
                           and self.passages[a.index].section == self.passages[b.index].section
                           and a.text in b.text for a in chosen for b in retained)
             if visible:
+                required = scorer.needs & QUANTITATIVE
+                facet_blocks = [block for block in retained if any(
+                    self.passages[block.index].card_id == self.passages[item.index].card_id
+                    and self.passages[block.index].section == self.passages[item.index].section
+                    for item in chosen)]
+                available = frozenset().union(*(block.properties for block in facet_blocks))
+                deficits = [LABELS[k] for k in sorted(required - available)]
+                if "comparison" in scorer.needs and len(scorer.owners) > 1:
+                    confirmed = {card for card in scorer.owners if any(
+                        self.passages[b.index].card_id == card or (
+                            self.title_terms[card] and self.title_terms[card] <= b.terms)
+                        for b in facet_blocks)}
+                    details["comparison_coverage"] = sorted(confirmed)
+                    if confirmed != scorer.owners:
+                        deficits.append("сведения об обеих сравниваемых сущностях")
+                if deficits:
+                    details["uncovered_properties"] = deficits
+                    missing.append(part + " (" + ", ".join(deficits) + ")")
                 continue
-            if (details.get("reason") != "unspecified_referent"
+            if (details.get("reason") not in {"unspecified_referent", "unknown_card_id"}
                     and any(scorer.has_answer_material([block]) and scorer.covers(block) for block in retained)):
                 details["reason"] = "covered_in_selected_sections"
             else:
@@ -308,7 +407,8 @@ class Retrieval:
             texts = [close_code_fence(re.sub(r"\[\[([A-Z]+-[A-Z]+-\d+)\]\]", "", b.text)) for b in group]
             grouped[p.card_id].append((p.heading, "\n\n".join(texts)))
             selected.extend({"id": p.card_id, "heading": p.heading,
-                             "position": self.passages[b.index].position, "text": b.text} for b in group)
+                             "position": self.passages[b.index].position, "text": b.text,
+                             **({"properties": sorted(b.properties)} if b.properties else {})} for b in group)
         rendered = []
         for card, picked in grouped.items():
             rendered.append("# " + by_id[card].title)
@@ -318,6 +418,8 @@ class Retrieval:
         if missing and grouped:
             rendered.append("Найден частичный ответ. Для следующих частей вопроса подходящего фрагмента не найдено:\n\n"
                             + "\n".join(f"- {part}" for part in missing))
+        if missing_ids:
+            rendered.append("Карточки отсутствуют в доступной базе: " + ", ".join(sorted(missing_ids)) + ".")
         if overflow:
             rendered.append("Отправьте оставшиеся части отдельным сообщением:\n\n"
                             + "\n".join(f"- {part}" for part in overflow))
@@ -326,12 +428,13 @@ class Retrieval:
             rendered.insert(0, "Уточните, о каком этапе, шаге или ситуации идёт речь.")
         answer = ExtractiveResult("\n\n".join(rendered), [by_id[c] for c in grouped]) if rendered else None
         if grouped:
-            state = "partial" if missing or overflow else "complete"
+            state = "partial" if missing or overflow or missing_ids else "complete"
         elif clarification or overflow:
             state = "clarification"
         elif (any(part.get("reason") == "overview_without_answer" for part in diagnostics)
               or any(cos >= .49 and coverage >= .30
-                     for part in diagnostics for _, (cos, coverage) in part["evidence"])):
+                     for part in diagnostics if part.get("reason") != "unknown_card_id"
+                     for _, (cos, coverage) in part["evidence"])):
             state = "related_only"
         else:
             state = "absent"

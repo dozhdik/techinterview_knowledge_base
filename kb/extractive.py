@@ -10,7 +10,7 @@ from .rag import RagConfig, RagError, _retrieve_sync
 from .parser import ParseError
 from .vector_store import VectorIndexError
 from .content import has_material
-from .search import _question_terms, requested_card_ids
+from .search import _question_terms, card_open_ids
 from .titles import title_index
 
 
@@ -22,7 +22,7 @@ class ExtractiveResult:
 
 def direct_search(question, units, domain=None):
     """Resolve an ID or an entire card name before retrieving passages."""
-    ids = requested_card_ids(question)
+    ids = card_open_ids(question)
     match = title_index(units).match(question, domain) if not ids else None
     if not ids and not match:
         return None
@@ -34,6 +34,7 @@ def direct_search(question, units, domain=None):
     missing = [key for key in keys if key not in by_id]
     unavailable = [u.id for u in cards if u not in available]
     notices = []
+    postponed = []
     if missing:
         notices.append("Карточки пока нет в базе: " + ", ".join(missing) + ".")
     if unavailable:
@@ -45,6 +46,9 @@ def direct_search(question, units, domain=None):
             f"- {u.title} ({u.domain}, {u.id})" for u in available)
         ranked, sources = [], []
     elif available:
+        postponed = [unit.id for unit in available[3:]]
+        if postponed:
+            notices.append("Открыты первые три карточки. Остальные запросите отдельно: " + ", ".join(postponed) + ".")
         status, state = "success", "partial" if notices and ids else "complete"
         sources = available[:3]
         ranked = [u.id for u in sources]
@@ -57,8 +61,9 @@ def direct_search(question, units, domain=None):
 
     return ExtractiveResult(text, sources), {
         "query": question, "lookup": {"kind": kind, "status": status, "candidates": list(keys)},
-        "ranked_cards": ranked, "state": state, "parts": [], "selected": [],
-        "sources": [u.id for u in sources], "unanswered": [], "deferred": [], "seconds": {},
+        "ranked_cards": ranked, "state": state, "parts": [], "selected": [], "intents": ["direct_lookup"],
+        "sources": [u.id for u in sources], "unanswered": [*missing, *unavailable, *postponed],
+        "deferred": postponed, "seconds": {},
     }
 
 
@@ -169,13 +174,17 @@ def card_description(unit):
     return None
 
 
-def structural_search(root, question, units):
+def structural_search(root, question, units, entity_mode=None):
     """Return the extracted answer, evidence state and separate suggestions."""
     from .retrieval import configured_reranker, get_engine
 
     start = time.perf_counter()
     engine = get_engine(root)
-    result, debug = engine.ask(question, units, reranker=configured_reranker())
+    if entity_mode is None:
+        import os
+
+        entity_mode = os.getenv("KB_ENTITY_MODE", "off").lower()
+    result, debug = engine.ask(question, units, reranker=configured_reranker(), entity_mode=entity_mode)
     by_id = {unit.id: unit for unit in units}
     related = [by_id[card] for card in engine.related_cards(debug) if card in by_id]
     state = debug["state"]

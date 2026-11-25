@@ -28,7 +28,7 @@ if __package__ in (None, ""):
 from kb.extractive import card_description, direct_search, structural_search
 from kb.parser import parse_directory
 from kb.content import has_material
-from kb.search import search_question
+from kb.search import requested_card_ids, search_question
 from kb.rag import (INSUFFICIENT_CONTEXT, RagConfig, RagError, generate, retrieve,
                     prepare_context, validate_answer)
 from kb.citation_stream import CitationFilter
@@ -209,7 +209,8 @@ async def ask(request: AskRequest) -> AskResponse:
                                "Подходящих материалов в базе знаний не найдено.")
                     return AskResponse(status="not_found", answer=message, sources=[],
                                        search_state=state, related_materials=materials)
-                return AskResponse(status="success", answer=extracted.answer, search_state=state,
+                return AskResponse(status="not_found" if state == "absent" else "success",
+                    answer=extracted.answer, search_state=state,
                     sources=[SourceItem(title=unit.title, id=unit.id, url=f"/cards/{unit.id}")
                              for unit in extracted.units], related_materials=materials)
         search_notice = prep.message
@@ -243,6 +244,10 @@ async def ask(request: AskRequest) -> AskResponse:
         rag_notice = ("Ответ модели обрезан; показываю материал карточки.\n\n"
                       if "обрезан" in str(exc) else
                       "Генерация сейчас недоступна; показываю материал карточки.\n\n")
+
+    if search_notice and requested_card_ids(request.question):
+        return AskResponse(status="not_found", search_state="absent", sources=[], search_notice=search_notice,
+                           answer="Поиск по свойствам указанной карточки требует структурного индекса.")
 
     results = await asyncio.to_thread(search_question, units, request.question)
     if not results:

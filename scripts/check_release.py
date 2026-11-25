@@ -20,9 +20,9 @@ def load_cases():
         yield from json.loads(file.read_text())
 
 
-def run(base_url):
+def run(base_url, cases=None):
     rows = []
-    for case in load_cases():
+    for case in load_cases() if cases is None else cases:
         request = Request(
             base_url.rstrip("/") + "/api/ask",
             data=json.dumps({"question": case["query"]}).encode(),
@@ -63,10 +63,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", default="http://127.0.0.1:8000")
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--cases", type=Path, help="Дополнительная размеченная выборка JSON")
     args = parser.parse_args()
-    rows = run(args.url)
-    summary = {"regression": summarize(rows[:267]), "holdout": summarize(rows[267:]),
-               "overall": summarize(rows)}
+    cases = json.loads(args.cases.read_text()) if args.cases else None
+    if cases == []:
+        parser.error("Выборка пуста.")
+    rows = run(args.url, cases)
+    summary = {"overall": summarize(rows)}
+    if cases is None:
+        summary.update(regression=summarize(rows[:267]), holdout=summarize(rows[267:]))
     args.output.write_text(json.dumps({"summary": summary, "rows": rows}, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 

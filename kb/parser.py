@@ -31,6 +31,8 @@ class KnowledgeUnit:
 
     file_path: str               = ""
     content: str                 = ""
+    aliases: list[str]           = field(default_factory=list)
+    abbreviations: list[str]     = field(default_factory=list)
 
     def __repr__(self) -> str:
         return f"KnowledgeUnit(id={self.id!r}, title={self.title!r})"
@@ -111,6 +113,8 @@ def _build_unit(metadata: dict, content: str, file_path: str) -> KnowledgeUnit:
         status         = str(metadata.get("status", "draft")),
         file_path      = file_path,
         content        = content,
+        aliases        = _to_list(metadata.get("aliases")),
+        abbreviations  = _to_list(metadata.get("abbreviations")),
     )
 
 

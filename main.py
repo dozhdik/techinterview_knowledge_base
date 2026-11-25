@@ -210,22 +210,28 @@ def cmd_search_diagnose(args) -> None:
     import json
     from time import perf_counter
 
+    from kb.extractive import direct_search
     from kb.qa_reader import load_reader
     from kb.representation import get_representation
     from kb.retrieval import configured_reranker, get_engine
 
     if args.qa_mode != "off" and not args.qa_path:
         raise SystemExit("Для режима QA укажите локальный каталог через --qa-path.")
-    reader = load_reader(args.qa_path) if args.qa_mode != "off" else None
     started = perf_counter()
-    engine = get_engine(KB_ROOT, args.index)
-    representations = (get_representation(KB_ROOT, args.representation_index)
-                       if args.representation_mode != "off" else None)
-    ready = perf_counter()
-    answer, debug = engine.ask(args.question, _load_units(), domain=args.domain,
-                               links=args.links, reranker=configured_reranker(), depth=args.depth,
-                               reader=reader, qa_mode=args.qa_mode, representations=representations,
-                               representation_mode=args.representation_mode)
+    units = _load_units()
+    if direct := direct_search(args.question, units, args.domain):
+        answer, debug = direct
+        ready = perf_counter()
+    else:
+        reader = load_reader(args.qa_path) if args.qa_mode != "off" else None
+        engine = get_engine(KB_ROOT, args.index)
+        representations = (get_representation(KB_ROOT, args.representation_index)
+                           if args.representation_mode != "off" else None)
+        ready = perf_counter()
+        answer, debug = engine.ask(args.question, units, domain=args.domain,
+                                   links=args.links, reranker=configured_reranker(), depth=args.depth,
+                                   reader=reader, qa_mode=args.qa_mode, representations=representations,
+                                   representation_mode=args.representation_mode)
     debug["answer"] = answer.answer if answer else None
     debug["seconds"]["startup"] = ready - started
     debug["seconds"]["total"] = perf_counter() - started

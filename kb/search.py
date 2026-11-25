@@ -5,7 +5,9 @@ import re
 from pathlib import Path
 from typing import Optional
 
+from .content import has_material
 from .parser import KnowledgeUnit
+from .titles import title_index
 from .registry import DOMAIN_CODES
 from .validator import VALID_CATEGORIES
 
@@ -48,11 +50,14 @@ def search(
 ) -> list[SearchResult]:
     results = []
     requested_ids = set(requested_card_ids(query.text or ""))
-
+    match = title_index(units).match(query.text, query.domain) if query.text and not requested_ids else None
     for unit in units:
         if requested_ids and unit.id.upper() not in requested_ids:
             continue
-        score, matched = _score_unit(unit, query, exact_id=bool(requested_ids))
+        if match and (unit.id not in match.ids or unit.status == "draft" or not has_material(unit)):
+            continue
+        kind = "id" if requested_ids else match.kind if match else None
+        score, matched = _score_unit(unit, query, direct_kind=kind)
         if score > 0:
             results.append(SearchResult(unit=unit, score=score, matched=matched))
 
@@ -271,7 +276,7 @@ def search_question(
 def _score_unit(
     unit: KnowledgeUnit,
     query: SearchQuery,
-    *, exact_id: bool = False,
+    *, direct_kind: str | None = None,
 ) -> tuple[int, list[str]]:
     score = 0
     matched = []
@@ -326,9 +331,9 @@ def _score_unit(
             score += 5
             matched.append(f"tag={tag}")
 
-    if exact_id:
+    if direct_kind:
         score += 15
-        matched.append("id")
+        matched.append(direct_kind)
     elif query.text:
         text_lower = query.text.lower()
         title_lower = unit.title.lower()

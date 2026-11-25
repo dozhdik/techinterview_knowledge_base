@@ -3,7 +3,6 @@ import functools
 import json
 import logging
 import os
-import re
 import sqlite3
 import time
 from contextlib import aclosing, asynccontextmanager
@@ -26,10 +25,10 @@ KB_ROOT = BASE_DIR.parent
 if __package__ in (None, ""):
     sys.path.insert(0, str(KB_ROOT))
 
-from kb.extractive import card_description, structural_search
+from kb.extractive import card_description, direct_search, structural_search
 from kb.parser import parse_directory
 from kb.content import has_material
-from kb.search import requested_card_ids, search_question
+from kb.search import search_question
 from kb.rag import (INSUFFICIENT_CONTEXT, RagConfig, RagError, generate, retrieve,
                     prepare_context, validate_answer)
 from kb.citation_stream import CitationFilter
@@ -172,39 +171,24 @@ def _material(unit):
                            domain=unit.domain, description=card_description(unit))
 
 
+def _direct_response(question, units):
+    direct = direct_search(question, units)
+    if direct is None:
+        return None
+    result, info = direct
+    return AskResponse(status=info["lookup"]["status"], search_state=info["state"],
+                       answer=result.answer,
+                       sources=[SourceItem(title=u.title, id=u.id, url=f"/cards/{u.id}") for u in result.units])
+
+
 @app.post("/api/ask", response_model=AskResponse)
 async def ask(request: AskRequest) -> AskResponse:
     if not request.question.strip():
         return AskResponse(status="error", answer="Пожалуйста, введите вопрос.", sources=[])
 
     units = await asyncio.to_thread(load_units)
-    requested_ids = requested_card_ids(request.question)
-    if requested_ids:
-        by_id = {unit.id.upper(): unit for unit in units}
-        missing = [card_id for card_id in requested_ids if card_id not in by_id]
-        unfinished = [card_id for card_id in requested_ids
-                      if card_id in by_id and not has_material(by_id[card_id])]
-        ready = [by_id[card_id] for card_id in requested_ids
-                 if card_id in by_id and has_material(by_id[card_id])]
-        notices = []
-        if missing:
-            notices.append("Карточки пока нет в базе: " + ", ".join(missing) + ".")
-        if unfinished:
-            notices.append("Материал ещё не заполнен: " + ", ".join(unfinished) + ".")
-        if ready:
-            return AskResponse(
-                status="success", search_state="partial" if notices else "complete",
-                answer=("\n\n".join(notices) + "\n\n" if notices else "")
-                + "Материал из базы знаний:\n\n" + re.sub(r"\[\[[A-Z]+-[A-Z]+-\d+\]\]", "", ready[0].content),
-                sources=[SourceItem(title=unit.title, id=unit.id, url=f"/cards/{unit.id}")
-                         for unit in ready[:3]],
-            )
-        return AskResponse(
-            status="not_ready" if unfinished and not missing else "not_found",
-            search_state="absent" if missing else None,
-            answer=" ".join(notices) + " Проверьте ID или спросите о другой теме.",
-            sources=[],
-        )
+    if direct := _direct_response(request.question, units):
+        return direct
 
     rag_notice = ""
     search_notice = None
@@ -310,12 +294,19 @@ async def ask_stream(request: AskRequest):
         provisional = False
         try:
             yield _event("stage", stage="search", message="Поиск информации…")
-            config = RagConfig.from_env() if _rag_enabled() else None
-            if not request.question.strip() or requested_card_ids(request.question) or not config:
+            if not request.question.strip() or not _rag_enabled():
                 result = await ask(request)
                 yield _event("final", **result.model_dump())
                 return
             units = await asyncio.to_thread(load_units)
+            if direct := _direct_response(request.question, units):
+                yield _event("final", **direct.model_dump())
+                return
+            config = RagConfig.from_env()
+            if not config:
+                result = await ask(request)
+                yield _event("final", **result.model_dump())
+                return
             hits = await retrieve(KB_ROOT, request.question, units, config)
             if not hits:
                 yield _event("final", status="not_found", answer="В базе знаний недостаточно информации для ответа.", sources=[], is_rag_enabled=False)

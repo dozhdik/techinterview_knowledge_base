@@ -321,7 +321,8 @@ def test_lifespan_warms_once_and_requests_wait_for_readiness(knowledge_base, mon
     (server.VectorIndexError("Model load failed"), "кеш MiniLM"),
 ])
 def test_failed_preparation_reports_reason_without_retry(knowledge_base, monkeypatch, error, fragment):
-    knowledge_base("CS-CONCEPT-001", "Тест", "Текст.")
+    # A content search needs the index; a direct card title remains available.
+    knowledge_base("CS-CONCEPT-001", "Тест системы", "Текст.")
     calls = []
 
     def fail():

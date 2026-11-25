@@ -9,13 +9,57 @@ from pathlib import Path
 from .rag import RagConfig, RagError, _retrieve_sync
 from .parser import ParseError
 from .vector_store import VectorIndexError
-from .search import _question_terms
+from .content import has_material
+from .search import _question_terms, requested_card_ids
+from .titles import title_index
 
 
 @dataclass(frozen=True)
 class ExtractiveResult:
     answer: str
     units: list
+
+
+def direct_search(question, units, domain=None):
+    """Resolve an ID or an entire card name before retrieving passages."""
+    ids = requested_card_ids(question)
+    match = title_index(units).match(question, domain) if not ids else None
+    if not ids and not match:
+        return None
+    kind, keys = ("id", tuple(ids)) if ids else (match.kind, match.ids)
+    by_id = {u.id.upper(): u for u in units if not domain or getattr(u, "domain", None) == domain}
+    cards = [by_id[key] for key in keys if key in by_id]
+    available = [u for u in cards if getattr(u, "status", None) != "draft"
+                 and getattr(u, "content", "") and has_material(u)]
+    missing = [key for key in keys if key not in by_id]
+    unavailable = [u.id for u in cards if u not in available]
+    notices = []
+    if missing:
+        notices.append("Карточки пока нет в базе: " + ", ".join(missing) + ".")
+    if unavailable:
+        notices.append("Материал ещё не заполнен или находится в черновике: " + ", ".join(unavailable) + ".")
+
+    if not ids and len(available) > 1:
+        status, state = "success", "clarification"
+        text = "Уточните, какую карточку открыть, указав её ID. По этому названию найдены:\n\n" + "\n".join(
+            f"- {u.title} ({u.domain}, {u.id})" for u in available)
+        ranked, sources = [], []
+    elif available:
+        status, state = "success", "partial" if notices and ids else "complete"
+        sources = available[:3]
+        ranked = [u.id for u in sources]
+        contents = [re.sub(r"\[\[[A-Z]+-[A-Z]+-\d+\]\]", "", u.content) for u in sources]
+        text = "\n\n".join([*(notices if ids else []), "Материал из базы знаний:", *contents])
+    else:
+        status, state = ("not_ready", "absent") if unavailable and not missing else ("not_found", "absent")
+        text = " ".join(notices) + " Проверьте ID или спросите о другой теме."
+        ranked, sources = [], []
+
+    return ExtractiveResult(text, sources), {
+        "query": question, "lookup": {"kind": kind, "status": status, "candidates": list(keys)},
+        "ranked_cards": ranked, "state": state, "parts": [], "selected": [],
+        "sources": [u.id for u in sources], "unanswered": [], "deferred": [], "seconds": {},
+    }
 
 
 def _sections(content):

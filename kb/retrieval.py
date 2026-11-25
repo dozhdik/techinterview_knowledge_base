@@ -12,7 +12,7 @@ from pathlib import Path
 from time import perf_counter
 
 from .evidence import DEFAULT_DEPTH, EvidenceScorer, acronyms, choose_sections, lacks_referent, resolve_acronyms
-from .extractive import ExtractiveResult
+from .extractive import ExtractiveResult, direct_search
 from .passage_index import INDEX, VERSION, Passage, close_code_fence, corpus_key
 from .qa_reader import apply_reader
 from .query import Query, facets, terms, with_facet_context
@@ -230,6 +230,8 @@ class Retrieval:
 
     def ask(self, question, units, method="hybrid", domain=None, links=False, reranker=None, *,
             depth=DEFAULT_DEPTH, reader=None, qa_mode="off", representations=None, representation_mode="off"):
+        if direct := direct_search(question, units, domain):
+            return direct
         grouped = defaultdict(list)
         diagnostics = []
         selections = []

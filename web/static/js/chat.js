@@ -1,3 +1,4 @@
+import { recentTurns } from "./conversation.js";
 import {
   escapeHtml,
   renderMarkdown,
@@ -36,7 +37,10 @@ let welcomeScreen = null;
 function loadHistory() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) history = JSON.parse(raw).slice(-MAX_HISTORY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (Array.isArray(saved)) history = saved.filter(msg => msg && typeof msg.content === "string").slice(-MAX_HISTORY);
+    }
   } catch {
     history = [];
   }
@@ -223,6 +227,7 @@ export async function sendMessage(question) {
   isLoading = true;
   activeController = new AbortController();
   const controller = activeController;
+  const context = recentTurns(history);
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   hideWelcome();
   const userMsg = {id: generateId(), role: "user", content: question.trim(), timestamp: Date.now()};
@@ -236,12 +241,15 @@ export async function sendMessage(question) {
   skeleton.querySelector(".skeleton-body").prepend(indicator);
   try {
     const response = await fetch("/api/ask", {method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({question: question.trim()}), signal: controller.signal});
+      body: JSON.stringify({question: question.trim(), ...(context.length ? {context} : {})}),
+      signal: controller.signal});
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+    if (controller.signal.aborted || activeController !== controller) return;
+    if (data.status === "error") throw new Error(data.answer);
     const msg = {id: generateId(), role: "assistant", content: data.answer, sources: data.sources || [],
                  searchState: data.search_state, searchNotice: data.search_notice,
-                 relatedMaterials: data.related_materials || [], timestamp: Date.now()};
+                 relatedMaterials: data.related_materials || [], replyTo: userMsg.id, status: data.status, timestamp: Date.now()};
     history.push(msg); saveHistory(); messagesArea.appendChild(renderMessage(msg));
     scrollToBottom(messagesArea);
   } catch (err) {

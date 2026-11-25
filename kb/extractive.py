@@ -174,7 +174,7 @@ def card_description(unit):
     return None
 
 
-def structural_search(root, question, units, entity_mode=None):
+def structural_search(root, question, units, entity_mode=None, *, context_ids=()):
     """Return the extracted answer, evidence state and separate suggestions."""
     from .retrieval import configured_reranker, get_engine
 
@@ -184,7 +184,8 @@ def structural_search(root, question, units, entity_mode=None):
         import os
 
         entity_mode = os.getenv("KB_ENTITY_MODE", "off").lower()
-    result, debug = engine.ask(question, units, reranker=configured_reranker(), entity_mode=entity_mode)
+    result, debug = engine.ask(question, units, reranker=configured_reranker(), entity_mode=entity_mode,
+                               context_ids=context_ids)
     by_id = {unit.id: unit for unit in units}
     related = [by_id[card] for card in engine.related_cards(debug) if card in by_id]
     state = debug["state"]

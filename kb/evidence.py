@@ -46,7 +46,7 @@ class Candidate:
 
 
 class EvidenceScorer:
-    def __init__(self, engine, query, ranked, evidence, lexical, dense, depth, method, *, needs=(), owners=(), required_cards=()):
+    def __init__(self, engine, query, ranked, evidence, lexical, dense, depth, method, *, needs=(), owners=(), required_cards=(), context=None):
         import numpy as np
 
         self.engine = engine
@@ -58,6 +58,7 @@ class EvidenceScorer:
         self.method = method
         self.needs = frozenset(needs)
         self.owners = frozenset(owners)
+        self.context = context or {}
         self.weights = {word: min(engine.idf.get(word, 3.1), 3.1) for word in query.tokens}
         self.total = sum(self.weights.values()) or 1.0
         self.known = {word for word in self.weights if word in engine.idf}
@@ -97,10 +98,14 @@ class EvidenceScorer:
     def cover(self, observed):
         return sum(self.weights.get(w, 0.0) for w in observed) / self.total
 
+    def _matches_context(self, card, vocabulary):
+        return (card in self.context or
+                any(anchor <= vocabulary for anchors in self.context.values() for anchor in anchors))
+
     def _properties(self, card, text, headings, vocabulary):
         found = supported(text, headings) & self.needs
         if found & QUANTITATIVE and self.owners and card not in self.owners:
-            if not any(self.engine.title_terms[owner] and self.engine.title_terms[owner] <= vocabulary
+            if not (self.context and self._matches_context(card, vocabulary)) and not any(self.engine.title_terms[owner] and self.engine.title_terms[owner] <= vocabulary
                        for owner in self.owners):
                 found -= QUANTITATIVE
         return found
@@ -154,6 +159,8 @@ class EvidenceScorer:
                 text = parent if whole else passage.text
                 body = engine.section_terms[card, section] if whole else engine.body_terms[ix]
                 match = frozenset((body | set(terms(" ".join(passage.heading)))) & self.weights.keys())
+                if self.context and not self._matches_context(card, body | self.engine.title_terms[card]):
+                    continue
                 if len(text) <= char_limit:
                     properties = self._properties(card, text, " ".join(passage.heading), body) if self.needs else frozenset()
                     output.append(SectionEvidence(ix, text, body, match, score, whole, properties))
@@ -194,6 +201,9 @@ class EvidenceScorer:
             reason = "unsupported_specific_detail"
         elif required and not coverage_props & required:
             reason = "missing_requested_property"
+        elif (card in self.context and required and required <= coverage_props
+              and cosine >= lexical_floor and best_coverage >= .13 and not self.precise):
+            pass
         elif exact and cosine >= lexical_floor:
             pass
         elif self.method == "bm25":

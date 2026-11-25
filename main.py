@@ -238,6 +238,43 @@ def cmd_search_diagnose(args) -> None:
     print(json.dumps(debug, ensure_ascii=False, indent=2))
 
 
+def cmd_conversation_diagnose(args) -> None:
+    import json
+    from dataclasses import asdict
+    from time import perf_counter
+
+    from kb.conversation import Conversation, ConversationTurn, HISTORY_LIMIT
+    from kb.extractive import direct_search
+    from kb.retrieval import get_engine
+
+    units = _load_units()
+    dialogue = Conversation(units)
+    history = []
+    engine = None
+    rows = []
+    for question in args.questions:
+        started = perf_counter()
+        resolution = dialogue.resolve(question, dialogue.restore(history))
+        if direct := direct_search(question, units):
+            result, info = direct
+        elif history and resolution.clarification:
+            result, info = None, {"state": "clarification", "ranked_cards": [], "parts": []}
+        else:
+            if engine is None:
+                engine = get_engine(KB_ROOT, args.index)
+            result, info = engine.ask(resolution.search_query, units, entity_mode=args.entity_mode,
+                                      context_ids=resolution.required_cards)
+        sources = [unit.id for unit in result.units] if result else []
+        status = info["state"]
+        state = dialogue.remember(resolution, sources, status)
+        history.append(ConversationTurn(question=question, source_ids=sources[:8], state=status))
+        history = history[-HISTORY_LIMIT:]
+        rows.append({**asdict(resolution), "updated": asdict(state), "sources": sources,
+                     "answer": result.answer if result else resolution.clarification,
+                     "status": status, "diagnostics": info, "seconds": perf_counter() - started})
+    print(json.dumps(rows, ensure_ascii=False, indent=2))
+
+
 def cmd_search_benchmark(args) -> None:
     import json
 
@@ -394,6 +431,12 @@ def build_parser() -> argparse.ArgumentParser:
     diagnose.add_argument("--depth", type=int, choices=(3, 5, 10), default=DEFAULT_DEPTH)
     diagnose.add_argument("--entity-mode", choices=ENTITY_MODES, default="link")
     diagnose.set_defaults(func=cmd_search_diagnose)
+
+    dialogue = subparsers.add_parser("conversation-diagnose", help="Диагностика последовательных вопросов")
+    dialogue.add_argument("questions", nargs="+", help="Сообщения пользователя по порядку")
+    dialogue.add_argument("--index", type=Path, help="Альтернативный структурный индекс")
+    dialogue.add_argument("--entity-mode", choices=ENTITY_MODES, default="off")
+    dialogue.set_defaults(func=cmd_conversation_diagnose)
 
     benchmark = subparsers.add_parser("search-benchmark", help="Оценить поиск по размеченным запросам")
     benchmark.add_argument("--cases", type=Path, default=KB_ROOT / "evaluation/search_cases.json")

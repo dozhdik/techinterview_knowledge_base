@@ -1,0 +1,1660 @@
+[
+  {
+    "id": "bfs-local",
+    "split": "dev",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "Что такое BFS?",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-016"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-016"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Обход по слоям",
+          "очередь FIFO"
+        ]
+      },
+      {
+        "question": "Как он работает?",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-016"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-016"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "При обнаружении вершину кладут в очередь",
+          "расстояние увеличивается на один от родителя"
+        ]
+      },
+      {
+        "question": "А какая у него сложность?",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-016"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-016"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Время O(V+E)",
+          "память O(V)"
+        ]
+      },
+      {
+        "question": "Когда его нельзя применять?",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-016"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-016"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Обычный BFS не гарантирует минимальный вес при неодинаковых весах рёбер"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "hash-switch",
+    "split": "dev",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "Расскажи, что представляет собой Breath First Search, а именно алгоритм BFS.",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-016"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-016"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Обход слоями"
+        ]
+      },
+      {
+        "question": "Что такое хеш-таблица?",
+        "action": "switch",
+        "entities": [
+          "CS-CONCEPT-009"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-009"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Хранит пары ключ-значение",
+          "использует хеш-функцию"
+        ]
+      },
+      {
+        "question": "А как в ней разрешаются коллизии?",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-009"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-009"
+          },
+          {
+            "id": "CS-CONCEPT-039"
+          },
+          {
+            "id": "CS-QUESTION-002"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Цепочки элементов или поиск следующей ячейки"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bfs-pair",
+    "split": "dev",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "Как BFS посещает соседей вершины?",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-016"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-016"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Соседи добавляются в очередь"
+        ]
+      },
+      {
+        "question": "А чем он отличается от DFS?",
+        "action": "compare",
+        "entities": [
+          "CS-CONCEPT-016",
+          "CS-CONCEPT-017"
+        ],
+        "sources": [
+          {
+            "id": "CS-QUESTION-003"
+          },
+          {
+            "id": "CS-CONCEPT-016"
+          },
+          {
+            "id": "CS-CONCEPT-017"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "BFS идёт слоями",
+          "DFS идёт по ветви и возвращается"
+        ]
+      },
+      {
+        "question": "Какова сложность обоих?",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-016",
+          "CS-CONCEPT-017"
+        ],
+        "sources": [
+          {
+            "id": "CS-QUESTION-003"
+          },
+          {
+            "id": "CS-CONCEPT-016"
+          },
+          {
+            "id": "CS-CONCEPT-017"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Оба O(V+E) по времени",
+          "память каждого может достигать O(V)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ambiguous-dev",
+    "split": "dev",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "Расскажи про BFS и DFS.",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-016",
+          "CS-CONCEPT-017"
+        ],
+        "sources": [
+          {
+            "id": "CS-QUESTION-003"
+          },
+          {
+            "id": "CS-CONCEPT-016"
+          },
+          {
+            "id": "CS-CONCEPT-017"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Различается порядок обхода"
+        ]
+      },
+      {
+        "question": "А когда его использовать?",
+        "action": "clarify",
+        "entities": [
+          "CS-CONCEPT-016",
+          "CS-CONCEPT-017"
+        ],
+        "sources": [],
+        "expected": "clarification",
+        "facts": []
+      },
+      {
+        "question": "Про DFS. Покажи, когда он уместен.",
+        "action": "switch",
+        "entities": [
+          "CS-CONCEPT-017"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-017"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Применим для достижимости или поиска циклов"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "outbox-dev",
+    "split": "dev",
+    "domain": "arch",
+    "turns": [
+      {
+        "question": "Как устроен Transactional Outbox?",
+        "action": "first",
+        "entities": [
+          "ARCH-DESIGNPAT-006"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-006"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Изменение и событие записываются атомарно"
+        ]
+      },
+      {
+        "question": "Какие у него ограничения?",
+        "action": "follow",
+        "entities": [
+          "ARCH-DESIGNPAT-006"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-006"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Повторная публикация возможна",
+          "потребителю нужна идемпотентность"
+        ]
+      },
+      {
+        "question": "Приведи пример.",
+        "action": "follow",
+        "entities": [
+          "ARCH-DESIGNPAT-006"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-006"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Рядом с записью заказа сохраняется событие для последующей отправки"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "frontend-path",
+    "split": "dev",
+    "domain": "arch",
+    "turns": [
+      {
+        "question": "Что делает API Gateway перед микросервисами?",
+        "action": "first",
+        "entities": [
+          "ARCH-COMPONENT-004"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Единая точка входа",
+          "маршрутизация к сервисам"
+        ]
+      },
+      {
+        "question": "Чем он отличается от Load Balancer?",
+        "action": "compare",
+        "entities": [
+          "ARCH-COMPONENT-004",
+          "ARCH-COMPONENT-001"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-001"
+          },
+          {
+            "id": "ARCH-COMPONENT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Gateway маршрутизирует по API",
+          "балансировщик распределяет трафик"
+        ]
+      },
+      {
+        "question": "Теперь расскажи про CDN.",
+        "action": "switch",
+        "entities": [
+          "ARCH-COMPONENT-005"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-005"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Граничные узлы держат копии ближе к пользователям"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expiry",
+    "split": "dev",
+    "domain": "arch",
+    "turns": [
+      {
+        "question": "Как работает распределённая блокировка в нескольких процессах?",
+        "action": "first",
+        "entities": [
+          "ARCH-COMPONENT-020"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-020"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Общее хранилище координирует доступ",
+          "аренда имеет TTL"
+        ]
+      },
+      {
+        "question": "Что происходит, когда она истекает?",
+        "action": "follow",
+        "entities": [
+          "ARCH-COMPONENT-020"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-020"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Старый владелец может продолжать работу",
+          "устаревший токен нужно отклонять"
+        ]
+      },
+      {
+        "question": "Можно ли без неё при конкурирующих операциях?",
+        "action": "follow",
+        "entities": [
+          "ARCH-COMPONENT-020"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-020"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Зависит от возможности идемпотентности или управления конкурентностью без блокировки"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "stage-two",
+    "split": "dev",
+    "domain": "process",
+    "turns": [
+      {
+        "question": "Что проверяют на Phone Screen?",
+        "action": "first",
+        "entities": [
+          "PROC-STAGE-002"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-002"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Базовые технические навыки"
+        ]
+      },
+      {
+        "question": "А чем он отличается от HR Screening?",
+        "action": "compare",
+        "entities": [
+          "PROC-STAGE-002",
+          "PROC-STAGE-001"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-002"
+          },
+          {
+            "id": "PROC-STAGE-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Phone Screen технический",
+          "HR обсуждает мотивацию и ожидания"
+        ]
+      },
+      {
+        "question": "А как к нему лучше подготовиться?",
+        "action": "clarify",
+        "entities": [
+          "PROC-STAGE-002",
+          "PROC-STAGE-001"
+        ],
+        "sources": [],
+        "expected": "clarification",
+        "facts": []
+      }
+    ]
+  },
+  {
+    "id": "star-dev",
+    "split": "dev",
+    "domain": "process",
+    "turns": [
+      {
+        "question": "Расскажи, что такое STAR на интервью.",
+        "action": "first",
+        "entities": [
+          "PROC-FRAMEWORK-001"
+        ],
+        "sources": [
+          {
+            "id": "PROC-FRAMEWORK-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Situation, Task, Action, Result"
+        ]
+      },
+      {
+        "question": "Когда его не стоит использовать?",
+        "action": "follow",
+        "entities": [
+          "PROC-FRAMEWORK-001"
+        ],
+        "sources": [
+          {
+            "id": "PROC-FRAMEWORK-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Есть вопросы где достаточно прямого ответа или иной структуры"
+        ]
+      },
+      {
+        "question": "Приведи пример.",
+        "action": "follow",
+        "entities": [
+          "PROC-FRAMEWORK-001"
+        ],
+        "sources": [
+          {
+            "id": "PROC-FRAMEWORK-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "История содержит ситуацию, собственное действие и результат"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "stale-ref",
+    "split": "dev",
+    "domain": "arch",
+    "turns": [
+      {
+        "question": "Какая сложность CS-CONCEPT-99801?",
+        "action": "first",
+        "entities": [],
+        "sources": [],
+        "expected": "absent",
+        "facts": []
+      },
+      {
+        "question": "А когда его использовать?",
+        "action": "clarify",
+        "entities": [],
+        "sources": [],
+        "expected": "clarification",
+        "facts": []
+      },
+      {
+        "question": "Как работает Bulkhead?",
+        "action": "switch",
+        "entities": [
+          "ARCH-DESIGNPAT-004"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Изолирует пулы или ресурсы зависимостей"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "no-reset-dev",
+    "split": "dev",
+    "domain": "process",
+    "turns": [
+      {
+        "question": "Как устроены Mock Interviews?",
+        "action": "first",
+        "entities": [
+          "PROC-STRATEGY-005"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STRATEGY-005"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Репетиция формата",
+          "обратная связь"
+        ]
+      },
+      {
+        "question": "Как отсеять отсутствующий ключ, если допустимы ложные срабатывания?",
+        "action": "standalone",
+        "entities": [],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-024"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Отрицательный результат гарантирует отсутствие"
+        ]
+      },
+      {
+        "question": "Какие у него недостатки?",
+        "action": "clarify",
+        "entities": [],
+        "sources": [],
+        "expected": "clarification",
+        "facts": []
+      }
+    ]
+  },
+  {
+    "id": "returns-dev",
+    "split": "dev",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "Что такое Quick Sort?",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-010"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-010"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Разбиение относительно опорного"
+        ]
+      },
+      {
+        "question": "Что такое DFS?",
+        "action": "switch",
+        "entities": [
+          "CS-CONCEPT-017"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-017"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Обход в глубину со стеком или рекурсией"
+        ]
+      },
+      {
+        "question": "Вернёмся к предыдущей теме. Какая у неё сложность?",
+        "action": "return",
+        "entities": [
+          "CS-CONCEPT-010"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-010"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "В среднем O(n log n)",
+          "в худшем O(n²)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unrelated-dev",
+    "split": "dev",
+    "domain": "mixed",
+    "turns": [
+      {
+        "question": "Что такое Redis?",
+        "action": "first",
+        "entities": [],
+        "sources": [],
+        "expected": "absent",
+        "facts": []
+      },
+      {
+        "question": "Как подготовиться к поведенческому собеседованию?",
+        "action": "standalone",
+        "entities": [],
+        "sources": [
+          {
+            "id": "PROC-STAGE-005"
+          },
+          {
+            "id": "PROC-CHECKLIST-005"
+          },
+          {
+            "id": "PROC-FRAMEWORK-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Подготовить несколько конкретных историй и личный результат"
+        ]
+      },
+      {
+        "question": "Что обсуждают на Team Match?",
+        "action": "switch",
+        "entities": [
+          "PROC-STAGE-006"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-006"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Проверяют взаимное соответствие команды и кандидата"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "denial-dev",
+    "split": "dev",
+    "domain": "process",
+    "turns": [
+      {
+        "question": "Какой закрытый ID отзыва выставит рекрутер после Team Match у конкретной компании?",
+        "action": "first",
+        "entities": [
+          "PROC-STAGE-006"
+        ],
+        "sources": [],
+        "expected": "absent",
+        "facts": []
+      },
+      {
+        "question": "Какие у него критерии?",
+        "action": "follow",
+        "entities": [
+          "PROC-STAGE-006"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-006"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Сопоставление ожиданий, роли и команды"
+        ]
+      },
+      {
+        "question": "Что может пойти не так на нём?",
+        "action": "follow",
+        "entities": [
+          "PROC-STAGE-006"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-006"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Красные флаги вроде неясных ожиданий или отсутствия честных ответов"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "direct-dev",
+    "split": "dev",
+    "domain": "mixed",
+    "turns": [
+      {
+        "question": "ARCH-COMPONENT-001",
+        "action": "first",
+        "entities": [
+          "ARCH-COMPONENT-001"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Распределяет трафик между экземплярами"
+        ]
+      },
+      {
+        "question": "Как он выбирает экземпляр?",
+        "action": "follow",
+        "entities": [
+          "ARCH-COMPONENT-001"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Round Robin, Least Connections или алгоритм на ключе"
+        ]
+      },
+      {
+        "question": "Поговорим про Offer Negotiation. Что обсуждают?",
+        "action": "switch",
+        "entities": [
+          "PROC-STAGE-007"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-007"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Компенсация и условия оффера"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sort-test",
+    "split": "holdout",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "За счёт чего работает Quick Sort?",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-010"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-010"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Опорный элемент разбивает массив"
+        ]
+      },
+      {
+        "question": "Какая у него асимптотика в худшем случае?",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-010"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-010"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Худший случай O(n²) из-за несбалансированного разбиения"
+        ]
+      },
+      {
+        "question": "Покажи на примере.",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-010"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-010"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Конкретный массив и положение опорного после разбиения"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "merge-test",
+    "split": "holdout",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "Как выглядит задача Merge Intervals?",
+        "action": "first",
+        "entities": [
+          "CS-PROBLEM-004"
+        ],
+        "sources": [
+          {
+            "id": "CS-PROBLEM-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Объединить пересекающиеся интервалы"
+        ]
+      },
+      {
+        "question": "Как её решать по шагам?",
+        "action": "follow",
+        "entities": [
+          "CS-PROBLEM-004"
+        ],
+        "sources": [
+          {
+            "id": "CS-PROBLEM-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Отсортировать по началу",
+          "сравнить начало следующего с концом последнего"
+        ]
+      },
+      {
+        "question": "Теперь про Valid Parentheses. Что хранить при обходе строки?",
+        "action": "switch",
+        "entities": [
+          "CS-PROBLEM-001"
+        ],
+        "sources": [
+          {
+            "id": "CS-PROBLEM-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Хранить открывающие скобки в стеке и проверять соответствие закрывающей"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dsu-test",
+    "split": "holdout",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "Для чего нужен Union-Find?",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-004"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Поддерживает объединяемые множества и узнаёт представителя"
+        ]
+      },
+      {
+        "question": "Из чего состоит его реализация?",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-004"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Массив родителей",
+          "операции find и union"
+        ]
+      },
+      {
+        "question": "А какие ошибки возможны при его использовании?",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-004"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Избегать неудачных цепочек с помощью ранга и сжатия или проверять корни"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "memory-test",
+    "split": "holdout",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "Что такое стек?",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-012"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-012"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "LIFO",
+          "операции push и pop"
+        ]
+      },
+      {
+        "question": "Сколько времени занимают его операции?",
+        "action": "follow",
+        "entities": [
+          "CS-CONCEPT-012"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-012"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Обычно O(1) для push и pop"
+        ]
+      },
+      {
+        "question": "Теперь опиши Message Queue между сервисами.",
+        "action": "switch",
+        "entities": [
+          "ARCH-COMPONENT-003"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-003"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Сообщения передаются асинхронно"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "breaker-test",
+    "split": "holdout",
+    "domain": "arch",
+    "turns": [
+      {
+        "question": "Почему нужен Circuit Breaker перед зависимостью?",
+        "action": "first",
+        "entities": [
+          "ARCH-DESIGNPAT-003"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-003"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "После порога ошибок приостанавливает вызовы"
+        ]
+      },
+      {
+        "question": "Как он понимает, что пора продолжить?",
+        "action": "follow",
+        "entities": [
+          "ARCH-DESIGNPAT-003"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-003"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "После паузы отправляет пробный запрос для проверки восстановления"
+        ]
+      },
+      {
+        "question": "Как работает Bulkhead при перегрузке?",
+        "action": "switch",
+        "entities": [
+          "ARCH-DESIGNPAT-004"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Изолирует независимые пулы и ограничивает влияние перегрузки"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cache-test",
+    "split": "holdout",
+    "domain": "arch",
+    "turns": [
+      {
+        "question": "Что делают при промахе в Cache-aside?",
+        "action": "first",
+        "entities": [
+          "ARCH-DESIGNPAT-008"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-008"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Приложение читает из БД и заполняет кеш"
+        ]
+      },
+      {
+        "question": "А что происходит при обновлении данных в этом подходе?",
+        "action": "follow",
+        "entities": [
+          "ARCH-DESIGNPAT-008"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-008"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Ключ удаляют или обновляют после записи"
+        ]
+      },
+      {
+        "question": "Какие у него риски?",
+        "action": "follow",
+        "entities": [
+          "ARCH-DESIGNPAT-008"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-008"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Устаревание значения или гонки между чтением и инвалидированием"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "async-test",
+    "split": "holdout",
+    "domain": "arch",
+    "turns": [
+      {
+        "question": "Как Message Queue помогает при всплесках нагрузки?",
+        "action": "first",
+        "entities": [
+          "ARCH-COMPONENT-003"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-003"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Буферизует входящий поток"
+        ]
+      },
+      {
+        "question": "Чем она отличается от API Gateway?",
+        "action": "compare",
+        "entities": [
+          "ARCH-COMPONENT-003",
+          "ARCH-COMPONENT-004"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-003"
+          },
+          {
+            "id": "ARCH-COMPONENT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Очередь буферизует асинхронные задачи",
+          "Gateway маршрутизирует клиентские запросы"
+        ]
+      },
+      {
+        "question": "А когда его лучше применять?",
+        "action": "clarify",
+        "entities": [
+          "ARCH-COMPONENT-003",
+          "ARCH-COMPONENT-004"
+        ],
+        "sources": [],
+        "expected": "clarification",
+        "facts": []
+      }
+    ]
+  },
+  {
+    "id": "process-test",
+    "split": "holdout",
+    "domain": "process",
+    "turns": [
+      {
+        "question": "Что такое Offer Negotiation?",
+        "action": "first",
+        "entities": [
+          "PROC-STAGE-007"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-007"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Обсуждение условий и компенсации"
+        ]
+      },
+      {
+        "question": "Приведи пример формулировки для него.",
+        "action": "follow",
+        "entities": [
+          "PROC-STAGE-007"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-007"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Вежливое контрпредложение со ссылкой на опыт или рыночные данные"
+        ]
+      },
+      {
+        "question": "А что отдельно проверяет Phone Screen?",
+        "action": "switch",
+        "entities": [
+          "PROC-STAGE-002"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-002"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Базовые технические знания и решение задач"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "team-test",
+    "split": "holdout",
+    "domain": "process",
+    "turns": [
+      {
+        "question": "Зачем проводят Team Match перед переходом в команду?",
+        "action": "first",
+        "entities": [
+          "PROC-STAGE-006"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-006"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Взаимно сверить ожидания и подход к работе"
+        ]
+      },
+      {
+        "question": "Как подготовиться к нему?",
+        "action": "follow",
+        "entities": [
+          "PROC-STAGE-006"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-006"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Изучить команду",
+          "подготовить конкретные вопросы"
+        ]
+      },
+      {
+        "question": "Какие ошибки бывают на нём?",
+        "action": "follow",
+        "entities": [
+          "PROC-STAGE-006"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STAGE-006"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Не задавать вопросы и игнорировать красные флаги"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mock-test",
+    "split": "holdout",
+    "domain": "process",
+    "turns": [
+      {
+        "question": "Какие форматы есть у Mock Interviews?",
+        "action": "first",
+        "entities": [
+          "PROC-STRATEGY-005"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STRATEGY-005"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Можно репетировать с партнёром или ментором, форматы зависят от типа интервью"
+        ]
+      },
+      {
+        "question": "Когда давать фидбек в этом случае?",
+        "action": "follow",
+        "entities": [
+          "PROC-STRATEGY-005"
+        ],
+        "sources": [
+          {
+            "id": "PROC-STRATEGY-005"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Давать обратную связь после окончания"
+        ]
+      },
+      {
+        "question": "Как оценивают рост числа операций с увеличением входа?",
+        "action": "standalone",
+        "entities": [],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-022"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Big O характеризует рост стоимости с размером входа"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "denial-test",
+    "split": "holdout",
+    "domain": "arch",
+    "turns": [
+      {
+        "question": "Какой закрытый номер счета присвоен удалению записи из моего CDN?",
+        "action": "first",
+        "entities": [
+          "ARCH-COMPONENT-005"
+        ],
+        "sources": [],
+        "expected": "absent",
+        "facts": []
+      },
+      {
+        "question": "Какие у него типичные применения?",
+        "action": "follow",
+        "entities": [
+          "ARCH-COMPONENT-005"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-005"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Доставляет статический контент через граничные узлы"
+        ]
+      },
+      {
+        "question": "А какая у него роль при обновлении файлов?",
+        "action": "follow",
+        "entities": [
+          "ARCH-COMPONENT-005"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-005"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Инвалидация или TTL устраняют старую копию"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unknown-test",
+    "split": "holdout",
+    "domain": "mixed",
+    "turns": [
+      {
+        "question": "Как устроено CQRS?",
+        "action": "first",
+        "entities": [
+          "ARCH-DESIGNPAT-007"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-DESIGNPAT-007"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Команды изменения отделены от запросов чтения"
+        ]
+      },
+      {
+        "question": "Что такое орбитальный резонанс Юпитера?",
+        "action": "standalone",
+        "entities": [],
+        "sources": [],
+        "expected": "absent",
+        "facts": []
+      },
+      {
+        "question": "Какие у него ограничения?",
+        "action": "clarify",
+        "entities": [],
+        "sources": [],
+        "expected": "clarification",
+        "facts": []
+      }
+    ]
+  },
+  {
+    "id": "back-test",
+    "split": "holdout",
+    "domain": "mixed",
+    "turns": [
+      {
+        "question": "Опиши общий принцип BFS.",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-016"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-016"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Обход по слоям с очередью"
+        ]
+      },
+      {
+        "question": "Что означает STAR для ответа на интервью?",
+        "action": "switch",
+        "entities": [
+          "PROC-FRAMEWORK-001"
+        ],
+        "sources": [
+          {
+            "id": "PROC-FRAMEWORK-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Situation, Task, Action, Result"
+        ]
+      },
+      {
+        "question": "Вернёмся к предыдущей теме. Сколько памяти требуется?",
+        "action": "return",
+        "entities": [
+          "CS-CONCEPT-016"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-016"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "BFS может требовать O(V) памяти"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ambiguous-test",
+    "split": "holdout",
+    "domain": "arch",
+    "turns": [
+      {
+        "question": "Расскажи про Load Balancer и API Gateway.",
+        "action": "first",
+        "entities": [
+          "ARCH-COMPONENT-001",
+          "ARCH-COMPONENT-004"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-001"
+          },
+          {
+            "id": "ARCH-COMPONENT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Распределение нагрузки и API-маршрутизация"
+        ]
+      },
+      {
+        "question": "Какие у него преимущества?",
+        "action": "clarify",
+        "entities": [
+          "ARCH-COMPONENT-001",
+          "ARCH-COMPONENT-004"
+        ],
+        "sources": [],
+        "expected": "clarification",
+        "facts": []
+      },
+      {
+        "question": "Какие у них различия?",
+        "action": "follow",
+        "entities": [
+          "ARCH-COMPONENT-001",
+          "ARCH-COMPONENT-004"
+        ],
+        "sources": [
+          {
+            "id": "ARCH-COMPONENT-001"
+          },
+          {
+            "id": "ARCH-COMPONENT-004"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Балансировка распределяет входящий трафик",
+          "Gateway обрабатывает API и маршруты"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "previous-test",
+    "split": "holdout",
+    "domain": "cs",
+    "turns": [
+      {
+        "question": "Как организовано бинарное дерево поиска?",
+        "action": "first",
+        "entities": [
+          "CS-CONCEPT-001"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Ключи слева меньше, справа больше"
+        ]
+      },
+      {
+        "question": "Теперь как работает бинарный поиск в отсортированном массиве?",
+        "action": "switch",
+        "entities": [
+          "CS-CONCEPT-018"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-018"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Сравнить со средним и отбросить половину"
+        ]
+      },
+      {
+        "question": "А чем он отличается от предыдущего?",
+        "action": "compare",
+        "entities": [
+          "CS-CONCEPT-018",
+          "CS-CONCEPT-001"
+        ],
+        "sources": [
+          {
+            "id": "CS-CONCEPT-018"
+          },
+          {
+            "id": "CS-CONCEPT-001"
+          }
+        ],
+        "expected": "answer",
+        "facts": [
+          "Массив проверяет средний индекс",
+          "дерево идёт по дочерним ссылкам"
+        ]
+      }
+    ]
+  }
+]

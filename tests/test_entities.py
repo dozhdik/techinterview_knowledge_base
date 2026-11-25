@@ -121,6 +121,7 @@ def test_numeric_property_must_be_about_the_linked_subject():
     scorer = EvidenceScorer.__new__(EvidenceScorer)
     scorer.engine = SimpleNamespace(title_terms={"A": {"algorithm"}})
     scorer.owners = {"A"}
+    scorer.context = {}
     scorer.needs = {"space_complexity"}
     source = "Дополнительная память — O(n)."
     assert not scorer._properties("B", source, "Оценка", {"sort"})

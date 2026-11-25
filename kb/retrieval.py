@@ -247,7 +247,7 @@ class Retrieval:
 
     def ask(self, question, units, method="hybrid", domain=None, links=False, reranker=None, *,
             depth=DEFAULT_DEPTH, reader=None, qa_mode="off", representations=None, representation_mode="off",
-            entity_mode="off"):
+            entity_mode="off", context_ids=()):
         if direct := direct_search(question, units, domain):
             return direct
         if entity_mode not in MODES:
@@ -263,8 +263,17 @@ class Retrieval:
         previous = None
         previous_mentions = ()
         missing_ids = set()
-        observe = entity_mode != "off" or bool(requested_card_ids(question))
-        index = entity_index(title_index(units)) if observe else None
+        active_context = {card: set() for card in context_ids if card in self.cards and card in by_id
+                          and (not domain or self.passages[self.cards[card][0]].domain == domain)}
+        observe = entity_mode != "off" or bool(requested_card_ids(question)) or bool(active_context)
+        names = title_index(units) if observe else None
+        index = entity_index(names) if names else None
+        if active_context:
+            for variants in names.names.values():
+                for variant, cards in variants.items():
+                    for cid in cards & active_context.keys():
+                        if (anchor := frozenset(terms(variant))):
+                            active_context[cid].add(anchor)
         cursor = 0
         for part in parts[:MAX_FACETS]:
             started = perf_counter()
@@ -294,6 +303,9 @@ class Retrieval:
                     weighted[key] = max(weighted.get(key, 0.), boost)
                     if mention.role != "context":
                         owners.add(key)
+            for cid in active_context:
+                weighted[cid] = max(weighted.get(cid, 0.), .045)
+                owners.add(cid)
             unresolved = set(explicit_ids) - weighted.keys()
             missing_ids.update(unresolved)
             search_part = part
@@ -326,10 +338,10 @@ class Retrieval:
             rankings.append(ranked)
             timings.update(details["seconds"])
             started = perf_counter()
-            evidence_needs = needs if weighted and (entity_mode == "evidence" or explicit_context) else ()
+            evidence_needs = needs if weighted and (entity_mode == "evidence" or explicit_context or active_context) else ()
             scorer = EvidenceScorer(self, query, [card for card in ranked if card in by_id],
                                     evidence, lexical, dense, depth, method,
-                                    needs=evidence_needs, owners=owners, required_cards=weighted)
+                                    needs=evidence_needs, owners=owners, required_cards=weighted, context=active_context)
             candidates = scorer.candidates()
             qa_start = perf_counter()
             qa = {}
@@ -363,6 +375,8 @@ class Retrieval:
                                        if mention.start is not None else asdict(mention) for mention in mentions]
                 details["information_needs"] = needs
                 details["checked_entity_cards"] = list(weighted)
+                if active_context:
+                    details["conversation_cards"] = list(active_context)
                 details["invalid_card_ids"] = sorted(unresolved)
                 details["properties"] = sorted(set().union(*(block.properties for block in chosen)))
             diagnostics.append(details)
@@ -386,7 +400,8 @@ class Retrieval:
                 if "comparison" in scorer.needs and len(scorer.owners) > 1:
                     confirmed = {card for card in scorer.owners if any(
                         self.passages[b.index].card_id == card or (
-                            self.title_terms[card] and self.title_terms[card] <= b.terms)
+                            self.title_terms[card] and self.title_terms[card] <= b.terms) or
+                        any(anchor <= b.terms for anchor in active_context.get(card, ()))
                         for b in facet_blocks)}
                     details["comparison_coverage"] = sorted(confirmed)
                     if confirmed != scorer.owners:

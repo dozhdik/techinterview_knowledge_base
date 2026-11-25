@@ -25,6 +25,7 @@ KB_ROOT = BASE_DIR.parent
 if __package__ in (None, ""):
     sys.path.insert(0, str(KB_ROOT))
 
+from kb.conversation import Conversation, ConversationTurn, HISTORY_LIMIT
 from kb.extractive import card_description, direct_search, structural_search
 from kb.parser import parse_directory
 from kb.content import has_material
@@ -128,6 +129,7 @@ app.add_middleware(
 
 class AskRequest(BaseModel):
     question: str = Field(max_length=1000)
+    context: list[ConversationTurn] = Field(default_factory=list, max_length=HISTORY_LIMIT)
 
 
 class SourceItem(BaseModel):
@@ -181,6 +183,11 @@ def _direct_response(question, units):
                        sources=[SourceItem(title=u.title, id=u.id, url=f"/cards/{u.id}") for u in result.units])
 
 
+def _resolve_conversation(question, context, units):
+    dialogue = Conversation(units)
+    return dialogue.resolve(question, dialogue.restore(context))
+
+
 @app.post("/api/ask", response_model=AskResponse)
 async def ask(request: AskRequest) -> AskResponse:
     if not request.question.strip():
@@ -190,16 +197,24 @@ async def ask(request: AskRequest) -> AskResponse:
     if direct := _direct_response(request.question, units):
         return direct
 
+    resolution = None
+    if request.context:
+        resolution = await asyncio.to_thread(_resolve_conversation, request.question, request.context, units)
+        if resolution.clarification:
+            return AskResponse(status="success", answer=resolution.clarification, sources=[],
+                               search_state="clarification")
+    search_query = resolution.search_query if resolution else request.question
+    search_options = {"context_ids": resolution.required_cards} if resolution and resolution.required_cards else {}
     rag_notice = ""
     search_notice = None
-    if not _rag_enabled():
+    if request.context or not _rag_enabled():
         task = getattr(app.state, "search_task", None)
         if task is not None:
             await asyncio.shield(task)
         prep = getattr(app.state, "search_preparation", None) or SearchPreparation()
         if prep.status != "degraded":
             try:
-                extracted, state, related = await asyncio.to_thread(structural_search, KB_ROOT, request.question, units)
+                extracted, state, related = await asyncio.to_thread(structural_search, KB_ROOT, search_query, units, **search_options)
             except SEARCH_ERRORS as exc:
                 prep.failed(exc)
             else:
@@ -215,7 +230,7 @@ async def ask(request: AskRequest) -> AskResponse:
                              for unit in extracted.units], related_materials=materials)
         search_notice = prep.message
     try:
-        rag_config = RagConfig.from_env() if _rag_enabled() else None
+        rag_config = RagConfig.from_env() if not request.context and _rag_enabled() else None
         if rag_config:
             hits = await retrieve(KB_ROOT, request.question, units, rag_config)
             if not hits:
@@ -244,6 +259,10 @@ async def ask(request: AskRequest) -> AskResponse:
         rag_notice = ("Ответ модели обрезан; показываю материал карточки.\n\n"
                       if "обрезан" in str(exc) else
                       "Генерация сейчас недоступна; показываю материал карточки.\n\n")
+
+    if search_notice and search_options:
+        return AskResponse(status="not_found", search_state="absent", sources=[], search_notice=search_notice,
+                           answer="Для уточняющего ответа о технологии нужен структурный поиск по карточкам.")
 
     if search_notice and requested_card_ids(request.question):
         return AskResponse(status="not_found", search_state="absent", sources=[], search_notice=search_notice,
@@ -299,7 +318,7 @@ async def ask_stream(request: AskRequest):
         provisional = False
         try:
             yield _event("stage", stage="search", message="Поиск информации…")
-            if not request.question.strip() or not _rag_enabled():
+            if not request.question.strip() or request.context or not _rag_enabled():
                 result = await ask(request)
                 yield _event("final", **result.model_dump())
                 return

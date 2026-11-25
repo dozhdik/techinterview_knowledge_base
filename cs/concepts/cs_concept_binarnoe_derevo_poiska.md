@@ -26,6 +26,11 @@ version: '1.1'
 date_created: '2026-04-05'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "Двоичное дерево поиска"
+  - "Binary Search Tree"
+abbreviations:
+  - "BST"
 ---
 
 # Бинарное дерево поиска

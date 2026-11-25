@@ -26,6 +26,14 @@ version: '1.1'
 date_created: '2026-11-23'
 date_updated: '2026-11-24'
 status: review
+aliases:
+  - "Поиск в ширину"
+  - "Обход в ширину"
+  - "Обход графа в ширину"
+  - "Breadth-First Search"
+  - "Breadth-First Traversal"
+abbreviations:
+  - "BFS"
 ---
 
 # Поиск в ширину BFS

@@ -32,6 +32,8 @@ version: "1.0"
 date_created: "2026-04-09"
 date_updated: "2026-04-09"
 status: "review"
+aliases:
+  - "Собеседование по проектированию систем"
 ---
 
 # System Design Interview (Интервью по проектированию систем)

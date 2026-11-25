@@ -24,6 +24,9 @@ version: '1.1'
 date_created: '2026-11-23'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "Exponential Backoff Retry"
+  - "Повтор с экспоненциальной задержкой"
 ---
 
 # Повтор с exponential backoff

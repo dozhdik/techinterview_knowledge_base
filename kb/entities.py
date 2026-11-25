@@ -3,34 +3,17 @@ from collections import defaultdict
 from dataclasses import dataclass, replace
 from functools import lru_cache
 import re
-import unicodedata
 
 from .content import has_material
-from .search import _TECHNICAL_ALIASES, requested_card_ids
-from .titles import _DEFINITION, normalize_title, title_index
+from .search import requested_card_ids
+from .titles import (WORD, _DEFINITION, name_keys as _keys, name_stem as _stem,
+                     name_word as _word, normalize_title, title_index)
 
 MODES = ("off", "link", "retrieve", "evidence")
-_WORD = re.compile(r"(?:[.．](?=[A-Za-zＡ-Ｚａ-ｚ]))?\w+(?:[.．]\w+)*(?:[+#＋＃]+\w*)?")
 _INTERRUPTION = re.compile(r"[;!?\n]")
-_SUFFIXES = re.compile(r"(?:иями|ями|ами|ого|ему|ому|ыми|ими|ой|ою|ое|ая|ые|ий|ый|ого|ов|ам|ах|ом|ем|ею|ей|ия|ие|ью|[аяуыиеоюь])$")
 _CONTEXT = re.compile(r"\b(?:с помощью|при помощи|посредством|при использовании|using|with the help of)\b")
 _REFERENT = re.compile(r"\b(?:у него|у нее|у них|его|ее|их|самого|при этом|он[аи]?|это|does it|it use|its)\b")
-_KIND_ORDER = ("title", "alias", "abbreviation", "definition_name", "technical_synonym", "inferred_abbreviation")
-
-
-def _word(text):
-    return unicodedata.normalize("NFKC", text).casefold().replace("ё", "е")
-
-
-def _keys(text):
-    return tuple(_word(m[0]) for m in _WORD.finditer(normalize_title(text)))
-
-
-def _stem(token):
-    if not re.fullmatch(r"[а-я]{4,}", token):
-        return token
-    short = _SUFFIXES.sub("", token)
-    return short if len(short) >= 3 else token
+_KIND_ORDER = ("title", "alias", "abbreviation", "definition_name", "inferred_abbreviation")
 
 
 @dataclass(frozen=True)
@@ -46,10 +29,13 @@ class Mention:
     domain: str | None
     role: str = "additional"
     inherited: bool = False
+    confirmed: bool = False
 
 
 class EntityIndex:
     def __init__(self, names):
+        self.confirmed = names.confirmed
+        self.confirmed_inflections = names.inflections
         self.records = {card: (title, domain) for card, domain, title, *_ in names.records}
         self.entries = defaultdict(lambda: defaultdict(set))
         for kind, entries in names.names.items():
@@ -74,12 +60,6 @@ class EntityIndex:
                 for part in parts:
                     if key := _keys(part):
                         self.entries[key]["definition_name"].add(card)
-        for short, variants in _TECHNICAL_ALIASES.items():
-            keys = {_keys(value) for value in (short, *variants)}
-            owners = set().union(*(set().union(*self.entries.get(key, {}).values()) for key in keys))
-            if owners:
-                for key in keys:
-                    self.entries[key]["technical_synonym"].update(owners)
         from .evidence import acronyms
 
         for short, expansions in acronyms({key: title for key, (title, _) in self.records.items()}).items():
@@ -91,6 +71,7 @@ class EntityIndex:
             if any(re.fullmatch(r"[а-я]{4,}", token) for token in key):
                 self.inflections[tuple(map(_stem, key))].add(key)
         self.width = max(map(len, self.entries), default=0)
+        self.initials = {key[0] for key in self.entries if key} | {key[0] for key in self.inflections if key}
 
     def _matches(self, tokens, observed):
         key = tuple(tokens)
@@ -115,8 +96,8 @@ class EntityIndex:
         return None
 
     def _mention(self, text, start, end, kind, ids, cards, context):
-        usable = sorted(key for key in ids if key in cards and cards[key].status != "draft"
-                        and has_material(cards[key]))
+        usable = sorted(key for key in ids if key in cards and getattr(cards[key], "status", None) != "draft"
+                        and getattr(cards[key], "content", "") and has_material(cards[key]))
         if not usable and kind != "id":
             return None
         selected = usable[0] if len(usable) == 1 else None
@@ -125,13 +106,17 @@ class EntityIndex:
                              for key in usable), reverse=True)
             if scores[0][0] >= 2 and scores[0][0] > scores[1][0]:
                 selected = scores[0][1]
+        keys = _keys(text)
+        declared = (self.confirmed_inflections.get(tuple(map(_stem, keys)), ())
+                    if kind == "inflected" else self.confirmed.get(keys, ()))
+        confirmed = kind == "id" or bool(usable and set(usable) <= set(declared))
         canonical, domain = self.records[selected] if selected else (normalize_title(text), None)
         return Mention(text, canonical, start, end, tuple(usable or sorted(ids)), selected,
-                       kind, len(usable) > 1 and selected is None, domain)
+                       kind, len(usable) > 1 and selected is None, domain, confirmed=confirmed)
 
     def link(self, text, units, domain=None):
-        cards = {unit.id: unit for unit in units if not domain or unit.domain == domain}
-        words = list(_WORD.finditer(text))
+        cards = {unit.id: unit for unit in units if not domain or getattr(unit, "domain", None) == domain}
+        words = list(WORD.finditer(text))
         keys = [_word(word[0]) for word in words]
         context = set(map(_stem, keys))
         mentions = []
@@ -141,6 +126,9 @@ class EntityIndex:
         occupied = [(m.start, m.end) for m in mentions]
         i = 0
         while i < len(words):
+            if keys[i] not in self.initials and _stem(keys[i]) not in self.initials:
+                i += 1
+                continue
             end_limit = min(i + self.width, len(words))
             matches = []
             for j in range(end_limit, i, -1):

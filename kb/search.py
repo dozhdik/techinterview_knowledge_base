@@ -50,7 +50,7 @@ def search(
 ) -> list[SearchResult]:
     results = []
     requested_ids = set(requested_card_ids(query.text or ""))
-    match = title_index(units).match(query.text, query.domain) if query.text and not requested_ids else None
+    match = title_index(units).topic(query.text, query.domain) if query.text and not requested_ids else None
     for unit in units:
         if requested_ids and unit.id.upper() not in requested_ids:
             continue
@@ -85,7 +85,9 @@ _RUSSIAN_ENDINGS = (
 )
 
 
-_TECHNICAL_ALIASES = {
+# Historical token equivalences keep vocabulary compatible with the legacy vector
+# and benchmark paths. They never declare that two card names identify one entity.
+_LEGACY_TOKEN_FOLDS = {
     "bfs": ("поиск в ширину", "обход в ширину", "обход графа в ширину",
             "breadth first search", "breadth first traversal"),
     "dfs": ("поиск в глубину", "обход в глубину", "обход графа в глубину",
@@ -121,7 +123,7 @@ def _stem_words(text: str) -> list[str]:
 
 _ALIAS_TO_TERM = {
     tuple(_stem_words(alias)): term
-    for term, aliases in _TECHNICAL_ALIASES.items()
+    for term, aliases in _LEGACY_TOKEN_FOLDS.items()
     for alias in aliases
 }
 _ALIAS_LENGTHS = sorted({len(alias) for alias in _ALIAS_TO_TERM}, reverse=True)
@@ -141,7 +143,7 @@ def _question_words(text: str) -> list[str]:
             term = words[offset]
             offset += 1
         if len(term) >= 2 and not term.isdigit() and term not in _QUESTION_STOP_WORDS:
-            if not terms or term != terms[-1] or term not in _TECHNICAL_ALIASES:
+            if not terms or term != terms[-1] or term not in _LEGACY_TOKEN_FOLDS:
                 terms.append(term)
     return terms
 
@@ -215,7 +217,7 @@ def lexical_chunk_scores(question, chunks, tags_by_card):
     frequency = Counter(term for card_id in titles for term in terms & (names[card_id] | bodies[card_id]))
     weights = {term: 1 + log((len(titles) + 1) / (frequency[term] + 1)) for term in terms}
     total_weight = sum(weights.values())
-    topics = terms & _TECHNICAL_ALIASES.keys()
+    topics = terms & _LEGACY_TOKEN_FOLDS.keys()
     definition = _is_definition_question(question)
     results = []
     for (card_id, _, _), passage in zip(chunks, passages):

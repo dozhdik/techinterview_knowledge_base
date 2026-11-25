@@ -1,10 +1,12 @@
 """Passage evidence, abstention and diversity for extractive retrieval."""
 from dataclasses import dataclass, replace
+from functools import lru_cache
 import math
 import re
 
 from .properties import QUANTITATIVE, supported
 from .query import normalize, terms
+from .titles import name_keys, name_stem
 
 DEFAULT_DEPTH = 5
 # Match requests for exact details where a general explanation is insufficient.
@@ -13,6 +15,7 @@ _PRECISE = re.compile(
     r"точн\w+\s+(?:числ\w*|балл\w*|значени\w*)|какие\s+команд\w*|"
     r"what flag|exact (?:limit|score|syntax)|which parameter)\b", re.I
 )
+_PRIVATE_DETAIL = re.compile(r"\b(?:закрыт|внутренн)\w* (?:портал|систем|критери|правил)\w*", re.I)
 _OVERVIEW = re.compile(r"^(?:задача|постановка задачи|условие|на собеседовании|что оценивают|для кого этот план|цель проверки)$")
 _DEICTIC = re.compile(r"\b(?:этот|этом|этого|этому|этой|это|этим|this|that)\s+(?:этап\w*|шаг\w*|случа\w*|способ\w*|stage|step)\b", re.I)
 
@@ -23,6 +26,16 @@ _EXACT_VALUE = re.compile(r"\b(?:како[йе] (?:числов\w+|точн\w+) 
                           r"|точн\w+ (?:квот\w*|лимит\w*|формул\w*|цен\w*)"
                           r"|каков[аы]? (?:квот\w*|цен\w*)|какой (?:[a-z]+[- ])?флаг"
                           r"|сколько (?:секунд|байтов|очков|баллов)|how many (?:seconds|bytes))\b", re.I)
+
+
+@lru_cache(maxsize=4096)
+def _name_tokens(text):
+    return tuple(map(name_stem, name_keys(text)))
+
+
+def _contains_name(text, name):
+    tokens = _name_tokens(text)
+    return any(tokens[pos:pos + len(name)] == name for pos in range(len(tokens) - len(name) + 1))
 
 
 @dataclass(frozen=True)
@@ -46,7 +59,7 @@ class Candidate:
 
 
 class EvidenceScorer:
-    def __init__(self, engine, query, ranked, evidence, lexical, dense, depth, method, *, needs=(), owners=(), required_cards=(), context=None):
+    def __init__(self, engine, query, ranked, evidence, lexical, dense, depth, method, *, needs=(), owners=(), required_cards=(), context=None, entity_scope=None, alternatives=(), literal_topic=""):
         import numpy as np
 
         self.engine = engine
@@ -59,6 +72,9 @@ class EvidenceScorer:
         self.needs = frozenset(needs)
         self.owners = frozenset(owners)
         self.context = context or {}
+        self.entity_scope = entity_scope or {}
+        self.explicit_name_terms = set(terms(" ".join(alternatives)))
+        self.literal_topic = tuple(map(name_stem, name_keys(literal_topic)))
         self.weights = {word: min(engine.idf.get(word, 3.1), 3.1) for word in query.tokens}
         self.total = sum(self.weights.values()) or 1.0
         self.known = {word for word in self.weights if word in engine.idf}
@@ -73,7 +89,8 @@ class EvidenceScorer:
         leading = sorted((evidence[c][0] for c in ranked), reverse=True)[:2]
         self.next_peak = leading[1] if len(leading) == 2 else median
         self.exact_value = bool(_EXACT_VALUE.search(query.raw))
-        self.precise = bool(self.exact_value or _PRECISE.search(query.normalized)
+        self.private_detail = bool(_PRIVATE_DETAIL.search(query.normalized))
+        self.precise = bool(self.exact_value or self.private_detail or _PRECISE.search(query.normalized)
                             or re.search(r"\b\d+\.\d+\b", query.raw))
         intents = set(query.intents)
         if intents & {"design", "procedure"}:
@@ -102,9 +119,43 @@ class EvidenceScorer:
         return (card in self.context or
                 any(anchor <= vocabulary for anchors in self.context.values() for anchor in anchors))
 
+    def names_entity(self, owner, text):
+        aliases = self.entity_scope.get(owner, ())
+        return any(_contains_name(text, alias) for alias in aliases)
+
+    def _about_entity(self, card, text):
+        if card in self.entity_scope:
+            return True
+        title = self.engine.passages[self.engine.cards[card][0]].title
+        return any(self.names_entity(owner, title) or self.names_entity(owner, text)
+                   for owner in self.entity_scope)
+
+    def complete_comparison(self, chosen, candidates):
+        available = {candidate.card: candidate for candidate in candidates if candidate.admitted}
+        limit, budget, _ = self.budget
+        for owner in self.entity_scope:
+            if any(self.engine.passages[block.index].card_id == owner or self.names_entity(owner, block.text)
+                   for block in chosen) or owner not in available:
+                continue
+            block = available[owner].blocks[0]
+            if len(chosen) >= limit:
+                # Keep the lead and reserve one slot for the other side.
+                chosen = chosen[:-1]
+            if sum(len(item.text) for item in chosen) + len(block.text) <= budget:
+                chosen = [*chosen, block]
+        return chosen
+
     def _properties(self, card, text, headings, vocabulary):
         found = supported(text, headings) & self.needs
-        if found & QUANTITATIVE and self.owners and card not in self.owners:
+        if self.entity_scope and card not in self.entity_scope:
+            # A number or property about a different subject in the same section
+            # does not establish a claim about the named entity.
+            fragments = re.split(r"(?<=[.!?])\s+|\n", text)
+            title = self.engine.passages[self.engine.cards[card][0]].title
+            if not any(self.names_entity(owner, title) for owner in self.entity_scope):
+                found = frozenset().union(*(supported(fragment, "") & found for fragment in fragments
+                                            if any(self.names_entity(owner, fragment) for owner in self.entity_scope)))
+        if found & QUANTITATIVE and self.owners and card not in self.owners and not self.entity_scope:
             if not (self.context and self._matches_context(card, vocabulary)) and not any(self.engine.title_terms[owner] and self.engine.title_terms[owner] <= vocabulary
                        for owner in self.owners):
                 found -= QUANTITATIVE
@@ -159,7 +210,11 @@ class EvidenceScorer:
                 text = parent if whole else passage.text
                 body = engine.section_terms[card, section] if whole else engine.body_terms[ix]
                 match = frozenset((body | set(terms(" ".join(passage.heading)))) & self.weights.keys())
-                if self.context and not self._matches_context(card, body | self.engine.title_terms[card]):
+                if self.literal_topic and not _contains_name(passage.title + " " + text, self.literal_topic):
+                    continue
+                if self.entity_scope and not self._about_entity(card, text):
+                    continue
+                if self.context and card not in self.entity_scope and not self._matches_context(card, body | self.engine.title_terms[card]):
                     continue
                 if len(text) <= char_limit:
                     properties = self._properties(card, text, " ".join(passage.heading), body) if self.needs else frozenset()
@@ -196,13 +251,20 @@ class EvidenceScorer:
         reason = "sufficient_section"
         if not blocks or not self.weights:
             reason = "no_section"
-        elif (self.strong_unknown or (self.precise and (coverage < .79 or best_coverage < .56))
+        elif (self.strong_unknown or (self.private_detail and not any(_PRIVATE_DETAIL.search(b.text) for b in blocks[:4]))
+              or (self.precise and (coverage < .79 or best_coverage < .56))
               or (self.exact_value and not any(_NUMERIC.search(b.text) for b in blocks[:4]))):
             reason = "unsupported_specific_detail"
         elif required and not coverage_props & required:
             reason = "missing_requested_property"
-        elif (card in self.context and required and required <= coverage_props
+        elif ((card in self.context or card in self.entity_scope) and required and required <= coverage_props
               and cosine >= lexical_floor and best_coverage >= .13 and not self.precise):
+            pass
+        elif (card in self.entity_scope and len(self.entity_scope) > 1 and "comparison" in self.needs
+              and cosine >= lexical_floor and best_coverage >= .13 and not self.precise):
+            pass
+        elif (card in self.entity_scope and self.query.intents == ("definition",)
+              and self.weights.keys() <= self.explicit_name_terms):
             pass
         elif exact and cosine >= lexical_floor:
             pass

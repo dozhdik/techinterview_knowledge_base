@@ -37,6 +37,11 @@ version: "1.0"
 date_created: "2026-04-09"
 date_updated: "2026-11-23"
 status: "review"
+aliases:
+  - "Сеть доставки контента"
+  - "Content Distribution Network"
+abbreviations:
+  - "CDN"
 ---
 
 # CDN (Content Delivery Network)

@@ -67,7 +67,8 @@ def test_old_title_cannot_override_current_corpus(dialogue):
     from dataclasses import replace
 
     original = next(u for u in dialogue.units if u.id == "CS-CONCEPT-016")
-    changed = replace(original, title="Текущее описание", content="# Текущее описание\n\nОбновлённый материал.")
+    changed = replace(original, title="Текущее описание", content="# Текущее описание\n\nОбновлённый материал.",
+                      aliases=[], abbreviations=[])
     new = Conversation([changed])
     past = new.restore([ConversationTurn(question=original.title,source_ids=[original.id])])
     assert past.inferred == (original.id,) and not past.active

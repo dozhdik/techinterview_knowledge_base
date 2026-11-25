@@ -28,6 +28,10 @@ version: "1.0"
 date_created: "2026-04-08"
 date_updated: "2026-04-10"
 status: "review"
+aliases:
+  - "Topological Sort"
+  - "Topological Sorting"
+  - "Топологическое упорядочение"
 ---
 
 # Топологическая сортировка

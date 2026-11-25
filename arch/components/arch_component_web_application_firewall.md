@@ -25,6 +25,11 @@ version: '1.1'
 date_created: '2026-11-23'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "Межсетевой экран веб-приложений"
+  - "Веб-фаервол"
+abbreviations:
+  - "WAF"
 ---
 
 # Web Application Firewall

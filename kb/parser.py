@@ -93,6 +93,10 @@ def _to_list(value) -> list[str]:
 
 
 def _build_unit(metadata: dict, content: str, file_path: str) -> KnowledgeUnit:
+    for field in ("aliases", "abbreviations"):
+        if field in metadata and (not isinstance(metadata[field], list)
+                                  or any(not isinstance(term, str) for term in metadata[field])):
+            raise ParseError(f"{file_path}: {field} должно быть списком строк.")
     return KnowledgeUnit(
         id             = str(metadata.get("id", "")),
         title          = str(metadata.get("title", "")),

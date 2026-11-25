@@ -26,6 +26,9 @@ version: '1.1'
 date_created: '2026-05-21'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "Быстрая сортировка"
+  - "Quicksort"
 ---
 
 # Quick Sort

@@ -24,6 +24,10 @@ version: '1.1'
 date_created: '2026-11-23'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "Big O notation"
+  - "О большое"
+  - "Нотация Big O"
 ---
 
 # Асимптотическая сложность Big O

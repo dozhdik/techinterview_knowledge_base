@@ -24,6 +24,9 @@ version: '1.1'
 date_created: '2026-11-23'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "Multi-Source BFS"
+  - "Многоточечный поиск в ширину"
 ---
 
 # Мультистартовый BFS

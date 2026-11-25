@@ -79,6 +79,38 @@ class Query:
                    for substring in _INTENTS[name][1:])
 
 
+def canonical_tokens(question, mentions):
+    """Use linked canonical names for BM25F without changing the dense prompt."""
+    pieces = []
+    start = 0
+    for mention in mentions:
+        if mention.start is None or mention.match_type in {"id", "title"}:
+            continue
+        pieces.extend((question[start:mention.start], " ", mention.canonical_name, " "))
+        start = mention.end
+    pieces.append(question[start:])
+    return tuple(dict.fromkeys(terms("".join(pieces))))
+
+
+_TOPIC_REQUEST = re.compile(
+    r"^(?:что (?:такое|означает)|как (?:работает|устроен[аоы]?)|what (?:is|are))\s+(.+)$"
+)
+_TOPIC_QUALIFIER = re.compile(r"\b(?:в|на|и|из|при|для|от|с|по|чтобы|котор\w*|in|of|for|and|with)\b")
+
+
+def unlinked_topic(query):
+    """A short explicit topic still needs a literal anchor if it has no linked card."""
+    match = _TOPIC_REQUEST.fullmatch(query.normalized)
+    interrogative = re.match(r"(?:что|как|когда|где|почему|како\w*|сколько|what|how|when|where|why)\b",
+                             query.normalized)
+    value = match[1] if match else query.normalized if not query.intents and not interrogative else ""
+    if value and not _TOPIC_QUALIFIER.search(value) and not any(c in value for c in ",:;"):
+        words = value.split()
+        if 2 <= len(words) <= 4 and len(terms(value)) >= 2:
+            return value
+    return ""
+
+
 _COORDINATED_FACETS = re.compile(
     r"\s+(?:и|а также|and)\s+"
     r"(?=(?:как|почему|зачем|что|когда|какие|какая|какова|сколько|how|why|what|when)\s)"

@@ -35,6 +35,10 @@ version: "1.0"
 date_created: "2026-04-10"
 date_updated: "2026-04-11"
 status: "review"
+aliases:
+  - "Репликация базы данных"
+  - "Репликация БД"
+  - "Репликация баз данных"
 ---
 
 # Database Replication

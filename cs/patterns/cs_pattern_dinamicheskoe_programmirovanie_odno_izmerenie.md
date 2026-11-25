@@ -24,6 +24,11 @@ version: '1.1'
 date_created: '2026-11-23'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "One-Dimensional Dynamic Programming"
+  - "Одномерное динамическое программирование"
+abbreviations:
+  - "1D DP"
 ---
 
 # Динамическое программирование: одно измерение

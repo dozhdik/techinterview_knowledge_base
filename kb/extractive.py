@@ -23,7 +23,7 @@ class ExtractiveResult:
 def direct_search(question, units, domain=None):
     """Resolve an ID or an entire card name before retrieving passages."""
     ids = card_open_ids(question)
-    match = title_index(units).match(question, domain) if not ids else None
+    match = title_index(units).topic(question, domain) if not ids else None
     if not ids and not match:
         return None
     kind, keys = ("id", tuple(ids)) if ids else (match.kind, match.ids)

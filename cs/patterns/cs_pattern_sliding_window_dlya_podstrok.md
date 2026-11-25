@@ -24,6 +24,9 @@ version: '1.1'
 date_created: '2026-11-23'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "Sliding Window for Substrings"
+  - "Скользящее окно для подстрок"
 ---
 
 # Sliding Window для подстрок

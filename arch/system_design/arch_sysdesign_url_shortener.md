@@ -36,6 +36,9 @@ version: "1.0"
 date_created: "2026-04-09"
 date_updated: "2026-04-09"
 status: "approved"
+aliases:
+  - "Сокращатель URL"
+  - "Сервис коротких ссылок"
 ---
 
 # URL Shortener (TinyURL/bit.ly)

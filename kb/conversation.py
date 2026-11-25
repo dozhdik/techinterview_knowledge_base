@@ -111,7 +111,7 @@ class Conversation:
         intents = information_needs(question)
         mentions = roles(self.linker.link(question, self.units), normalized, intents)
         exact = card_open_ids(question)
-        match = self.names.match(question) if not exact else None
+        match = self.names.topic(question) if not exact else None
         if exact or match:
             choices = self._ready(exact or match.ids)
             ambiguous = choices if match and len(choices) > 1 else ()
@@ -119,7 +119,7 @@ class Conversation:
             intents = ("direct_lookup",)
         else:
             subjects = tuple(m for m in mentions if m.selected and m.role != "context")
-            if any(m.match_type != "inflected" for m in subjects):
+            if any(m.confirmed and m.match_type != "inflected" for m in subjects):
                 # An inflected common noun inside the setting need not be a topic of its own.
                 subjects = tuple(m for m in subjects if m.match_type != "inflected" or
                                  m.role != "additional" or not _SETTING.search(normalize(question[:m.start])))

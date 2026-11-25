@@ -29,6 +29,12 @@ version: "1.0"
 date_created: "2026-04-09"
 date_updated: "2026-04-09"
 status: "approved"
+aliases:
+  - "Метод STAR"
+  - "STAR Method"
+  - "Situation Task Action Result"
+abbreviations:
+  - "STAR"
 ---
 
 # Метод STAR для ответа на behavioral-вопросы

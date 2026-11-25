@@ -29,6 +29,8 @@ version: "1.0"
 date_created: "2026-04-08"
 date_updated: "2026-04-09"
 status: "review"
+aliases:
+  - "Быстрый и медленный указатели"
 ---
 
 # Fast and Slow Pointers

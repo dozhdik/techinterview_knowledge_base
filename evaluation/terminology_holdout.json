@@ -1,0 +1,528 @@
+[
+  {
+    "id": "T01",
+    "kind": "form",
+    "query": "Какие недостатки у сортировки Хоара для почти упорядоченного входа?",
+    "expected_ids": [
+      "CS-CONCEPT-010"
+    ],
+    "fact": "плохой выбор опорного даёт квадратичную сложность"
+  },
+  {
+    "id": "T02",
+    "kind": "form",
+    "query": "метод двоичного поиска в массиве",
+    "expected_ids": [
+      "CS-CONCEPT-018"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T03",
+    "kind": "form",
+    "query": "префиксного дерева",
+    "expected_ids": [
+      "CS-CONCEPT-003"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T04",
+    "kind": "form",
+    "query": "связного списка",
+    "expected_ids": [
+      "CS-CONCEPT-011"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T05",
+    "kind": "form",
+    "query": "хэш-таблицей",
+    "expected_ids": [
+      "CS-CONCEPT-009"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T06",
+    "kind": "form",
+    "query": "по обходу в ширину",
+    "expected_ids": [
+      "CS-CONCEPT-016"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T07",
+    "kind": "form",
+    "query": "алгоритм поиска в глубину",
+    "expected_ids": [
+      "CS-CONCEPT-017"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T08",
+    "kind": "form",
+    "query": "шаблон скользящего окна на строках",
+    "expected_ids": [
+      "CS-PATTERN-007"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T09",
+    "kind": "form",
+    "query": "паттерн двух указателей для массива",
+    "expected_ids": [
+      "CS-PATTERN-006"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T10",
+    "kind": "term",
+    "query": "union–find",
+    "expected_ids": [
+      "CS-CONCEPT-004"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T11",
+    "kind": "term",
+    "query": "disjoint-set union",
+    "expected_ids": [
+      "CS-CONCEPT-004"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T12",
+    "kind": "term",
+    "query": "topological ordering",
+    "expected_ids": [
+      "CS-CONCEPT-005"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T13",
+    "kind": "form",
+    "query": "Дает ли Merge Sort стабильную сортировку?",
+    "expected_ids": [
+      "CS-CONCEPT-019"
+    ],
+    "fact": "сохраняет порядок равных элементов при корректном слиянии"
+  },
+  {
+    "id": "T14",
+    "kind": "form",
+    "query": "какова дополнительная память у поиска в ширину?",
+    "expected_ids": [
+      "CS-CONCEPT-016"
+    ],
+    "fact": "O(V)"
+  },
+  {
+    "id": "T15",
+    "kind": "form",
+    "query": "Как устроены корзины в хэш-таблице?",
+    "expected_ids": [
+      "CS-CONCEPT-009"
+    ],
+    "fact": "индекс бакета вычисляется по хешу, коллизии требуют разрешения"
+  },
+  {
+    "id": "T16",
+    "kind": "form",
+    "query": "Какая сложность поиска в двоичном дереве поиска?",
+    "expected_ids": [
+      "CS-CONCEPT-001"
+    ],
+    "fact": "O(h)"
+  },
+  {
+    "id": "T17",
+    "kind": "form",
+    "query": "Почему стек вызовов растёт при рекурсии?",
+    "expected_ids": [
+      "CS-CONCEPT-021"
+    ],
+    "fact": "каждый вызов создаёт отдельный кадр"
+  },
+  {
+    "id": "T18",
+    "kind": "compare",
+    "query": "Чем поблочное и объектное хранилища отличаются по единице доступа?",
+    "expected_ids": [
+      "ARCH-TRADEOFF-019"
+    ],
+    "fact": "объекты адресуются ключом, блочное устройство предоставляет блоки"
+  },
+  {
+    "id": "T19",
+    "kind": "compare",
+    "query": "Чем отличается поиск в ширину от поиска в глубину по структуре данных?",
+    "expected_ids": [
+      "CS-QUESTION-003"
+    ],
+    "fact": "очередь против стека"
+  },
+  {
+    "id": "T20",
+    "kind": "compare",
+    "query": "Чем бинарный поиск в отсортированном массиве отличается от бинарного дерева поиска?",
+    "expected_ids": [
+      "CS-CONCEPT-018",
+      "CS-CONCEPT-001"
+    ],
+    "fact": "средний индекс и переход по дочерним ссылкам"
+  },
+  {
+    "id": "T21",
+    "kind": "compare",
+    "query": "В чём различие репликации базы данных и шардинга?",
+    "expected_ids": [
+      "ARCH-COMPONENT-008",
+      "ARCH-TRADEOFF-005"
+    ],
+    "fact": "копирование и разделение данных"
+  },
+  {
+    "id": "T22",
+    "kind": "form",
+    "query": "паттерн транзакционного исходящего ящика",
+    "expected_ids": [
+      "ARCH-DESIGNPAT-006"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T23",
+    "kind": "term",
+    "query": "кэширование по требованию",
+    "expected_ids": [
+      "ARCH-DESIGNPAT-008"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T24",
+    "kind": "term",
+    "query": "reverse-proxy",
+    "expected_ids": [
+      "ARCH-COMPONENT-013"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T25",
+    "kind": "term",
+    "query": "сеть доставки содержимого",
+    "expected_ids": [
+      "ARCH-COMPONENT-005"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T26",
+    "kind": "form",
+    "query": "Покажи, как отстаёт реплика при асинхронной репликации БД",
+    "expected_ids": [
+      "ARCH-COMPONENT-008"
+    ],
+    "fact": "реплика может применить запись после подтверждения лидером"
+  },
+  {
+    "id": "T27",
+    "kind": "term",
+    "query": "API-шлюз",
+    "expected_ids": [
+      "ARCH-COMPONENT-004"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T28",
+    "kind": "term",
+    "query": "web application firewall",
+    "expected_ids": [
+      "ARCH-COMPONENT-021"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T29",
+    "kind": "term",
+    "query": "WAF",
+    "expected_ids": [
+      "ARCH-COMPONENT-021"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T30",
+    "kind": "term",
+    "query": "secret manager",
+    "expected_ids": [
+      "ARCH-COMPONENT-027"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T31",
+    "kind": "form",
+    "query": "компонент распределённой блокировки",
+    "expected_ids": [
+      "ARCH-COMPONENT-020"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T32",
+    "kind": "form",
+    "query": "паттерн повторных попыток с экспоненциальной задержкой",
+    "expected_ids": [
+      "ARCH-DESIGNPAT-002"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T33",
+    "kind": "term",
+    "query": "файрвол веб-приложений",
+    "expected_ids": [
+      "ARCH-COMPONENT-021"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T34",
+    "kind": "form",
+    "query": "Что получает клиент по истечении deadline запроса?",
+    "expected_ids": [
+      "ARCH-DESIGNPAT-009"
+    ],
+    "fact": "не следует продолжать работу после общего дедлайна"
+  },
+  {
+    "id": "T35",
+    "kind": "form",
+    "query": "когда нужен пул соединений с базой данных?",
+    "expected_ids": [
+      "ARCH-COMPONENT-028"
+    ],
+    "fact": "переиспользование соединений и ограничение нагрузки на БД"
+  },
+  {
+    "id": "T36",
+    "kind": "form",
+    "query": "Как сбросить ключ при обновлении по Cache-Aside?",
+    "expected_ids": [
+      "ARCH-DESIGNPAT-008"
+    ],
+    "fact": "после записи в БД инвалидировать либо обновить ключ"
+  },
+  {
+    "id": "T37",
+    "kind": "term",
+    "query": "distributed lock",
+    "expected_ids": [
+      "ARCH-COMPONENT-020"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T38",
+    "kind": "form",
+    "query": "посредник обратного прокси",
+    "expected_ids": [
+      "ARCH-COMPONENT-013"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T39",
+    "kind": "term",
+    "query": "пробное собеседование",
+    "expected_ids": [
+      "PROC-STRATEGY-005"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T40",
+    "kind": "term",
+    "query": "technical phone screen",
+    "expected_ids": [
+      "PROC-STAGE-002"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T41",
+    "kind": "term",
+    "query": "интервью по дизайну систем",
+    "expected_ids": [
+      "PROC-STAGE-004"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T42",
+    "kind": "term",
+    "query": "переговоры по офферу",
+    "expected_ids": [
+      "PROC-STAGE-007"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T43",
+    "kind": "form",
+    "query": "метод STAR",
+    "expected_ids": [
+      "PROC-FRAMEWORK-001"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T44",
+    "kind": "form",
+    "query": "как сформулировать контрпредложение при переговорах об оффере?",
+    "expected_ids": [
+      "PROC-STAGE-007"
+    ],
+    "fact": "поблагодарить, сослаться на опыт и данные рынка, предложить диапазон"
+  },
+  {
+    "id": "T45",
+    "kind": "form",
+    "query": "Что уточняет рекрутер на первичном HR-скрининге?",
+    "expected_ids": [
+      "PROC-STAGE-001"
+    ],
+    "fact": "профиль, мотивация и организационные ожидания"
+  },
+  {
+    "id": "T46",
+    "kind": "form",
+    "query": "Что проверяют на интервью по проектированию систем?",
+    "expected_ids": [
+      "PROC-STAGE-004"
+    ],
+    "fact": "уточнение требований, архитектурные решения и компромиссы"
+  },
+  {
+    "id": "T47",
+    "kind": "form",
+    "query": "Когда давать обратную связь на мок-интервью?",
+    "expected_ids": [
+      "PROC-STRATEGY-005"
+    ],
+    "fact": "после основной части"
+  },
+  {
+    "id": "T48",
+    "kind": "term",
+    "query": "spaced repetition",
+    "expected_ids": [
+      "PROC-STRATEGY-012"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T49",
+    "kind": "term",
+    "query": "active listening",
+    "expected_ids": [
+      "PROC-SOFTSKILL-001"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T50",
+    "kind": "term",
+    "query": "thinking aloud",
+    "expected_ids": [
+      "PROC-SOFTSKILL-004"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T51",
+    "kind": "form",
+    "query": "разбор инцидента без обвинений",
+    "expected_ids": [
+      "PROC-FRAMEWORK-010"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T52",
+    "kind": "form",
+    "query": "метод подготовки к поведенческому собеседованию",
+    "expected_ids": [
+      "PROC-STAGE-005"
+    ],
+    "fact": ""
+  },
+  {
+    "id": "T53",
+    "kind": "negative",
+    "query": "Как настроить heapsort на Python?",
+    "expected_ids": [],
+    "fact": "нет профильной карточки о пирамидальной сортировке"
+  },
+  {
+    "id": "T54",
+    "kind": "negative",
+    "query": "Что такое Zookeeper Zab?",
+    "expected_ids": [],
+    "fact": "нет профильной карточки"
+  },
+  {
+    "id": "T55",
+    "kind": "negative",
+    "query": "Как настроить Raft pre-vote?",
+    "expected_ids": [],
+    "fact": "нет профильной карточки"
+  },
+  {
+    "id": "T56",
+    "kind": "negative",
+    "query": "Чем LSM-tree отличается от B-tree?",
+    "expected_ids": [],
+    "fact": "нет свидетельства для одной из сторон"
+  },
+  {
+    "id": "T57",
+    "kind": "negative",
+    "query": "Как установить Sidecar на голом металле?",
+    "expected_ids": [],
+    "fact": "нет профильной карточки о Sidecar"
+  },
+  {
+    "id": "T58",
+    "kind": "negative",
+    "query": "Как выполняется chunked transfer в FTP?",
+    "expected_ids": [],
+    "fact": "нет основания подменять FTP на HTTP"
+  },
+  {
+    "id": "T59",
+    "kind": "ambiguous",
+    "query": "SD",
+    "expected_ids": [],
+    "fact": "уточнение между Service Discovery и System Design"
+  },
+  {
+    "id": "T60",
+    "kind": "ambiguous",
+    "query": "Как используют SD в архитектуре?",
+    "expected_ids": [],
+    "fact": "уточнение между Service Discovery и System Design"
+  }
+]

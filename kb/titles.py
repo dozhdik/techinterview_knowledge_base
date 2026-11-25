@@ -17,10 +17,34 @@ _DEFINITION = re.compile(
 _ABBREVIATION = re.compile(r"(?=[A-Z0-9/-]{2,12}$)[A-Z][A-Z0-9]*(?:[/-][A-Z0-9]+)*")
 _HEADING = re.compile(r"\A#\s+([^\n]+)")
 _INTRO_ABBREVIATION = re.compile(r"^([A-Z][A-Z0-9/-]*)[ :]+(?=[А-Яа-яЁё(—–])")
+WORD = re.compile(r"(?:[.．](?=[A-Za-zＡ-Ｚａ-ｚ]))?\w+(?:[.．]\w+)*(?:[+#＋＃]+\w*)?")
+_SUFFIXES = re.compile(r"(?:иями|ями|ами|ого|ему|ому|ыми|ими|ой|ою|ое|ая|ые|ий|ый|ов|ам|ах|ом|ем|ею|ей|ия|ие|ью|[аяуыиеоюь])$")
+_TOPIC_PREFIX = re.compile(
+    r"^(?:алгоритм|метод|паттерн|шаблон|механизм|компонент|структура данных|"
+    r"the algorithm|algorithm|pattern|method|data structure)\s+(?:(?:of|for)\s+)?"
+)
+_TOPIC_BREAK = re.compile(r"[?;!\n]")
+
+
+def name_word(text):
+    return unicodedata.normalize("NFKC", text).casefold().replace("ё", "е")
+
+
+def name_keys(text):
+    return tuple(name_word(m[0]) for m in WORD.finditer(normalize_title(text)))
+
+
+def name_stem(token):
+    if re.fullmatch(r"[а-я]{4,}", token):
+        short = _SUFFIXES.sub("", token)
+        if len(short) >= 3:
+            return short
+    return token
+
 
 
 def normalize_title(value):
-    normalized = unicodedata.normalize("NFKC", value).casefold().replace("ё", "е")
+    normalized = name_word(value)
     return " ".join(_SEPARATORS.sub(" ", normalized).split()).rstrip(".!? ")
 
 
@@ -97,6 +121,33 @@ class TitleIndex:
                 key = normalize_title(name)
                 if key != full and any(ch.isalpha() for ch in key):
                     self.names[kind][key].add(card)
+        self.confirmed = defaultdict(set)
+        self.inflections = defaultdict(set)
+        for card, _, title, _, aliases, abbreviations in records:
+            for value in (title, *aliases, *abbreviations):
+                if (keys := name_keys(value)):
+                    self.confirmed[keys].add(card)
+        for key, owners in self.confirmed.items():
+            if any(re.fullmatch(r"[а-я]{4,}", token) for token in key):
+                self.inflections[tuple(map(name_stem, key))].update(owners)
+
+    def topic(self, value, domain=None):
+        """Look up a full topic, allowing a single outer label and case endings."""
+        if match := self.match(value, domain):
+            return match
+        cleaned = normalize_title(value)
+        if _TOPIC_BREAK.search(cleaned) or _COMPARISON.search(cleaned):
+            return None
+        stripped = _TOPIC_PREFIX.sub("", cleaned, count=1)
+        if stripped != cleaned and (match := self.match(stripped, domain)):
+            return TitleMatch("topic", match.ids)
+        keys = name_keys(stripped)
+        ids = self.inflections.get(tuple(map(name_stem, keys)), ())
+        choices = tuple(sorted(card for card in ids if not domain or self.domains[card] == domain))
+        # Stop before punctuation, qualifiers or a different technical name.
+        if choices and stripped == " ".join(keys):
+            return TitleMatch("inflected_topic", choices)
+        return None
 
     def match(self, value, domain=None):
         key = normalize_title(value)

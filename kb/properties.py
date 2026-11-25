@@ -2,7 +2,7 @@
 import re
 
 NUMBER = re.compile(r"\b[OoОо]\s*\([^)]{1,32}\)|\d+\s*(?:байт\w*|bytes?|KiB|MiB|ГиБ|мс|сек\w*|ms)\b", re.I)
-TIME = re.compile(r"\b(?:врем\w*|time|операци\w+ в худш\w*|шаг\w*)\b", re.I)
+TIME = re.compile(r"\b(?:врем\w*|time|операци\w+ в худш\w*|шаг\w*|(?:средн\w*|худш\w*|лучш\w*|амортизир\w*) сложност\w*)\b", re.I)
 SPACE = re.compile(r"\b(?:памят\w*|memory|space|пространственн\w+)\b", re.I)
 PROSE = {
     "procedure": r"\b(?:сначала|затем|шаг\w*|после этого|repeat|then)\b",

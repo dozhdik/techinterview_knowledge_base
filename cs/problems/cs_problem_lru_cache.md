@@ -25,6 +25,9 @@ version: '1.1'
 date_created: '2026-11-23'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "Least Recently Used Cache"
+  - "Кеш с вытеснением по давности использования"
 ---
 
 # LRU Cache

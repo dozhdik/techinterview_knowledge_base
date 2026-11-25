@@ -47,6 +47,7 @@ def cmd_search(args) -> None:
 
 
 def cmd_validate(args) -> None:
+    from kb.parser import ParseError
     from kb.validator import validate_all, validate_file
 
     if args.file:
@@ -55,7 +56,10 @@ def cmd_validate(args) -> None:
         result.print_report()
         sys.exit(0 if result.is_valid else 1)
     else:
-        units = _load_units(skip_errors=True)
+        try:
+            units = _load_units(skip_errors=False)
+        except ParseError as exc:
+            raise SystemExit(str(exc)) from exc
         if not units:
             return
         print(f"🔍 Валидация БЗ: {len(units)} единиц знаний...\n")

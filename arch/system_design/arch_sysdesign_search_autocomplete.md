@@ -34,6 +34,10 @@ version: "1.0"
 date_created: "2026-04-10"
 date_updated: "2026-04-11"
 status: "review"
+aliases:
+  - "Автодополнение поиска"
+  - "Search Typeahead"
+  - "Search Auto-Complete"
 ---
 
 # Search Autocomplete

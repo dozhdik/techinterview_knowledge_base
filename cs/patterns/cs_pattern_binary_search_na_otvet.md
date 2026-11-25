@@ -27,6 +27,10 @@ version: "1.0"
 date_created: "2026-04-08"
 date_updated: "2026-04-09"
 status: "review"
+aliases:
+  - "Бинарный поиск по ответу"
+  - "Двоичный поиск по ответу"
+  - "Binary Search on the Answer"
 ---
 
 # Binary Search на ответ (по пространству ответа)

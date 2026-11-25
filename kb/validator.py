@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 
 from .parser import KnowledgeUnit
+from .titles import normalize_title, title_index
 
 
 VALID_DOMAINS = {"cs", "arch", "process", "global"}
@@ -90,6 +91,28 @@ class ValidationResult:
             print(f"❌ Валидация не пройдена: {len(self.errors)} ошибок.")
 
 
+_GENERAL_NAMES = {
+    "алгоритм", "буфер", "данные", "задача", "интервью", "компонент", "метод",
+    "паттерн", "поиск", "программа", "процесс", "сервис", "система", "сортировка",
+    "структура данных", "технология", "шаблон", "algorithm", "component", "data",
+    "data structure", "method", "pattern", "search", "service", "system",
+}
+
+
+def _validate_names(result, unit, uid):
+    seen = {normalize_title(unit.title): "title"}
+    for field in ("aliases", "abbreviations"):
+        for name in getattr(unit, field):
+            key = normalize_title(name)
+            if not key or not any(char.isalpha() for char in key):
+                result.add_error(uid, field, "Пустое терминологическое значение.")
+            elif key in seen:
+                result.add_warning(uid, field, f"'{name}' повторяет значение поля {seen[key]}.")
+            elif key in _GENERAL_NAMES:
+                result.add_warning(uid, field, f"'{name}' выглядит слишком общим обозначением.")
+            seen.setdefault(key, field)
+
+
 def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
     result = ValidationResult()
     uid = unit.id or unit.file_path
@@ -107,6 +130,8 @@ def validate_unit(unit: KnowledgeUnit) -> ValidationResult:
         result.add_error(uid, "title", "Поле не заполнено.")
     elif len(unit.title) < 3:
         result.add_warning(uid, "title", "Слишком короткое название.")
+
+    _validate_names(result, unit, uid)
 
     if unit.domain not in VALID_DOMAINS:
         result.add_error(
@@ -178,12 +203,25 @@ def validate_all(units: list[KnowledgeUnit]) -> ValidationResult:
         id_to_units[unit.id].append(unit)
 
     all_ids = set(id_to_units.keys())
+    names = title_index(units).names
 
     for unit in units:
         uid = unit.id or unit.file_path
 
         unit_result = validate_unit(unit)
         result.issues.extend(unit_result.issues)
+
+        title_key = normalize_title(unit.title)
+        if duplicates := names["title"].get(title_key, set()) - {uid}:
+            result.add_warning(uid, "title", f"Название совпадает с {', '.join(sorted(duplicates))}.")
+
+        for field in ("aliases", "abbreviations"):
+            for name in getattr(unit, field):
+                key = normalize_title(name)
+                if titles := names["title"].get(key, set()) - {uid}:
+                    result.add_warning(uid, field, f"'{name}' совпадает с названием {', '.join(sorted(titles))}.")
+                if aliases := (names["alias"].get(key, set()) | names["abbreviation"].get(key, set())) - {uid}:
+                    result.add_warning(uid, field, f"Неоднозначное обозначение '{name}': {', '.join(sorted(aliases | {uid}))}.")
 
         if len(id_to_units[unit.id]) > 1:
             paths = [u.file_path for u in id_to_units[unit.id]]

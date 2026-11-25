@@ -29,6 +29,10 @@ version: "1.0"
 date_created: "2026-04-08"
 date_updated: "2026-04-10"
 status: "review"
+aliases:
+  - "Greedy Algorithms"
+  - "Жадные алгоритмы"
+  - "Жадный алгоритм"
 ---
 
 # Greedy Algorithms: признаки применимости и ограничения

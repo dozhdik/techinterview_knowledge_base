@@ -24,6 +24,11 @@ version: '1.1'
 date_created: '2026-11-23'
 date_updated: '2026-11-23'
 status: review
+aliases:
+  - "Two-Dimensional Dynamic Programming"
+  - "Двумерное динамическое программирование"
+abbreviations:
+  - "2D DP"
 ---
 
 # Динамическое программирование: два измерения

@@ -18,6 +18,9 @@ author: "Редакция базы знаний"
 version: "1.0"
 date_created: "2026-11-24"
 date_updated: "2026-11-24"
+aliases:
+  - "Composite B-tree Index"
+  - "Многоколоночный B-tree индекс"
 ---
 
 # Составной B-tree индекс и порядок столбцов
